@@ -1,0 +1,12 @@
+.vscode
+node_modules
+*.log
+.DS_Store
+coverage
+dist
+tmp
+/connectors
+/test.*
+__*
+.data
+.tmp
