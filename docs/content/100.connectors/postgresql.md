@@ -25,8 +25,8 @@ pnpm add pg@8 @types/pg@8
 ::
 
 ```js
-import { createDB, sql } from "sql0";
-import postgresql from "sql0/connectors/postgresql";
+import { createDB, sql } from "db0";
+import postgresql from "db0/connectors/postgresql";
 
 const db = createDB(
   postgresql({

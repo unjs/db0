@@ -1,13 +1,13 @@
 export default defineAppConfig({
   docus: {
-    title: "SQL0",
+    title: "db0",
     description: "Universal Storage Layer.",
     header: {
       logo: false,
     },
     socials: {
       twitter: "unjsio",
-      github: "unjs/sql0",
+      github: "unjs/db0",
     },
     aside: {
       level: 0,

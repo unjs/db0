@@ -1,8 +1,8 @@
 {
-  "name": "sql0",
+  "name": "db0",
   "version": "0.1.0",
   "description": "",
-  "repository": "unjs/sql0",
+  "repository": "unjs/db0",
   "license": "MIT",
   "sideEffects": false,
   "exports": {
@@ -32,7 +32,7 @@
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
     "test": "pnpm lint && vitest run --coverage",
-    "sql0": "pnpm jiti src/cli"
+    "db0": "pnpm jiti src/cli"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.4",

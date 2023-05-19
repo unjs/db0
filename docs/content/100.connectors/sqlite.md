@@ -25,8 +25,8 @@ pnpm add better-sqlite3@8
 ::
 
 ```js
-import { createDB, sql } from "sql0";
-import sqlite from "sql0/connectors/better-sqlite3";
+import { createDB, sql } from "db0";
+import sqlite from "db0/connectors/better-sqlite3";
 
 const db = createDB(
   sqlite({

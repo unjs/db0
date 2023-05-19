@@ -7,12 +7,12 @@ navigation.title: LibSQL
 Connect to [LibSQL](https://libsql.org/) database.
 
 ::alert{type="primary"}
-🚀 This connector will be comming soon! Follow up via [unjs/sql0#14](https://github.com/unjs/sql0/issues/14).
+🚀 This connector will be comming soon! Follow up via [unjs/db0#14](https://github.com/unjs/db0/issues/14).
 ::
 
 ```js
-import { createDB, sql } from "sql0";
-import vercelPostgres from "sql0/connectors/libsql";
+import { createDB, sql } from "db0";
+import vercelPostgres from "db0/connectors/libsql";
 
 const db = createDB(
   libsql({
