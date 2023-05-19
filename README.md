@@ -15,7 +15,7 @@ sql0 provides an easy way to connect and query sql databases providers with a [t
 ## Features
 
 - Designed for all environments: Browser, NodeJS, and Workers
-- Lots of built-in connectors
+- Well tested built-in connectors
 - Asynchronous API
 
 ## Usage
