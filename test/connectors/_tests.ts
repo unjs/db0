@@ -7,30 +7,28 @@ export function testConnector(opts: { connector: Connector }) {
     db = createDatabase(opts.connector);
   });
 
+  const userId = "1001";
+
   it("drop and create table", async () => {
-    await db.exec(`DROP TABLE IF EXISTS users`);
-    const res = await db.exec(
-      `CREATE TABLE users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`
-    );
-    expect(res).toBeDefined();
+    await db.sql`DROP TABLE IF EXISTS users`;
+    await db.sql`CREATE TABLE users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
   });
 
   it("insert", async () => {
-    const res = await db
-      .prepare("INSERT INTO users VALUES (?, 'John', 'Doe', '')")
-      .run("123");
-    expect(res).toBeDefined();
+    await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '')`;
   });
 
   it("select", async () => {
-    const row = await db.prepare("SELECT * FROM users WHERE id = ?").get("123");
-    expect(row).toMatchInlineSnapshot(`
-      {
-        "email": "",
-        "firstName": "John",
-        "id": "123",
-        "lastName": "Doe",
-      }
+    const { rows } = await db.query`SELECT * FROM users WHERE id = ${userId}`;
+    expect(rows).toMatchInlineSnapshot(`
+      [
+        {
+          "email": "",
+          "firstName": "John",
+          "id": "1001",
+          "lastName": "Doe",
+        },
+      ]
     `);
   });
 }

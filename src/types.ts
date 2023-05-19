@@ -1,8 +1,10 @@
+export type Primitive = string | number | boolean | undefined | null;
+
 export type Statement = {
-  bind(...params: unknown[]): Statement;
-  all(...params: unknown[]): Promise<unknown[]>;
-  run(...params: unknown[]): Promise<{ success: boolean }>;
-  get(...params: unknown[]): Promise<unknown>;
+  bind(...params: Primitive[]): Statement;
+  all(...params: Primitive[]): Promise<unknown[]>;
+  run(...params: Primitive[]): Promise<{ success: boolean }>;
+  get(...params: Primitive[]): Promise<unknown>;
 };
 
 export type ExecResult = unknown;
@@ -13,7 +15,15 @@ export type Connector = {
   prepare: (sql: string) => Statement;
 };
 
+type SqlTemplate<T> = (
+  strings: TemplateStringsArray,
+  ...values: Primitive[]
+) => T;
+
 export type Database = {
   exec: (sql: string) => Promise<ExecResult>;
   prepare: (sql: string) => Statement;
+
+  sql: SqlTemplate<Promise<ExecResult>>;
+  query: SqlTemplate<Promise<{ rows: unknown[] }>>;
 };

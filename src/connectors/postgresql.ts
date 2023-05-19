@@ -44,6 +44,7 @@ export default function sqliteConnector(opts: ConnectorOptions) {
         run(...params) {
           return query(this._sql, params || this._params).then((r) => ({
             result: r,
+            rows: r.rows,
           }));
         },
         get(...params) {
