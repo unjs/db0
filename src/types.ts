@@ -23,7 +23,5 @@ type SqlTemplate<T> = (
 export type Database = {
   exec: (sql: string) => Promise<ExecResult>;
   prepare: (sql: string) => Statement;
-
-  sql: SqlTemplate<Promise<ExecResult>>;
-  query: SqlTemplate<Promise<{ rows: unknown[] }>>;
+  sql: SqlTemplate<Promise<{ rows?: unknown[]; [key: string]: unknown }>>;
 };

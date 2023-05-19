@@ -45,7 +45,7 @@ const userId = "1001";
 await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '')`;
 
 // Query for users
-const { rows } = await db.query`SELECT * FROM users WHERE id = ${userId}`;
+const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
 console.log(rows);
 ```
 

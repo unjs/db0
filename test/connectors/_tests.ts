@@ -19,7 +19,7 @@ export function testConnector(opts: { connector: Connector }) {
   });
 
   it("select", async () => {
-    const { rows } = await db.query`SELECT * FROM users WHERE id = ${userId}`;
+    const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
     expect(rows).toMatchInlineSnapshot(`
       [
         {

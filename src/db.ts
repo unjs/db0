@@ -1,5 +1,7 @@
 import type { Connector, Database, Primitive } from "./types";
 
+const SQL_WITH_RES_RE = /^select/i;
+
 export function createDatabase(connector: Connector): Database {
   return <Database>{
     exec: (sql: string) => {
@@ -12,16 +14,15 @@ export function createDatabase(connector: Connector): Database {
 
     sql: async (strings, ...values) => {
       const [sql, params] = sqlTemplate(strings, ...values);
-      const res = await connector.prepare(sql).run(...params);
-      return res;
-    },
-
-    query: async (strings, ...values) => {
-      const [sql, params] = sqlTemplate(strings, ...values);
-      const rows = await connector.prepare(sql).all(...params);
-      return {
-        rows,
-      };
+      if (SQL_WITH_RES_RE.test(sql)) {
+        const rows = await connector.prepare(sql).all(...params);
+        return {
+          rows,
+        };
+      } else {
+        const res = await connector.prepare(sql).run(...params);
+        return res;
+      }
     },
   };
 }
