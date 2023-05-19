@@ -1,4 +1,4 @@
-import { Client, ClientConfig, Query } from "pg";
+import { Client, ClientConfig } from "pg";
 
 import type { Connector, Statement } from "../types";
 

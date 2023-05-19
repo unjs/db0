@@ -1,4 +1,4 @@
-# db0
+# DB0
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -8,15 +8,9 @@
 
 <!--[![Github Actions][github-actions-src]][github-actions-href]-->
 
-db0 provides an easy way to connect and query sql databases providers with a [tiny core](https://bundlephobia.com/package/db0).
+DB0 provides an easy interface to connect and query sql databases providers with a tiny core!
 
-<!-- 👉 [Documentation](https://db0.unjs.io) -->
-
-## Features
-
-- Designed for all environments: Browser, NodeJS, and Workers
-- Well tested built-in connectors
-- Asynchronous API
+👉 Read [Documentation](https://db0.unjs.io)
 
 ## Usage
 

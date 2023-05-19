@@ -1,6 +1,7 @@
 {
   "extends": ["eslint-config-unjs"],
   "rules": {
-    "unicorn/expiring-todo-comments": 0
+    "unicorn/expiring-todo-comments": 0,
+    "@typescript-eslint/no-non-null-assertion": 0
   }
 }
