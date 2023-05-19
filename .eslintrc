@@ -1,4 +1,6 @@
 {
   "extends": ["eslint-config-unjs"],
-  "rules": {}
+  "rules": {
+    "unicorn/expiring-todo-comments": 0
+  }
 }
