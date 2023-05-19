@@ -4,13 +4,16 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![Codecov][codecov-src]][codecov-href]
 [![bundle][bundle-src]][bundle-href]
-[![License][license-src]][license-href]
 
+<!-- [![License][license-src]][license-href] -->
 <!--[![Github Actions][github-actions-src]][github-actions-href]-->
 
-DB0 provides an easy interface to connect and query sql databases providers with a tiny core!
+DB0 provides an easy interface to connect and query sql databases providers with a tiny core.
 
 👉 Read [Documentation](https://db0.unjs.io)
+
+> **Warning**
+> This project is under heavy development and API might change.
 
 ## Usage
 
