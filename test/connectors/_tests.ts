@@ -7,9 +7,10 @@ export function testConnector(opts: { connector: Connector }) {
     db = createDatabase(opts.connector);
   });
 
-  it("create table", async () => {
+  it("drop and create table", async () => {
+    await db.exec(`DROP TABLE IF EXISTS users`);
     const res = await db.exec(
-      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT)"
+      `CREATE TABLE users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`
     );
     expect(res).toBeDefined();
   });

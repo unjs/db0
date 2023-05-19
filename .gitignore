@@ -10,3 +10,4 @@ tmp
 __*
 .data
 .tmp
+.env
