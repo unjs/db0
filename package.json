@@ -36,12 +36,12 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.4",
-    "@types/pg": "^8.6.6",
+    "@types/pg": "^8.10.1",
     "@vitest/coverage-c8": "^0.31.1",
-    "better-sqlite3": "^8.3.0",
+    "better-sqlite3": "^8.4.0",
     "changelogen": "^0.5.3",
     "dotenv": "^16.0.3",
-    "eslint": "^8.40.0",
+    "eslint": "^8.41.0",
     "eslint-config-unjs": "^0.1.0",
     "jiti": "^1.18.2",
     "pg": "^8.11.0",
@@ -51,7 +51,7 @@
     "vitest": "^0.31.1"
   },
   "peerDependencies": {
-    "better-sqlite3": "^8.3.0"
+    "better-sqlite3": "^8.4.0"
   },
   "peerDependenciesMeta": {
     "better-sqlite3": {
