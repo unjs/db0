@@ -11,6 +11,11 @@
       "import": "./connectors/*.mjs",
       "require": "./connectors/*.cjs"
     },
+    "./drizzle": {
+      "types": "./dist/drizzle.d.ts",
+      "import": "./dist/drizzle.mjs",
+      "require": "./dist/drizzle.cjs"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
@@ -28,7 +33,7 @@
     "build": "unbuild",
     "dev": "vitest",
     "lint": "eslint --ext .ts . && prettier -c src test",
-    "lint:fix": "eslint --ext .ts . --fix && prettier -w src testpg",
+    "lint:fix": "eslint --ext .ts . --fix && prettier -w src test",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
     "test": "pnpm lint && vitest run --coverage",
@@ -41,6 +46,7 @@
     "better-sqlite3": "^8.4.0",
     "changelogen": "^0.5.3",
     "dotenv": "^16.3.1",
+    "drizzle-orm": "^0.27.0",
     "eslint": "^8.43.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.18.2",
@@ -51,10 +57,14 @@
     "vitest": "^0.32.2"
   },
   "peerDependencies": {
-    "better-sqlite3": "^8.4.0"
+    "better-sqlite3": "^8.4.0",
+    "drizzle-orm": "^0.27.0"
   },
   "peerDependenciesMeta": {
     "better-sqlite3": {
+      "optional": true
+    },
+    "drizzle-orm": {
       "optional": true
     }
   },

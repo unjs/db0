@@ -7,6 +7,7 @@ export default defineBuildConfig({
   },
   entries: [
     "src/index",
+    "src/drizzle",
     {
       input: "src/connectors/",
       outDir: "connectors",
