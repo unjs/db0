@@ -12,9 +12,9 @@ import type {
   SelectedFieldsOrdered,
 } from "drizzle-orm/sqlite-core";
 
-import type { Database } from "../../../src";
+import type { Database } from "./types";
 
-export type DrizzleDatabase<
+type DrizzleDatabase<
   TSchema extends Record<string, unknown> = Record<string, never>
 > = BaseSQLiteDatabase<"async", any, TSchema>;
 
@@ -36,7 +36,7 @@ export function drizzle<
   ) as DrizzleDatabase<TSchema>;
 }
 
-export class SQLiteDB0Session<
+class SQLiteDB0Session<
   TFullSchema extends Record<string, unknown>,
   TSchema extends TablesRelationalConfig
 > extends SQLiteSession<"async", unknown, TFullSchema, TSchema> {
@@ -70,9 +70,7 @@ export class SQLiteDB0Session<
   }
 }
 
-export class DB0PreparedQuery<
-  T extends PreparedQueryConfig
-> extends PreparedQuery<T> {
+class DB0PreparedQuery<T extends PreparedQueryConfig> extends PreparedQuery<T> {
   ctx: {
     stmt: any;
     query: Query;

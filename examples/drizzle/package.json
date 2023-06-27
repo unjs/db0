@@ -2,7 +2,7 @@
   "name": "db0-with-drizzle",
   "private": true,
   "scripts": {
-    "test": "jiti ./src/test.ts"
+    "start": "jiti ./index.ts"
   },
   "devDependencies": {
     "drizzle-kit": "^0.19.2",

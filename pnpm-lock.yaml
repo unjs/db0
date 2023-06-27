@@ -26,6 +26,9 @@ importers:
       dotenv:
         specifier: ^16.3.1
         version: 16.3.1
+      drizzle-orm:
+        specifier: ^0.27.0
+        version: 0.27.0(@types/better-sqlite3@7.6.4)(@types/pg@8.10.2)(better-sqlite3@8.4.0)(pg@8.11.1)
       eslint:
         specifier: ^8.43.0
         version: 8.43.0
@@ -51,7 +54,7 @@ importers:
         specifier: ^0.32.2
         version: 0.32.2
 
-  examples/with-drizzle:
+  examples/drizzle:
     devDependencies:
       drizzle-kit:
         specifier: ^0.19.2

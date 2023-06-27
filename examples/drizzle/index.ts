@@ -1,7 +1,12 @@
 import { sqliteTable, text, numeric } from "drizzle-orm/sqlite-core";
-import { createDatabase } from "../../../src";
-import sqlite from "../../../src/connectors/better-sqlite3";
-import { drizzle } from "./driver";
+
+// import { createDatabase } from "db0";
+// import sqlite from "db0/connectors/better-sqlite3";
+// import { drizzle } from "db0/drizzle";
+
+import { createDatabase } from "../../src";
+import sqlite from "../../src/connectors/better-sqlite3";
+import { drizzle } from "../../src/drizzle";
 
 export const users = sqliteTable("users", {
   id: numeric("id"),
