@@ -1,7 +1,7 @@
+import { sqliteTable, text, numeric } from "drizzle-orm/sqlite-core";
 import { createDatabase } from "../../../src";
 import sqlite from "../../../src/connectors/better-sqlite3";
 import { drizzle } from "./driver";
-import { sqliteTable, text, numeric } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: numeric("id"),
@@ -23,7 +23,9 @@ async function main() {
   console.log({ res });
 }
 
-main().catch((err) => {
-  console.error(err);
+// eslint-disable-next-line unicorn/prefer-top-level-await
+main().catch((error) => {
+  console.error(error);
+  // eslint-disable-next-line unicorn/no-process-exit
   process.exit(1);
 });

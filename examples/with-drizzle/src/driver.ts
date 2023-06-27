@@ -1,4 +1,4 @@
-import type { DrizzleConfig, Query, TablesRelationalConfig } from "drizzle-orm";
+import type { Query, TablesRelationalConfig } from "drizzle-orm";
 
 import {
   BaseSQLiteDatabase,
@@ -20,7 +20,7 @@ export type DrizzleDatabase<
 
 export function drizzle<
   TSchema extends Record<string, unknown> = Record<string, never>
->(db: Database, config: DrizzleConfig<TSchema> = {}): DrizzleDatabase<TSchema> {
+>(db: Database): DrizzleDatabase<TSchema> {
   const dialect = new SQLiteAsyncDialect();
 
   // TODO: Support schema
@@ -59,13 +59,13 @@ export class SQLiteDB0Session<
     const stmt = this.db.prepare(query.sql);
     return new DB0PreparedQuery({
       stmt,
-      query: query,
-      fields: fields,
+      query,
+      fields,
       customResultMapper,
     });
   }
 
-  override async transaction<T>(transaction, config?): Promise<T> {
+  transaction<T>(): Promise<T> {
     throw new Error("transaction is not implemented!");
   }
 }
@@ -85,16 +85,19 @@ export class DB0PreparedQuery<
     this.ctx = ctx;
   }
 
-  async run() {
+  run() {
     return this.ctx.stmt.run(...this.ctx.query.params);
   }
-  async all() {
+
+  all() {
     return this.ctx.stmt.all(...this.ctx.query.params);
   }
-  async get() {
+
+  get() {
     return this.ctx.stmt.get(...this.ctx.query.params);
   }
-  async values() {
+
+  values() {
     throw new Error("values is not implemented!");
   }
 }
