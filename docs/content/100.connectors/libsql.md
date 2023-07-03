@@ -19,32 +19,43 @@ const db = createDB(
 
 ## Options
 
-```ts
-export interface Config {
-  /** The database URL.
-   *
-   * The client supports `libsql:`, `http:`/`https:`, `ws:`/`wss:` and `file:` URL. For more infomation,
-   * please refer to the project README:
-   *
-   * https://github.com/libsql/libsql-client-ts#supported-urls
-   */
-  url: string;
-  /** Authentication token for the database. */
-  authToken?: string;
-  /** Enables or disables TLS for `libsql:` URLs.
-   *
-   * By default, `libsql:` URLs use TLS. You can set this option to `false` to disable TLS.
-   */
-  tls?: boolean;
-  /** How to convert SQLite integers to JavaScript values:
-   *
-   * - `"number"` (default): returns SQLite integers as JavaScript `number`-s (double precision floats).
-   * `number` cannot precisely represent integers larger than 2^53-1 in absolute value, so attempting to read
-   * larger integers will throw a `RangeError`.
-   * - `"bigint"`: returns SQLite integers as JavaScript `bigint`-s (arbitrary precision integers). Bigints can
-   * precisely represent all SQLite integers.
-   * - `"string"`: returns SQLite integers as strings.
-   */
-  intMode?: IntMode;
-}
-```
+### `url`
+
+Type: `string`
+
+The database URL. The client supports `libsql:`, `http:`/`https:`, `ws:`/`wss:` and `file:` URL. For more information, please refer to the project README: [link](https://github.com/libsql/libsql-client-ts#supported-urls)
+
+---
+
+### `authToken`
+
+Type: `string` (optional)
+
+Authentication token for the database.
+
+---
+
+### `tls`
+
+Type: `boolean` (optional)
+
+Enables or disables TLS for `libsql:` URLs. By default, `libsql:` URLs use TLS. You can set this option to `false` to disable TLS.
+
+---
+
+### `intMode`
+
+Type: `IntMode` (optional)
+
+How to convert SQLite integers to JavaScript values:
+
+- `"number"` (default): returns SQLite integers as JavaScript `number`-s (double precision floats). `number` cannot precisely represent integers larger than 2^53-1 in absolute value, so attempting to read larger integers will throw a `RangeError`.
+- `"bigint"`: returns SQLite integers as JavaScript `bigint`-s (arbitrary precision integers). Bigints can precisely represent all SQLite integers.
+- `"string"`: returns SQLite integers as strings.
+
+## References
+
+- [LibSQL Website](https://libsql.org/)
+- [LibSQL GitHub Repository](https://github.com/libsql/libsql)
+- [LibSQL Client API Reference](https://libsql.org/libsql-client-ts/index.html)
+- [LibSQL Client GitHub Repository](https://github.com/libsql/libsql-client-ts)
