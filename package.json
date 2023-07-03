@@ -58,10 +58,14 @@
     "vitest": "^0.32.2"
   },
   "peerDependencies": {
+    "@libsql/client": "^0.2.2",
     "better-sqlite3": "^8.4.0",
     "drizzle-orm": "^0.27.0"
   },
   "peerDependenciesMeta": {
+    "@libsql/client": {
+      "optional": true
+    },
     "better-sqlite3": {
       "optional": true
     },
