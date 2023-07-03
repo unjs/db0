@@ -4,6 +4,7 @@ export * from "./types";
 export const connectors = {
   sqlite: "db0/connectors/better-sqlite3",
   libsql: "db0/connectors/libsql",
+  turso: "db0/connectors/turso",
   postgresql: "db0/connectors/postgresql",
   "cloudflare-d1": "db0/connectors/cloudflare-d1",
 } as const;
