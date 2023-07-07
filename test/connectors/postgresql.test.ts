@@ -10,5 +10,5 @@ describe.runIf(process.env.POSTGRESQL_URL)(
         url: process.env.POSTGRESQL_URL!,
       }),
     });
-  }
+  },
 );

@@ -50,7 +50,7 @@ export default function sqliteConnector(opts: ConnectorOptions) {
         get(...params) {
           // TODO: Append limit?
           return query(this._sql, params || this._params).then(
-            (r) => r.rows[0]
+            (r) => r.rows[0],
           );
         },
       };

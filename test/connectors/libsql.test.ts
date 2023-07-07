@@ -8,7 +8,7 @@ import { testConnector } from "./_tests";
 describe("connectors: libsql", () => {
   const dbPath = resolve(
     dirname(fileURLToPath(import.meta.url)),
-    ".tmp/libsql/.data/local.db"
+    ".tmp/libsql/.data/local.db",
   );
   if (existsSync(dbPath)) {
     unlinkSync(dbPath);

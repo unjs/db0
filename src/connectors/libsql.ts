@@ -36,7 +36,7 @@ export default function libSqlConnector(opts: ConnectorOptions) {
         },
         all(...params) {
           return query({ sql: this._sql, args: params || this._params }).then(
-            (r) => r.rows
+            (r) => r.rows,
           );
         },
         run(...params) {
@@ -44,13 +44,13 @@ export default function libSqlConnector(opts: ConnectorOptions) {
             (r) => ({
               result: r,
               rows: r.rows,
-            })
+            }),
           );
         },
         get(...params) {
           // TODO: Append limit?
           return query({ sql: this._sql, args: params || this._params }).then(
-            (r) => r.rows[0]
+            (r) => r.rows[0],
           );
         },
       };

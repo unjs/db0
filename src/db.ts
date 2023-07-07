@@ -45,7 +45,7 @@ export function sqlTemplate(
 }
 
 function isTemplateStringsArray(
-  strings: unknown
+  strings: unknown,
 ): strings is TemplateStringsArray {
   return (
     Array.isArray(strings) && "raw" in strings && Array.isArray(strings.raw)
