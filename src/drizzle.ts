@@ -15,11 +15,11 @@ import type {
 import type { Database } from "./types";
 
 type DrizzleDatabase<
-  TSchema extends Record<string, unknown> = Record<string, never>
+  TSchema extends Record<string, unknown> = Record<string, never>,
 > = BaseSQLiteDatabase<"async", any, TSchema>;
 
 export function drizzle<
-  TSchema extends Record<string, unknown> = Record<string, never>
+  TSchema extends Record<string, unknown> = Record<string, never>,
 >(db: Database): DrizzleDatabase<TSchema> {
   const dialect = new SQLiteAsyncDialect();
 
@@ -32,13 +32,13 @@ export function drizzle<
     "async",
     dialect,
     session,
-    schema
+    schema,
   ) as DrizzleDatabase<TSchema>;
 }
 
 class SQLiteDB0Session<
   TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig
+  TSchema extends TablesRelationalConfig,
 > extends SQLiteSession<"async", unknown, TFullSchema, TSchema> {
   db: Database;
   schema: any;
@@ -54,7 +54,7 @@ class SQLiteDB0Session<
   prepareQuery(
     query: Query,
     fields?: SelectedFieldsOrdered,
-    customResultMapper?: (rows: unknown[][]) => unknown
+    customResultMapper?: (rows: unknown[][]) => unknown,
   ): PreparedQuery<any> {
     const stmt = this.db.prepare(query.sql);
     return new DB0PreparedQuery({
