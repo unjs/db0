@@ -13,7 +13,7 @@ export default function libSqlConnector(opts: ConnectorOptions) {
     return _client;
   };
   return libSqlCore({
-    name: "libsql",
+    name: "libsql-node",
     getClient,
   });
 }
