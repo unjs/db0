@@ -11,12 +11,12 @@ Connect to [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) da
 ::
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import vercelPostgres from "db0/connectors/vercel-postgres";
 
-const db = createDB(
+const db = createDatabase(
   vercelPostgres({
     /* options */
-  })
+  }),
 );
 ```

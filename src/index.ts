@@ -1,6 +1,8 @@
 export * from "./db";
 export * from "./types";
 
+export * from "./schema";
+
 export const connectors = {
   sqlite: "db0/connectors/better-sqlite3",
   libsql: "db0/connectors/libsql",

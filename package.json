@@ -73,5 +73,10 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@8.6.7"
+  "packageManager": "pnpm@8.6.7",
+  "dependencies": {
+    "defu": "^6.1.2",
+    "zod": "^3.21.4",
+    "zod-to-json-schema": "^3.21.4"
+  }
 }

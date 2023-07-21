@@ -7,13 +7,13 @@ navigation.title: LibSQL
 Connect to a [LibSQL](https://libsql.org/) database.
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql";
 
-const db = createDB(
+const db = createDatabase(
   libSql({
     url: `file:local.db`,
-  })
+  }),
 );
 ```
 

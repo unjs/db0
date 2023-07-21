@@ -28,9 +28,11 @@ export default function sqliteConnector(opts: ConnectorOptions) {
   return <Connector>{
     name: "sqlite",
     exec(sql: string) {
+      console.log("> SQL Exec:", sql);
       return getDB().exec(sql);
     },
     prepare(sql: string) {
+      console.log("> SQL Prepare:", sql);
       const _stmt = getDB().prepare(sql);
       const stmt = <Statement>{
         bind(...params) {
@@ -44,7 +46,7 @@ export default function sqliteConnector(opts: ConnectorOptions) {
         },
         run(...params) {
           const res = _stmt.run(...params);
-          return Promise.resolve({ success: res.changes > 0 });
+          return Promise.resolve({ success: res.changes > 0, ...res });
         },
         get(...params) {
           return Promise.resolve(_stmt.get(...params));

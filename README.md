@@ -31,11 +31,11 @@ pnpm add db0
 ```
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import sqlite from "db0/connectors/better-sqlite3";
 
 // Initiate database with SQLite connector
-const db = createDB(sqlite({}));
+const db = createDatabase(sqlite({}));
 
 // Create users table
 await db.sql`CREATE TABLE IF NOT EXISTS users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
