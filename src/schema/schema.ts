@@ -13,7 +13,7 @@ export type Schema<T extends SchemaBaseType = SchemaBaseType> = {
 };
 
 export function defineSchema<T extends SchemaBaseType = SchemaBaseType>(
-  schema: Schema<T> = {}
+  schema: Schema<T> = {},
 ): Schema<T> {
   return schema;
 }

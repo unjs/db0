@@ -6,7 +6,7 @@ export { z } from "zod";
 
 export function defineZodSchema<T extends z.ZodRawShape>(
   shape: T,
-  additional?: Partial<Exclude<Schema, "defaults" | "validate">>
+  additional?: Partial<Exclude<Schema, "defaults" | "validate">>,
 ): Schema<z.TypeOf<z.ZodObject<T>>> {
   const _schema = z.object({
     ...shape,
