@@ -1,4 +1,5 @@
-import type { Connector, Database, Primitive } from "./types";
+import { sqlTemplate } from "./template";
+import type { Connector, Database } from "./types";
 
 const SQL_WITH_RES_RE = /^select/i;
 
@@ -25,29 +26,4 @@ export function createDatabase(connector: Connector): Database {
       }
     },
   };
-}
-
-export function sqlTemplate(
-  strings: TemplateStringsArray,
-  ...values: Primitive[]
-): [string, Primitive[]] {
-  if (!isTemplateStringsArray(strings) || !Array.isArray(values)) {
-    throw new Error("[db0] invalid template invokation");
-  }
-
-  let result = strings[0] || "";
-
-  for (let i = 1; i < strings.length; i++) {
-    result += `?${strings[i] ?? ""}`;
-  }
-
-  return [result, values];
-}
-
-function isTemplateStringsArray(
-  strings: unknown,
-): strings is TemplateStringsArray {
-  return (
-    Array.isArray(strings) && "raw" in strings && Array.isArray(strings.raw)
-  );
 }
