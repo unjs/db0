@@ -39,13 +39,18 @@
   ],
   "scripts": {
     "build": "unbuild",
+    "db0": "pnpm jiti src/cli",
     "dev": "vitest",
     "lint": "eslint --ext .ts . && prettier -c src test",
     "lint:fix": "eslint --ext .ts . --fix && prettier -w src test",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
-    "test": "pnpm lint && vitest run --coverage",
-    "db0": "pnpm jiti src/cli"
+    "test": "pnpm lint && vitest run --coverage"
+  },
+  "dependencies": {
+    "defu": "^6.1.2",
+    "zod": "^3.21.4",
+    "zod-to-json-schema": "^3.21.4"
   },
   "devDependencies": {
     "@libsql/client": "^0.2.2",
@@ -81,10 +86,5 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@8.6.7",
-  "dependencies": {
-    "defu": "^6.1.2",
-    "zod": "^3.21.4",
-    "zod-to-json-schema": "^3.21.4"
-  }
+  "packageManager": "pnpm@8.6.7"
 }

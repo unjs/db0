@@ -28,11 +28,9 @@ export default function sqliteConnector(opts: ConnectorOptions) {
   return <Connector>{
     name: "sqlite",
     exec(sql: string) {
-      console.log("> SQL Exec:", sql);
       return getDB().exec(sql);
     },
     prepare(sql: string) {
-      console.log("> SQL Prepare:", sql);
       const _stmt = getDB().prepare(sql);
       const stmt = <Statement>{
         bind(...params) {
