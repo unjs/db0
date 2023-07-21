@@ -1,27 +1,19 @@
-import { createClient } from "@libsql/client";
-import type { Client, InStatement, Config } from "@libsql/client";
-import type { Connector, Statement } from "../types";
+import type { Client, InStatement } from "@libsql/client";
+import type { Connector, Statement } from "../../types";
 
-export type ConnectorOptions = Config;
+export type ConnectorOptions = {
+  getClient: () => Client;
+  name?: string;
+};
 
-export default function libSqlConnector(opts: ConnectorOptions) {
-  let _client: undefined | Client;
-  function getClient() {
-    if (_client) {
-      return _client;
-    }
-    // TODO: Normalize options for file: protocol to be relative to project .data
-    _client = createClient(opts);
-    return _client;
-  }
-
+export default function libSqlCoreConnector(opts: ConnectorOptions) {
   function query(sql: InStatement) {
-    const client = getClient();
+    const client = opts.getClient();
     return client.execute(sql);
   }
 
   return <Connector>{
-    name: "libsql",
+    name: opts.name || "libsql-core",
     exec(sql: string) {
       return query(sql);
     },
