@@ -21,23 +21,24 @@ describe("schema", () => {
 
     const booksTable = new DBTable(db, "books", booksSchema);
 
-    await booksTable.insert({
+    const book = await booksTable.insert({
       title: "The Great Gatsby",
     });
+
+    expect(await booksTable.findById(book.id!)).toMatchInlineSnapshot(`
+      {
+        "id": 1,
+        "title": "The Great Gatsby",
+      }
+    `);
 
     expect(await booksTable.findAll()).toMatchInlineSnapshot(`
       [
         {
-          "$id": "1",
+          "id": 1,
+          "title": "The Great Gatsby",
         },
       ]
     `);
-
-    // expect(await booksTable.findAll()).toMatchInlineSnapshot(`
-    //   {
-    //     "$id": undefined,
-    //     "title": "The Great Gatsby",
-    //   }
-    // `);
   });
 });

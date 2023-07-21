@@ -22,7 +22,7 @@ export function sqlTemplate(
 
   const dynamicValues = values.filter((_, i) => !staticIndexes.includes(i));
 
-  return [result, dynamicValues];
+  return [result.trim(), dynamicValues];
 }
 
 function isTemplateStringsArray(

@@ -15,13 +15,18 @@ export type Connector = {
   prepare: (sql: string) => Statement;
 };
 
-type SqlTemplate<T> = (
-  strings: TemplateStringsArray,
-  ...values: Primitive[]
-) => T;
+type DefaultSQLResult = {
+  lastInsertRowid?: number;
+  changes?: number;
+  error?: string;
+  rows?: { id?: string | number; [key: string]: unknown }[];
+};
 
-export type Database = {
+export interface Database {
   exec: (sql: string) => Promise<ExecResult>;
   prepare: (sql: string) => Statement;
-  sql: SqlTemplate<Promise<{ rows?: unknown[]; [key: string]: unknown }>>;
-};
+  sql: <T = DefaultSQLResult>(
+    strings: TemplateStringsArray,
+    ...values: Primitive[]
+  ) => Promise<T>;
+}

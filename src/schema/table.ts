@@ -27,7 +27,7 @@ export class DBTable<T extends SchemaBaseType = SchemaBaseType> {
     };
   }
 
-  _get(id: string): DBRecord<T> {
+  _get(id: string | number): DBRecord<T> {
     if (!this._records[id]) {
       this._records[id] = new DBRecord<T>(this, id);
     }
@@ -44,23 +44,24 @@ export class DBTable<T extends SchemaBaseType = SchemaBaseType> {
     );
   }
 
-  create(value: T & { $id?: string }): DBRecord<T> {
+  create(value: T & { id?: string | number }): DBRecord<T> {
     const record = this._get(value.$id);
-    record.setValue(value);
+    // @ts-ignore
+    record._value = value;
     return record;
   }
 
-  insert(value: T & { $id?: string }): Promise<DBRecord<T>> {
+  insert(value: T & { id?: string | number }): Promise<DBRecord<T>> {
     const record = this.create(value);
     return record.save();
   }
 
-  insertMany(items: (T & { $id?: string })[]): Promise<DBRecord<T>[]> {
+  insertMany(items: (T & { id?: string | number })[]): Promise<DBRecord<T>[]> {
     // TODO: leverage INSERT INTO with VALUES
     return Promise.all(items.map((item) => this.insert(item)));
   }
 
-  async findById(id: string): Promise<DBRecord<T> | undefined> {
+  async findById(id: string | number): Promise<DBRecord<T> | undefined> {
     const record = await this._get(id).load();
     if (!record.value) {
       return undefined;
@@ -70,13 +71,12 @@ export class DBTable<T extends SchemaBaseType = SchemaBaseType> {
 
   async findAll(): Promise<DBRecord<T>[]> {
     await this._ensureTable();
-    const rawRecords = await this.db
-      .prepare(`SELECT * FROM ${this.name}`)
-      .all();
+    const rawRecords = await this.db.sql`SELECT * FROM {${this.name}}`;
 
-    const records = rawRecords.map((rawRecord) => {
+    const records = rawRecords.rows.map((rawRecord) => {
       const record = this._get(rawRecord.id);
-      record.setValue(rawRecord);
+      // @ts-ignore
+      record._value = rawRecord as any;
       return record;
     });
 
