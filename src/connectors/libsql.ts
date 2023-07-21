@@ -10,6 +10,7 @@ export default function libSqlConnector(opts: ConnectorOptions) {
     if (_client) {
       return _client;
     }
+    // TODO: Normalize options for file: protocol to be relative to project .data
     _client = createClient(opts);
     return _client;
   }
