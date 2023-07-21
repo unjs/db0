@@ -1,5 +1,5 @@
-import type { Connector, Database } from "./types";
 import { sqlTemplate } from "./template";
+import type { Connector, Database } from "./types";
 
 const SQL_WITH_RES_RE = /^select/i;
 

@@ -6,16 +6,52 @@ navigation.title: LibSQL
 
 Connect to a [LibSQL](https://libsql.org/) database.
 
-```js
+## Usage
+
+For this connector, you need to install [`@libsql/client`](https://www.npmjs.com/package/@libsql/client) dependency:
+
+::code-group
+
+```sh [npm]
+npm install @libsql/client
+```
+
+```sh [Yarn]
+yarn add @libsql/client
+```
+
+```sh [pnpm]
+pnpm add @libsql/client
+```
+
+::
+
+<br>
+
+::code-group
+
+```ts [Node.js]
 import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql";
 
-const db = createDatabase(
-  libSql({
-    url: `file:local.db`,
-  }),
-);
+const db = createDatabase(libSql({ url: `file:local.db` }));
 ```
+
+```ts [Http]
+import { createDatabase, sql } from "db0";
+import libSql from "db0/connectors/libsql/http";
+
+const db = createDatabase(libSql({}));
+```
+
+```ts [Web]
+import { createDatabase, sql } from "db0";
+import libSql from "db0/connectors/libsql/web";
+
+const db = createDatabase(libSql({}));
+```
+
+::
 
 ## Options
 
