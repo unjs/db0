@@ -11,8 +11,8 @@ export function sqlTemplate(
   let result = strings[0] || "";
 
   for (let i = 1; i < strings.length; i++) {
-    if (/from\s+$/i.test(result)) {
-      result += `${values[i - 1]}${strings[i] ?? ""}`;
+    if (result.endsWith("{") && strings[i].startsWith("}")) {
+      result = result.slice(0, -1) + values[i - 1] + strings[i].slice(1);
       values.splice(i - 1, 1);
       continue;
     }

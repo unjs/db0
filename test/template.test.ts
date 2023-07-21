@@ -4,7 +4,7 @@ import { sqlTemplate } from "../src/template";
 describe("SQL Template", () => {
   const tests = [
     {
-      sql: sqlTemplate`SELECT * FROM ${"users"} WHERE age > ${25} AND type = ${"test"}`,
+      sql: sqlTemplate`SELECT * FROM {${"users"}} WHERE age > ${25} AND type = ${"test"}`,
       query: "SELECT * FROM users WHERE age > ? AND type = ?",
       values: [25, "test"],
     },
