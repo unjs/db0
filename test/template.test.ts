@@ -8,6 +8,11 @@ describe("SQL Template", () => {
       query: "SELECT * FROM users WHERE age > ? AND type = ?",
       values: [25, "test"],
     },
+    {
+      sql: sqlTemplate`INSERT INTO {${"users"}} ({${"name"}}, {${"age"}}) VALUES (${25}, ${"test"})`,
+      query: "INSERT INTO users (name, age) VALUES (?, ?)",
+      values: [25, "test"],
+    },
   ];
 
   for (const test of tests) {

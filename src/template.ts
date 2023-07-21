@@ -8,18 +8,21 @@ export function sqlTemplate(
     throw new Error("[db0] invalid template invokation");
   }
 
-  let result = strings[0] || "";
+  const staticIndexes: number[] = [];
 
+  let result = strings[0] || "";
   for (let i = 1; i < strings.length; i++) {
     if (result.endsWith("{") && strings[i].startsWith("}")) {
       result = result.slice(0, -1) + values[i - 1] + strings[i].slice(1);
-      values.splice(i - 1, 1);
+      staticIndexes.push(i - 1);
       continue;
     }
     result += `?${strings[i] ?? ""}`;
   }
 
-  return [result, values];
+  const dynamicValues = values.filter((_, i) => !staticIndexes.includes(i));
+
+  return [result, dynamicValues];
 }
 
 function isTemplateStringsArray(
