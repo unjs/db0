@@ -9,13 +9,13 @@ navigation.title: Cloudflare D1
 This connector works within cloudflare workers with D1 enabled. [Read More](https://developers.cloudflare.com/d1/)
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import cloudflareD1 from "db0/connectors/cloudflare-d1";
 
-const db = createDB(
+const db = createDatabase(
   cloudflareD1({
     bindingName: "DB",
-  })
+  }),
 );
 ```
 

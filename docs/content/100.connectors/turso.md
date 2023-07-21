@@ -11,12 +11,12 @@ Connect to [Turso](https://turso.tech/) database. Follow up via [unjs/db0#11](ht
 ::
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import vercelPostgres from "db0/connectors/turso";
 
-const db = createDB(
+const db = createDatabase(
   turso({
     /* options */
-  })
+  }),
 );
 ```

@@ -11,12 +11,12 @@ Connect to [Planetscale](https://planetscale.com/) database.
 ::
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import planetscale from "db0/connectors/planetscale";
 
-const db = createDB(
+const db = createDatabase(
   planetscale({
     /* options */
-  })
+  }),
 );
 ```

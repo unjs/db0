@@ -25,13 +25,13 @@ pnpm add pg@8 @types/pg@8
 ::
 
 ```js
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import postgresql from "db0/connectors/postgresql";
 
-const db = createDB(
+const db = createDatabase(
   postgresql({
     bindingName: "DB",
-  })
+  }),
 );
 ```
 

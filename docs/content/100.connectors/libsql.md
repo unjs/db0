@@ -31,24 +31,24 @@ pnpm add @libsql/client
 ::code-group
 
 ```ts [Node.js]
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql";
 
-const db = createDB(libSql({ url: `file:local.db` }));
+const db = createDatabase(libSql({ url: `file:local.db` }));
 ```
 
 ```ts [Http]
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql/http";
 
-const db = createDB(libSql({}));
+const db = createDatabase(libSql({}));
 ```
 
 ```ts [Web]
-import { createDB, sql } from "db0";
+import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql/web";
 
-const db = createDB(libSql({}));
+const db = createDatabase(libSql({}));
 ```
 
 ::
