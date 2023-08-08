@@ -55,7 +55,7 @@
     "better-sqlite3": "^8.5.0",
     "changelogen": "^0.5.4",
     "dotenv": "^16.3.1",
-    "drizzle-orm": "^0.27.2",
+    "drizzle-orm": "^0.28.1",
     "eslint": "^8.46.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.19.1",
@@ -68,7 +68,7 @@
   "peerDependencies": {
     "@libsql/client": "^0.3.1",
     "better-sqlite3": "^8.5.0",
-    "drizzle-orm": "^0.27.2"
+    "drizzle-orm": "^0.28.1"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
@@ -81,5 +81,5 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@8.6.11"
+  "packageManager": "pnpm@8.6.12"
 }
