@@ -30,8 +30,8 @@ importers:
         specifier: ^16.3.1
         version: 16.3.1
       drizzle-orm:
-        specifier: ^0.27.2
-        version: 0.27.2(@libsql/client@0.3.1)(@types/better-sqlite3@7.6.4)(@types/pg@8.10.2)(better-sqlite3@8.5.0)(pg@8.11.2)
+        specifier: ^0.28.1
+        version: 0.28.1(@libsql/client@0.3.1)(@types/better-sqlite3@7.6.4)(@types/pg@8.10.2)(better-sqlite3@8.5.0)(pg@8.11.2)
       eslint:
         specifier: ^8.46.0
         version: 8.46.0
@@ -2154,8 +2154,8 @@ packages:
       pg: 8.11.2
     dev: true
 
-  /drizzle-orm@0.27.2(@libsql/client@0.3.1)(@types/better-sqlite3@7.6.4)(@types/pg@8.10.2)(better-sqlite3@8.5.0)(pg@8.11.2):
-    resolution: {integrity: sha512-ZvBvceff+JlgP7FxHKe0zOU9CkZ4RcOtibumIrqfYzDGuOeF0YUY0F9iMqYpRM7pxnLRfC+oO7rWOUH3T5oFQA==}
+  /drizzle-orm@0.28.1(@libsql/client@0.3.1)(@types/better-sqlite3@7.6.4)(@types/pg@8.10.2)(better-sqlite3@8.5.0)(pg@8.11.2):
+    resolution: {integrity: sha512-6ms2pVxvkBJtuP1BZTUCzLLkr+iK/cNgd+tCw+I5/PoM8PB9kXaYoW9yNe/cnaXb0TLJ1gDEndDIyQdRX7zCdQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
