@@ -4,7 +4,7 @@ icon: simple-icons:turso
 
 # Turso
 
-> Connect DB0 to Turso database
+> Connect DB0 to Turso
 
 :read-more{to="https://turso.tech"}
 

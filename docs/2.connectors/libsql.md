@@ -4,7 +4,7 @@ icon: clarity:node-line
 
 # LibSQL
 
-> Connect DB0 to LibSQL database
+> Connect DB0 to LibSQL
 
 :read-more{to="https://libsql.org"}
 

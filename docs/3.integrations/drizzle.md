@@ -4,6 +4,8 @@ icon: simple-icons:drizzle
 
 # Drizzle
 
+> Integrate DB0 with Drizzle ORM
+
 :read-more{to="https://orm.drizzle.team"}
 
 ## Example

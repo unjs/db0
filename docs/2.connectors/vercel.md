@@ -4,7 +4,7 @@ icon: radix-icons:vercel-logo
 
 # Vercel
 
-Connect to [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) database.
+> Connect DB0 to Vercel Postgres
 
 :read-more{to="https://vercel.com/docs/storage/vercel-postgres"}
 

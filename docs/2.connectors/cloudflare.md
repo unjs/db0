@@ -4,7 +4,7 @@ icon: devicon-plain:cloudflareworkers
 
 # Cloudflare D1
 
-> Connect DB0 to Cloudflare D1 database
+> Connect DB0 to Cloudflare D1
 
 :read-more{to="https://developers.cloudflare.com/d1"}
 
