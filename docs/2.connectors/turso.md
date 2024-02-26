@@ -8,5 +8,6 @@ icon: simple-icons:turso
 
 :read-more{to="https://turso.tech"}
 
-> [!WARNING]
-> 🚀 This connector will be supported soon! Follow up via [unjs/db0#11](https://github.com/unjs/db0/issues/11).
+::read-more{to="https://github.com/unjs/db0/issues/32"}
+This connector is planned to be supported. Follow up via [unjs/db0#32](https://github.com/unjs/db0/issues/32).
+::

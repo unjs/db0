@@ -7,8 +7,8 @@ github: "unjs/db0"
 url: "https://db0.unjs.io"
 automd: true
 themeColor: "orange"
-# landing:
-# contributors: true
+landing:
+  contributors: true
 #   heroLinks:
 #     stackblitz:
 #       icon: "i-heroicons-play"
