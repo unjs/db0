@@ -5,8 +5,8 @@
     "start": "jiti ./index.ts"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.19.2",
-    "drizzle-orm": "^0.27.0",
-    "jiti": "^1.18.2"
+    "drizzle-kit": "^0.20.14",
+    "drizzle-orm": "^0.29.4",
+    "jiti": "^1.21.0"
   }
 }

@@ -12,7 +12,7 @@ icon: simple-icons:postgresql
 
 For this connector, you need to install [`pg`](https://www.npmjs.com/package/pg) dependency:
 
-:pm-install{name="pg@8 @types/pg@8"}
+:pm-install{name="pg @types/pg"}
 
 Use `postgresql` connector:
 
