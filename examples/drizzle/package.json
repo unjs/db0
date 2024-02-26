@@ -7,6 +7,7 @@
   "devDependencies": {
     "drizzle-kit": "^0.20.14",
     "drizzle-orm": "^0.29.4",
-    "jiti": "^1.21.0"
+    "jiti": "^1.21.0",
+    "db0": "latest"
   }
 }

@@ -7,7 +7,6 @@ export default defineBuildConfig({
   },
   entries: [
     "src/index",
-    "src/drizzle",
     {
       input: "src/connectors/",
       outDir: "connectors",
@@ -16,6 +15,18 @@ export default defineBuildConfig({
     {
       input: "src/connectors/",
       outDir: "connectors",
+      format: "cjs",
+      ext: "cjs",
+      declaration: false,
+    },
+    {
+      input: "src/integrations/",
+      outDir: "integrations",
+      format: "esm",
+    },
+    {
+      input: "src/integrations/",
+      outDir: "integrations",
       format: "cjs",
       ext: "cjs",
       declaration: false,

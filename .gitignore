@@ -5,9 +5,11 @@ node_modules
 coverage
 dist
 tmp
-/connectors
 /test.*
 __*
 .data
 .tmp
 .env
+
+/connectors
+/integrations

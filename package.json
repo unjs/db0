@@ -19,10 +19,10 @@
       "import": "./connectors/*.mjs",
       "require": "./connectors/*.cjs"
     },
-    "./drizzle": {
-      "types": "./dist/drizzle.d.ts",
-      "import": "./dist/drizzle.mjs",
-      "require": "./dist/drizzle.cjs"
+    "./integrations/*": {
+      "types": "./integrations/*.d.ts",
+      "import": "./integrations/*.mjs",
+      "require": "./integrations/*.cjs"
     },
     ".": {
       "types": "./dist/index.d.ts",
@@ -35,17 +35,18 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "connectors"
+    "connectors",
+    "integrations"
   ],
   "scripts": {
     "build": "unbuild",
+    "db0": "pnpm jiti src/cli",
     "dev": "vitest",
     "lint": "eslint --ext .ts . && prettier -c src test",
     "lint:fix": "eslint --ext .ts . --fix && prettier -w src test",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
-    "test": "pnpm lint && vitest run --coverage",
-    "db0": "pnpm jiti src/cli"
+    "test": "pnpm lint && vitest run --coverage"
   },
   "devDependencies": {
     "@libsql/client": "^0.5.2",
@@ -55,6 +56,7 @@
     "automd": "^0.3.6",
     "better-sqlite3": "^9.4.3",
     "changelogen": "^0.5.5",
+    "db0": "link:.",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.4",
     "eslint": "^8.57.0",

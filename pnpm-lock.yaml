@@ -29,6 +29,9 @@ importers:
       changelogen:
         specifier: ^0.5.5
         version: 0.5.5
+      db0:
+        specifier: link:.
+        version: 'link:'
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -62,6 +65,9 @@ importers:
 
   examples/drizzle:
     devDependencies:
+      db0:
+        specifier: latest
+        version: link:../..
       drizzle-kit:
         specifier: ^0.20.14
         version: 0.20.14
