@@ -1,13 +1,22 @@
 # DB0
 
-<!-- automd:badges -->
+<!-- automd:badges color=yellow -->
 
 [![npm version](https://flat.badgen.net/npm/v/db0)](https://npmjs.com/package/db0)
 [![npm downloads](https://flat.badgen.net/npm/dm/db0)](https://npmjs.com/package/db0)
 
 <!-- /automd -->
 
-> DB0 provides an easy interface to connect and query sql databases providers with a tiny core.
+> [!IMPORTANT]
+> DB0 development is in the early stages. Followup progress via [GitHub issues](https://github.com/unjs/db0/issues).
+
+DB0 is a lightweight SQL connector:
+
+✅ Works with several SQL [connectors](/connectors).
+
+✅ Can be [integrated](/integrations) with ORMs and embeded into frameworks.
+
+✅ Provides a simple but elegant query API out of the box.
 
 👉 Read [📚 Documentation](https://db0.unjs.io)
 
