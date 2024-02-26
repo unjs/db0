@@ -8,7 +8,7 @@
 <!-- /automd -->
 
 > [!IMPORTANT]
-> DB0 development is in the early stages. Followup progress via [GitHub issues](https://github.com/unjs/db0/issues).
+> DB0 development is in the early stages. Track progress via [GitHub issues](https://github.com/unjs/db0/issues).
 
 DB0 is a lightweight SQL connector:
 
