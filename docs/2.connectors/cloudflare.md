@@ -1,12 +1,19 @@
 ---
-navigation.title: Cloudflare D1
+icon: devicon-plain:cloudflareworkers
 ---
 
-# Cloudflare D1 Connector
+# Cloudflare D1
+
+> Connect DB0 to Cloudflare D1 database
+
+:read-more{to="https://developers.cloudflare.com/d1"}
+
+> [!NOTE]
+> This connector works within cloudflare workers with D1 enabled.
 
 ## Usage
 
-This connector works within cloudflare workers with D1 enabled. [Read More](https://developers.cloudflare.com/d1/)
+Use `cloudflare-d1` connector:
 
 ```js
 import { createDatabase, sql } from "db0";

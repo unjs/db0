@@ -1,50 +1,38 @@
 ---
-navigation.title: LibSQL
+icon: clarity:node-line
 ---
 
-# LibSQL Connector
+# LibSQL
 
-Connect to a [LibSQL](https://libsql.org/) database.
+> Connect DB0 to LibSQL database
+
+:read-more{to="https://libsql.org"}
 
 ## Usage
 
 For this connector, you need to install [`@libsql/client`](https://www.npmjs.com/package/@libsql/client) dependency:
 
-::code-group
+:pm-install{name="@libsql/client"}
 
-```sh [npm]
-npm install @libsql/client
-```
-
-```sh [Yarn]
-yarn add @libsql/client
-```
-
-```sh [pnpm]
-pnpm add @libsql/client
-```
-
-::
-
-<br>
+Choose on of the `libsql`, `libsql/http` or `libsql/web` connectors depending on your usage requirements:
 
 ::code-group
 
-```ts [Node.js]
+```ts [libsql.node.js]
 import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql";
 
 const db = createDatabase(libSql({ url: `file:local.db` }));
 ```
 
-```ts [Http]
+```ts [libsql.http.js]
 import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql/http";
 
 const db = createDatabase(libSql({}));
 ```
 
-```ts [Web]
+```ts [libsql.web.js]
 import { createDatabase, sql } from "db0";
 import libSql from "db0/connectors/libsql/web";
 

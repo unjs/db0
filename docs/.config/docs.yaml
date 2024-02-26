@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://unpkg.com/undocs/schema/config.json
+
+name: "db0"
+shortDescription: "elegant Database API"
+description: ""
+github: "unjs/db0"
+url: "https://db0.unjs.io"
+automd: true
+themeColor: "orange"
+# landing:
+# contributors: true
+#   heroLinks:
+#     stackblitz:
+#       icon: "i-heroicons-play"
+#       to: "https://stackblitz.com/github/unjs/packageName/tree/main/playground"
+# features:
+#   - title:
+#     description:

@@ -1,28 +1,20 @@
 ---
-navigation.title: SQLite
+icon: simple-icons:sqlite
 ---
 
-# SQLite Connector
+# SQLite
+
+> Connect DB0 to SQLite using better-sqlite3
+
+<!-- :read-more{to=""} -->
 
 ## Usage
 
 For this connector, you need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) dependency:
 
-::code-group
+:pm-i{name="better-sqlite3@8"}
 
-```sh [npm]
-npm install better-sqlite3@8
-```
-
-```sh [Yarn]
-yarn add better-sqlite3@8
-```
-
-```sh [pnpm]
-pnpm add better-sqlite3@8
-```
-
-::
+Use `better-sqlite3` connector:
 
 ```js
 import { createDatabase, sql } from "db0";
