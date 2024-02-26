@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://unpkg.com/undocs/schema/config.json
 
 name: "db0"
-shortDescription: "database, made simple."
-description: "Elegant Database API for any SQL compatible database."
+shortDescription: "databases, made simple."
+description: "Connect and query any SQL compatible database."
 github: "unjs/db0"
 url: "https://db0.unjs.io"
 automd: true
