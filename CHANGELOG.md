@@ -1,6 +1,30 @@
 # Changelog
 
 
+## v0.1.3
+
+[compare changes](https://github.com/unjs/db0/compare/v0.1.2...v0.1.3)
+
+### 🚀 Enhancements
+
+- Add bun sqlite support ([d6de297](https://github.com/unjs/db0/commit/d6de297))
+
+### 📖 Documentation
+
+- **readme:** Fix links ([#52](https://github.com/unjs/db0/pull/52))
+
+### 🏡 Chore
+
+- Update docs ([598e90c](https://github.com/unjs/db0/commit/598e90c))
+- Update docs ([5eda18e](https://github.com/unjs/db0/commit/5eda18e))
+- Update readme ([#53](https://github.com/unjs/db0/pull/53))
+- Update autofix ci ([ecf97f1](https://github.com/unjs/db0/commit/ecf97f1))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Shoshana Connack
+
 ## v0.1.2
 
 [compare changes](https://github.com/unjs/db0/compare/v0.1.1...v0.1.2)
