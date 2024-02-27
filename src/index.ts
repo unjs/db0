@@ -9,6 +9,8 @@ export const connectors = {
   "libsql-node": "db0/connectors/libsql/node",
   "libsql-http": "db0/connectors/libsql/http",
   "libsql-web": "db0/connectors/libsql/web",
+  bun: "db0/connectors/bun-sqlite",
+  "bun-sqlite": "db0/connectors/bun-sqlite",
 } as const;
 
 export type ConnectorName = keyof typeof connectors;

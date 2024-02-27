@@ -8,7 +8,30 @@ icon: simple-icons:bun
 
 :read-more{to="https://bun.sh/docs/api/sqlite"}
 
-::read-more{to="https://github.com/unjs/db0/issues/32"}
-This connector is planned to be supported. Follow up via [unjs/db0#32](https://github.com/unjs/db0/issues/32).
-::
+> [!NOTE]
+> This connector needs Bun as runtime. Use `bun --bun ...` to make sure of this.
 
+## Usage
+
+Use `bun-sqlite` connector:
+
+```js
+import { createDatabase, sql } from "db0";
+import bunSqlite from "db0/connectors/bun-sqlite";
+
+const db = createDatabase(bunSqlite({}));
+```
+
+## Options
+
+### `name`
+
+Database (file) name. Default is `:memory`.
+
+### `cwd`
+
+Working directory to create database. Default is current working directory of project. (It will be ignored if `path` is provided an absolute path or if name is `:memory` or empty).
+
+### `path`
+
+Related (to `cwd`) or absolute path to the sql file. By default it is stored in `{cwd}/.data/{name}.bun.sqlite` / `.data/db.bun.sqlite`
