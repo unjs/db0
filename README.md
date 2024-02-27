@@ -2,8 +2,8 @@
 
 <!-- automd:badges color=yellow -->
 
-[![npm version](https://flat.badgen.net/npm/v/db0)](https://npmjs.com/package/db0)
-[![npm downloads](https://flat.badgen.net/npm/dm/db0)](https://npmjs.com/package/db0)
+[![npm version](https://flat.badgen.net/npm/v/db0?color=yellow)](https://npmjs.com/package/db0)
+[![npm downloads](https://flat.badgen.net/npm/dm/db0?color=yellow)](https://npmjs.com/package/db0)
 
 <!-- /automd -->
 
