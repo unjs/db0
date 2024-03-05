@@ -11,6 +11,9 @@ importers:
       '@libsql/client':
         specifier: ^0.5.2
         version: 0.5.2
+      '@planetscale/database':
+        specifier: ^1.16.0
+        version: 1.16.0
       '@types/better-sqlite3':
         specifier: ^7.6.9
         version: 7.6.9
@@ -40,7 +43,7 @@ importers:
         version: 16.4.5
       drizzle-orm:
         specifier: ^0.29.4
-        version: 0.29.4(@libsql/client@0.5.2)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.2)(better-sqlite3@9.4.3)(pg@8.11.3)
+        version: 0.29.4(@libsql/client@0.5.2)(@planetscale/database@1.16.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.2)(better-sqlite3@9.4.3)(pg@8.11.3)
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -76,7 +79,7 @@ importers:
         version: 0.20.14
       drizzle-orm:
         specifier: ^0.29.4
-        version: 0.29.4(@libsql/client@0.5.2)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.2)(better-sqlite3@9.4.3)(pg@8.11.3)
+        version: 0.29.4(@libsql/client@0.5.2)(@planetscale/database@1.16.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.2)(better-sqlite3@9.4.3)(pg@8.11.3)
       jiti:
         specifier: ^1.21.0
         version: 1.21.0
@@ -1090,6 +1093,11 @@ packages:
       '@parcel/watcher-win32-arm64': 2.4.1
       '@parcel/watcher-win32-ia32': 2.4.1
       '@parcel/watcher-win32-x64': 2.4.1
+    dev: true
+
+  /@planetscale/database@1.16.0:
+    resolution: {integrity: sha512-HNUrTqrd8aTRZYMDcsoZ62s36sIWkMMmKZBOehoCWR2WrfNPKq+Q1yQef5okl3pSVlldFnu2h/dbHjOsDTHXug==}
+    engines: {node: '>=16'}
     dev: true
 
   /@rollup/plugin-alias@5.1.0(rollup@3.29.4):
@@ -2490,7 +2498,7 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.29.4(@libsql/client@0.5.2)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.2)(better-sqlite3@9.4.3)(pg@8.11.3):
+  /drizzle-orm@0.29.4(@libsql/client@0.5.2)(@planetscale/database@1.16.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.2)(better-sqlite3@9.4.3)(pg@8.11.3):
     resolution: {integrity: sha512-ZnSM8TAxFhzH7p1s3+w3pRE/eKaOeNkH9SKitm717pubDVVcV2I0BCDBPGKV+pe02+wMfw37ntlTcCyo2rA3IA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -2562,6 +2570,7 @@ packages:
         optional: true
     dependencies:
       '@libsql/client': 0.5.2
+      '@planetscale/database': 1.16.0
       '@types/better-sqlite3': 7.6.9
       '@types/pg': 8.11.2
       better-sqlite3: 9.4.3
