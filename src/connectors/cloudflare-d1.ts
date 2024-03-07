@@ -5,7 +5,13 @@ export interface ConnectorOptions {
 }
 
 export default function sqliteConnector(options: ConnectorOptions) {
-  const getDB = () => globalThis.__cf_env__[options.bindingName];
+  const getDB = () => {
+    const binding = globalThis.__cf_env__?.[options.bindingName];
+    if (!binding) {
+      throw new Error(`D1 binding ${options.bindingName} not found`);
+    }
+    return binding;
+  }
 
   return <Connector>{
     name: "cloudflare-d1",
