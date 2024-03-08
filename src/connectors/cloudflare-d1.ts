@@ -8,7 +8,7 @@ export default function sqliteConnector(options: ConnectorOptions) {
   const getDB = () => {
     const binding = globalThis.__cf_env__?.[options.bindingName];
     if (!binding) {
-      throw new Error(`[db0] [d1] binding ${options.bindingName} not found`);
+      throw new Error(`[db0] [d1] binding \`${options.bindingName}\` not found`);
     }
     return binding;
   }
