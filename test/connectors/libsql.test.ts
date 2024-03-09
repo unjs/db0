@@ -15,6 +15,7 @@ describe("connectors: libsql", () => {
   }
   mkdirSync(dirname(dbPath), { recursive: true });
   testConnector({
+    dialect: "libsql",
     connector: libSql({
       url: `file:${dbPath}`,
     }),

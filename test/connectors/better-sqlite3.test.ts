@@ -8,6 +8,7 @@ describe("connectors: better-sqlite3", () => {
   const tmpDir = fileURLToPath(new URL(".tmp/better-sqlite3", import.meta.url));
   rmSync(tmpDir, { recursive: true, force: true });
   testConnector({
+    dialect: "sqlite",
     connector: connector({
       cwd: tmpDir,
     }),

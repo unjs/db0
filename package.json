@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@libsql/client": "^0.5.2",
+    "@planetscale/database": "^1.16.0",
     "@types/better-sqlite3": "^7.6.9",
     "@types/bun": "^1.0.8",
     "@types/pg": "^8.11.2",
