@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { numeric, pgTable, text } from "drizzle-orm/pg-core";
 import { Database, createDatabase } from "../../../src";
 
 import postgresql from "../../../src/connectors/postgresql";
 
 import { DrizzleDatabase, drizzle } from "../../../src/integrations/drizzle";
-import { numeric, pgTable, text } from "drizzle-orm/pg-core";
 
 describe.runIf(process.env.POSTGRESQL_URL)("integrations: drizzle: postgres", () => {
   const users = pgTable("users", {
@@ -22,7 +22,7 @@ describe.runIf(process.env.POSTGRESQL_URL)("integrations: drizzle: postgres", ()
     
     drizzleDb = drizzle(db);
     await db.sql`DROP TABLE IF EXISTS users`;
-    await db.sql`CREATE TABLE users ("id" INTEGER PRIMARY KEY, "name" TEXT)`;;
+    await db.sql`CREATE TABLE users ("id" INTEGER PRIMARY KEY, "name" TEXT)`;
   })
 
   it("insert", async () => {
