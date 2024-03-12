@@ -1,16 +1,16 @@
-import { Client, ClientConfig } from "pg";
+import pg, { ClientConfig } from "pg";
 
 import type { Connector, Statement } from "../types";
 
 export type ConnectorOptions = { url: string } | ClientConfig;
 
 export default function sqliteConnector(opts: ConnectorOptions) {
-  let _client: undefined | Client | Promise<Client>;
+  let _client: undefined | pg.Client | Promise<pg.Client>;
   function getClient() {
     if (_client) {
       return _client;
     }
-    const client = new Client("url" in opts ? opts.url : opts);
+    const client = new pg.Client("url" in opts ? opts.url : opts);
     _client = client.connect().then(() => {
       _client = client;
       return _client;
