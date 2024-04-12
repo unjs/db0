@@ -50,30 +50,30 @@
     "test": "pnpm lint && vitest run --coverage && pnpm test:bun"
   },
   "devDependencies": {
-    "@libsql/client": "^0.5.6",
+    "@libsql/client": "^0.6.0",
     "@types/better-sqlite3": "^7.6.9",
-    "@types/bun": "^1.0.11",
-    "@types/pg": "^8.11.4",
-    "@vitest/coverage-v8": "^1.4.0",
+    "@types/bun": "^1.0.12",
+    "@types/pg": "^8.11.5",
+    "@vitest/coverage-v8": "^1.5.0",
     "automd": "^0.3.7",
-    "better-sqlite3": "^9.4.3",
+    "better-sqlite3": "^9.5.0",
     "changelogen": "^0.5.5",
     "db0": "link:.",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.30.4",
+    "drizzle-orm": "^0.30.8",
     "eslint": "^8.57.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.21.0",
-    "pg": "^8.11.3",
+    "pg": "^8.11.5",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.3",
+    "typescript": "^5.4.5",
     "unbuild": "^2.0.0",
-    "vitest": "^1.4.0"
+    "vitest": "^1.5.0"
   },
   "peerDependencies": {
-    "@libsql/client": "^0.5.6",
-    "better-sqlite3": "^9.4.3",
-    "drizzle-orm": "^0.30.4"
+    "@libsql/client": "^0.6.0",
+    "better-sqlite3": "^9.5.0",
+    "drizzle-orm": "^0.30.8"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
@@ -86,5 +86,5 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@8.15.5"
+  "packageManager": "pnpm@8.15.6"
 }
