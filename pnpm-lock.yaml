@@ -12,8 +12,8 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       '@types/better-sqlite3':
-        specifier: ^7.6.9
-        version: 7.6.9
+        specifier: ^7.6.10
+        version: 7.6.10
       '@types/bun':
         specifier: ^1.1.0
         version: 1.1.0
@@ -39,8 +39,8 @@ importers:
         specifier: ^16.4.5
         version: 16.4.5
       drizzle-orm:
-        specifier: ^0.30.8
-        version: 0.30.8(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5)
+        specifier: ^0.30.9
+        version: 0.30.9(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5)
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -76,7 +76,7 @@ importers:
         version: 0.20.14
       drizzle-orm:
         specifier: ^0.29.4
-        version: 0.29.4(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5)
+        version: 0.29.4(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5)
       jiti:
         specifier: ^1.21.0
         version: 1.21.0
@@ -1294,8 +1294,8 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /@types/better-sqlite3@7.6.9:
-    resolution: {integrity: sha512-FvktcujPDj9XKMJQWFcl2vVl7OdRIqsSRX9b0acWwTmwLK9CF2eqo/FRcmMLNpugKoX/avA6pb7TorDLmpgTnQ==}
+  /@types/better-sqlite3@7.6.10:
+    resolution: {integrity: sha512-TZBjD+yOsyrUJGmcUj6OS3JADk3+UZcNv3NOBqGkM09bZdi28fNZw8ODqbMOLfKCu7RYCO62/ldq1iHbzxqoPw==}
     dependencies:
       '@types/node': 20.11.20
     dev: true
@@ -2468,7 +2468,7 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.29.4(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5):
+  /drizzle-orm@0.29.4(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5):
     resolution: {integrity: sha512-ZnSM8TAxFhzH7p1s3+w3pRE/eKaOeNkH9SKitm717pubDVVcV2I0BCDBPGKV+pe02+wMfw37ntlTcCyo2rA3IA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -2540,14 +2540,14 @@ packages:
         optional: true
     dependencies:
       '@libsql/client': 0.6.0
-      '@types/better-sqlite3': 7.6.9
+      '@types/better-sqlite3': 7.6.10
       '@types/pg': 8.11.5
       better-sqlite3: 9.5.0
       pg: 8.11.5
     dev: true
 
-  /drizzle-orm@0.30.8(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.9)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5):
-    resolution: {integrity: sha512-9pBJA0IjnpPpzZ6s9jlS1CQAbKoBmbn2GJesPhXaVblAA/joOJ4AWWevYcqvLGj9SvThBAl7WscN8Zwgg5mnTw==}
+  /drizzle-orm@0.30.9(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.5.0)(pg@8.11.5):
+    resolution: {integrity: sha512-VOiCFsexErmgqvNCOmbzmqDCZzZsHoz6SkWAjTFxsTr1AllKDbDJ2+GgedLXsXMDgpg/ljDG1zItIFeZtiO2LA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
@@ -2627,7 +2627,7 @@ packages:
         optional: true
     dependencies:
       '@libsql/client': 0.6.0
-      '@types/better-sqlite3': 7.6.9
+      '@types/better-sqlite3': 7.6.10
       '@types/pg': 8.11.5
       better-sqlite3: 9.5.0
       pg: 8.11.5
