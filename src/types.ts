@@ -4,7 +4,7 @@
 export type Primitive = string | number | boolean | undefined | null;
 
 export type Statement = {
-   /**
+  /**
    * Binds parameters to the statement and returns itself for concatenation.
    * @param {...Primitive[]} params - Parameters to bind to the SQL statement.
    * @returns {Statement} The instance of the statement for further cascading.
