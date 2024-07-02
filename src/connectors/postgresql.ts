@@ -11,10 +11,17 @@ export default function sqliteConnector(opts: ConnectorOptions) {
       return _client;
     }
     const client = new Client("url" in opts ? opts.url : opts);
-    _client = client.connect().then(() => {
-      _client = client;
-      return _client;
-    });
+    _client = client
+      .connect()
+      .then(() => {
+        _client = client;
+        return _client;
+      })
+      .catch((error: Error) => {
+        error.message += ` - could not connect to Postgres DB at "${"url" in opts ? opts.url : opts}"`;
+
+        throw error;
+      });
     return _client;
   }
 
