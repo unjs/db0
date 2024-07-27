@@ -12,7 +12,7 @@ icon: simple-icons:sqlite
 
 For this connector, you need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) dependency:
 
-:pm-i{name="better-sqlite3"}
+:pm-install{name="better-sqlite3"}
 
 Use `better-sqlite3` connector:
 
