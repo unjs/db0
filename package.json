@@ -54,7 +54,7 @@
     "@types/better-sqlite3": "^7.6.10",
     "@types/bun": "^1.1.0",
     "@types/pg": "^8.11.5",
-    "@vitest/coverage-v8": "^1.5.2",
+    "@vitest/coverage-v8": "^2.0.5",
     "automd": "^0.3.7",
     "better-sqlite3": "^9.6.0",
     "changelogen": "^0.5.5",
@@ -68,7 +68,7 @@
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "unbuild": "^2.0.0",
-    "vitest": "^1.5.2"
+    "vitest": "^2.0.5"
   },
   "peerDependencies": {
     "@libsql/client": "^0.6.0",
