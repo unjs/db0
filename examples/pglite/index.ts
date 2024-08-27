@@ -5,7 +5,7 @@ import pglite from "../../src/connectors/pglite";
 
 async function main() {
   const db = createDatabase(pglite({
-    dataDir: ".data/db.pglite"
+    dataDir: ".data/pglite-data"
   }));
 
   await db.sql`create table if not exists users (
