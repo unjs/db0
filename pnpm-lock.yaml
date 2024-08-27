@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.2.4
+        version: 0.2.4
       '@libsql/client':
         specifier: ^0.6.0
         version: 0.6.0
@@ -40,7 +43,7 @@ importers:
         version: 16.4.5
       drizzle-orm:
         specifier: ^0.30.9
-        version: 0.30.9(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.6.0)(pg@8.11.5)
+        version: 0.30.9(@electric-sql/pglite@0.2.4)(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.6.0)(pg@8.11.5)
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -77,6 +80,18 @@ importers:
       drizzle-orm:
         specifier: ^0.29.4
         version: 0.29.4(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.6.0)(pg@8.11.5)
+      jiti:
+        specifier: ^1.21.0
+        version: 1.21.0
+
+  examples/pglite:
+    devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.2.4
+        version: 0.2.4
+      db0:
+        specifier: latest
+        version: link:../..
       jiti:
         specifier: ^1.21.0
         version: 1.21.0
@@ -308,6 +323,10 @@ packages:
     resolution: {integrity: sha512-c5Hkm7MmQC2n5qAsKShjQrHoqlfGslB8+qWzsGGZ+2dHMRTNG60UuzalF0h0rvBax5uzPXuGkYLGaQ+TUX3yMw==}
     dependencies:
       superjson: 2.2.1
+    dev: true
+
+  /@electric-sql/pglite@0.2.4:
+    resolution: {integrity: sha512-NN1ATH9aYTCD4257wZH1CjAKdro8jDd5r/BumxZtEVTDNDztBmPYYtBd4TEIHWdi0+QuM7SWk2JRCLvAYCSEWg==}
     dev: true
 
   /@esbuild-kit/core-utils@3.3.2:
@@ -2546,7 +2565,7 @@ packages:
       pg: 8.11.5
     dev: true
 
-  /drizzle-orm@0.30.9(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.6.0)(pg@8.11.5):
+  /drizzle-orm@0.30.9(@electric-sql/pglite@0.2.4)(@libsql/client@0.6.0)(@types/better-sqlite3@7.6.10)(@types/pg@8.11.5)(better-sqlite3@9.6.0)(pg@8.11.5):
     resolution: {integrity: sha512-VOiCFsexErmgqvNCOmbzmqDCZzZsHoz6SkWAjTFxsTr1AllKDbDJ2+GgedLXsXMDgpg/ljDG1zItIFeZtiO2LA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -2626,6 +2645,7 @@ packages:
       sqlite3:
         optional: true
     dependencies:
+      '@electric-sql/pglite': 0.2.4
       '@libsql/client': 0.6.0
       '@types/better-sqlite3': 7.6.10
       '@types/pg': 8.11.5

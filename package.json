@@ -50,6 +50,7 @@
     "test": "pnpm lint && vitest run --coverage && pnpm test:bun"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.2.4",
     "@libsql/client": "^0.6.0",
     "@types/better-sqlite3": "^7.6.10",
     "@types/bun": "^1.1.0",
