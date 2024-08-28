@@ -18,7 +18,7 @@ Use `pglite` connector:
 
 ```js
 import { createDatabase, sql } from "db0";
-import sqlite from "db0/connectors/pglite";
+import pglite from "db0/connectors/pglite";
 
 const db = createDatabase(
   pglite({
