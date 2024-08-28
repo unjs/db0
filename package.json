@@ -52,16 +52,16 @@
   },
   "devDependencies": {
     "@libsql/client": "^0.6.0",
-    "@types/better-sqlite3": "^7.6.9",
+    "@types/better-sqlite3": "^7.6.10",
     "@types/bun": "^1.1.0",
     "@types/pg": "^8.11.5",
-    "@vitest/coverage-v8": "^1.5.0",
+    "@vitest/coverage-v8": "^1.5.2",
     "automd": "^0.3.7",
-    "better-sqlite3": "^9.5.0",
+    "better-sqlite3": "^9.6.0",
     "changelogen": "^0.5.5",
     "db0": "link:.",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.30.8",
+    "drizzle-orm": "^0.30.9",
     "eslint": "^8.57.0",
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.21.0",
@@ -70,12 +70,12 @@
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "unbuild": "^2.0.0",
-    "vitest": "^1.5.0"
+    "vitest": "^1.5.2"
   },
   "peerDependencies": {
     "@libsql/client": "^0.6.0",
-    "better-sqlite3": "^9.5.0",
-    "drizzle-orm": "^0.30.8"
+    "better-sqlite3": "^9.6.0",
+    "drizzle-orm": "^0.30.9"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
