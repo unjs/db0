@@ -72,7 +72,7 @@
   },
   "peerDependencies": {
     "@libsql/client": "^0.6.0",
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^11.3.0",
     "drizzle-orm": "^0.30.9"
   },
   "peerDependenciesMeta": {
