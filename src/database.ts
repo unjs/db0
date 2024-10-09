@@ -3,8 +3,20 @@ import type { Connector, Database } from "./types";
 
 const SQL_WITH_RES_RE = /^select/i;
 
+/**
+ * Creates and returns a database interface using the specified connector.
+ * This interface allows you to execute raw SQL queries, prepare SQL statements,
+ * and execute SQL queries with parameters using tagged template literals.
+ *
+ * @param {Connector} connector - The database connector used to execute and prepare SQL statements. See {@link Connector}.
+ * @returns {Database} The database interface that allows SQL operations. See {@link Database}.
+ */
 export function createDatabase(connector: Connector): Database {
   return <Database>{
+    get dialect() {
+      return connector.dialect;
+    },
+
     exec: (sql: string) => {
       return Promise.resolve(connector.exec(sql));
     },

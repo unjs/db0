@@ -1,31 +1,28 @@
-import pg from "pg";
+import { Client, type Config } from "@planetscale/database";
 
 import type { Connector, Statement } from "../types";
 
-export type ConnectorOptions = { url: string } | pg.ClientConfig;
-
-export default function postgresqlConnector(opts: ConnectorOptions) {
-  let _client: undefined | pg.Client | Promise<pg.Client>;
+export default function planetscaleConnector(opts: Config) {
+  let _client: undefined | Client;
   function getClient() {
     if (_client) {
       return _client;
     }
-    const client = new pg.Client("url" in opts ? opts.url : opts);
-    _client = client.connect().then(() => {
-      _client = client;
-      return _client;
-    });
-    return _client;
+    const client = new Client(opts);
+    _client = client;
+    return client;
   }
 
-  async function query(sql: string, params?: unknown[]) {
-    const client = await getClient();
-    return client.query(normalizeParams(sql), params);
+  // Discussion on how @planetscale/database client works:
+  // https://github.com/drizzle-team/drizzle-orm/issues/1743#issuecomment-1879479647
+  function query(sql: string, params?: unknown[]) {
+    const client = getClient();
+    return client.execute(sql, params);
   }
 
   return <Connector>{
-    name: "postgresql",
-    dialect: "postgresql",
+    name: "planetscale",
+    dialect: "mysql",
     exec(sql: string) {
       return query(sql);
     },
@@ -49,7 +46,6 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
           }));
         },
         get(...params) {
-          // TODO: Append limit?
           return query(this._sql, params || this._params).then(
             (r) => r.rows[0],
           );
@@ -58,10 +54,4 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
       return stmt;
     },
   };
-}
-
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
-function normalizeParams(sql: string) {
-  let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
 }
