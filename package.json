@@ -20,9 +20,9 @@
       "require": "./connectors/*.cjs"
     },
     "./integrations/*": {
-      "types": "./integrations/*.d.ts",
-      "import": "./integrations/*.mjs",
-      "require": "./integrations/*.cjs"
+      "types": "./integrations/*/index.d.ts",
+      "import": "./integrations/*/index.mjs",
+      "require": "./integrations/*/index.cjs"
     },
     ".": {
       "types": "./dist/index.d.ts",
