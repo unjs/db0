@@ -1,22 +1,16 @@
 import { fileURLToPath } from "node:url";
-import { existsSync, unlinkSync, mkdirSync } from "node:fs";
+import { rm, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { describe } from "vitest";
 import PGlite from "../../src/connectors/pglite"
 import { testConnector } from "./_tests";
 
-describe("connectors: pglite", () => {
-  const dbPath = resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    ".tmp/pglite/.data/pglite-data",
-  );
-  if (existsSync(dbPath)) {
-    unlinkSync(dbPath);
-  }
-  mkdirSync(dirname(dbPath), { recursive: true });
+describe("connectors: pglite", async () => {
+  const dataDir = fileURLToPath(new URL(".tmp/pglite", import.meta.url));
+  await rm(dataDir, { recursive: true }).catch(() => { /* */ });
+  await mkdir(dirname(dataDir), { recursive: true });
   testConnector({
-    connector: PGlite({
-      dataDir: `${dbPath}`,
-    }),
+    dialect: "postgresql",
+    connector: PGlite({ dataDir }),
   });
 });

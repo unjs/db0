@@ -21,9 +21,7 @@ export default function pgliteConnector(opts: ConnectorOptions = {}) {
     if (_client) {
       return _client;
     }
-
-    _client = opts.dataDir ? new PGlite(opts.dataDir, opts) : new PGlite(opts);
-
+    _client = new PGlite(opts);
     return _client;
   }
 
@@ -36,6 +34,7 @@ export default function pgliteConnector(opts: ConnectorOptions = {}) {
 
   return <Connector>{
     name: "pglite",
+    dialect: "postgresql",
     exec(sql: string) {
       return query(sql);
     },
