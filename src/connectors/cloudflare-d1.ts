@@ -4,8 +4,15 @@ export interface ConnectorOptions {
   bindingName?: string;
 }
 
-export default function sqliteConnector(options: ConnectorOptions) {
-  const getDB = () => globalThis.__cf_env__[options.bindingName];
+export default function cloudflareD1Connector(options: ConnectorOptions) {
+  const getDB = () => {
+    // TODO: Remove legacy __cf_env__ support in next major version
+    const binding = globalThis.__env__?.[options.bindingName] || globalThis.__cf_env__?.[options.bindingName];
+    if (!binding) {
+      throw new Error(`[db0] [d1] binding \`${options.bindingName}\` not found`);
+    }
+    return binding;
+  }
 
   return <Connector>{
     name: "cloudflare-d1",

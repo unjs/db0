@@ -5,7 +5,7 @@ import {
 import type { Database } from "../../types";
 import { DB0Session } from "./_session";
 
-type DrizzleDatabase<
+export type DrizzleDatabase<
   TSchema extends Record<string, unknown> = Record<string, never>,
 > = BaseSQLiteDatabase<"async", any, TSchema>;
 

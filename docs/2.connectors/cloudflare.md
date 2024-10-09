@@ -26,6 +26,11 @@ const db = createDatabase(
 );
 ```
 
+> [!NOTE]
+> In order for the driver to work, `globalThis.__env__.DB` value should be set.
+>
+> If you are using [Nitro](https://nitro.unjs.io/) you don't need to do any extra steps.
+
 ## Options
 
 ### `bindingName`

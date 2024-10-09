@@ -1,6 +1,32 @@
 # Changelog
 
 
+## v0.1.4
+
+[compare changes](https://github.com/unjs/db0/compare/v0.1.3...v0.1.4)
+
+### 🩹 Fixes
+
+- **d1:** Support `__env__` for accessing binding ([2ef9d57](https://github.com/unjs/db0/commit/2ef9d57))
+
+### 💅 Refactors
+
+- **d1:** Throw a better error if binding not found ([#60](https://github.com/unjs/db0/pull/60))
+
+### 📖 Documentation
+
+- Fix typos ([#56](https://github.com/unjs/db0/pull/56))
+
+### 🏡 Chore
+
+- Apply automated updates ([5760665](https://github.com/unjs/db0/commit/5760665))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Sébastien Chopin <seb@nuxtlabs.com>
+- Neil Richter ([@noook](http://github.com/noook))
+
 ## v0.1.3
 
 [compare changes](https://github.com/unjs/db0/compare/v0.1.2...v0.1.3)

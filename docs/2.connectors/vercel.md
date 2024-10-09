@@ -14,7 +14,7 @@ A dedicated `vercel` connector is planned to be supported. Follow up via [unjs/d
 
 ## Usage
 
-Use [`postgress`](/connectors/postgresql) connector:
+Use [`postgres`](/connectors/postgresql) connector:
 
 ```js
 import { createDatabase, sql } from "db0";
