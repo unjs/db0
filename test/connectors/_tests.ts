@@ -1,7 +1,5 @@
 import { beforeAll, expect, it } from "vitest";
-import { Connector, Database, createDatabase } from "../../src";
-
-export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
+import { Connector, Database, createDatabase, type SQLDialect } from "../../src";
 
 export function testConnector(opts: { connector: Connector, dialect: SQLDialect }) {
   let db: Database;
