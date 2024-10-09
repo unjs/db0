@@ -1,5 +1,15 @@
-export * from "./database";
-export * from "./types";
+export {
+  createDatabase
+} from "./database";
+
+export type {
+  Connector,
+  Database,
+  ExecResult,
+  Primitive,
+  SQLDialect,
+  Statement
+} from "./types";
 
 /**
  * A mapping of available database connector identifiers to their module paths.
