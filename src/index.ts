@@ -1,6 +1,4 @@
-export {
-  createDatabase
-} from "./database";
+export { createDatabase } from "./database";
 
 export type {
   Connector,
@@ -8,7 +6,7 @@ export type {
   ExecResult,
   Primitive,
   SQLDialect,
-  Statement
+  Statement,
 } from "./types";
 
 /**
