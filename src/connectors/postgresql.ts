@@ -4,7 +4,7 @@ import type { Connector, Statement } from "../types";
 
 export type ConnectorOptions = { url: string } | ClientConfig;
 
-export default function sqliteConnector(opts: ConnectorOptions) {
+export default function postgresqlConnector(opts: ConnectorOptions) {
   let _client: undefined | pg.Client | Promise<pg.Client>;
   function getClient() {
     if (_client) {
