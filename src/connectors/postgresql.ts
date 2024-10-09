@@ -1,8 +1,8 @@
-import pg, { ClientConfig } from "pg";
+import pg from "pg";
 
 import type { Connector, Statement } from "../types";
 
-export type ConnectorOptions = { url: string } | ClientConfig;
+export type ConnectorOptions = { url: string } | pg.ClientConfig;
 
 export default function postgresqlConnector(opts: ConnectorOptions) {
   let _client: undefined | pg.Client | Promise<pg.Client>;
