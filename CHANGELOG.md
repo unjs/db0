@@ -1,6 +1,65 @@
 # Changelog
 
 
+## v0.2.0
+
+[compare changes](https://github.com/unjs/db0/compare/v0.1.4...v0.2.0)
+
+### 🚀 Enhancements
+
+- Add `dialect` and planetscale connector ([#59](https://github.com/unjs/db0/pull/59))
+- Mysql connector ([#86](https://github.com/unjs/db0/pull/86))
+- Support pglite ([#110](https://github.com/unjs/db0/pull/110))
+
+### 🩹 Fixes
+
+- **postgresql:** Use default export ([#63](https://github.com/unjs/db0/pull/63))
+- **pkg:** ⚠️  Correct  `/integrations/drizzle` subpath export ([#106](https://github.com/unjs/db0/pull/106))
+
+### 💅 Refactors
+
+- Relax peer dependencies ([a80b62c](https://github.com/unjs/db0/commit/a80b62c))
+- **postgresql:** Correct function name ([#114](https://github.com/unjs/db0/pull/114))
+- Explicit exports ([f5c30bf](https://github.com/unjs/db0/commit/f5c30bf))
+
+### 📖 Documentation
+
+- **vercel:** Fix the connector name ([#74](https://github.com/unjs/db0/pull/74))
+- Fix typo ([#108](https://github.com/unjs/db0/pull/108))
+- **sqlite:** Fix pm install component ([#85](https://github.com/unjs/db0/pull/85))
+- **guide:** Add information about static parameters ([#80](https://github.com/unjs/db0/pull/80))
+- Added jsdocs to exported functions and types ([#89](https://github.com/unjs/db0/pull/89))
+- Remove non existent `sql` import ([9e5550f](https://github.com/unjs/db0/commit/9e5550f))
+
+### 🏡 Chore
+
+- Update dependencies ([c7aad11](https://github.com/unjs/db0/commit/c7aad11))
+- Update eslint config ([ee1dcbc](https://github.com/unjs/db0/commit/ee1dcbc))
+- Apply automated updates ([086317e](https://github.com/unjs/db0/commit/086317e))
+- **docs:** Update undocs ([122c83a](https://github.com/unjs/db0/commit/122c83a))
+- Update deps ([7e7a4ef](https://github.com/unjs/db0/commit/7e7a4ef))
+- Apply automated updates ([5b1bdbd](https://github.com/unjs/db0/commit/5b1bdbd))
+
+### ✅ Tests
+
+- **integrations:** Drizzle integration test ([#79](https://github.com/unjs/db0/pull/79))
+
+#### ⚠️ Breaking Changes
+
+- **pkg:** ⚠️  Correct  `/integrations/drizzle` subpath export ([#106](https://github.com/unjs/db0/pull/106))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Adrien Zaganelli <adrienzaganelli@gmail.com>
+- Arash Ari Sheyda ([@arashsheyda](http://github.com/arashsheyda))
+- Gerben Mulder <github.undergo381@passmail.net>
+- Aman Desai ([@amandesai01](http://github.com/amandesai01))
+- Max ([@onmax](http://github.com/onmax))
+- Kh ([@hareland](http://github.com/hareland))
+- @beer ([@iiio2](http://github.com/iiio2))
+- Rishi Raj Jain <rishi18304@iiitd.ac.in>
+
 ## v0.1.4
 
 [compare changes](https://github.com/unjs/db0/compare/v0.1.3...v0.1.4)
