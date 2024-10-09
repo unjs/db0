@@ -14,6 +14,7 @@ export default function libSqlCoreConnector(opts: ConnectorOptions) {
 
   return <Connector>{
     name: opts.name || "libsql-core",
+    dialect: "libsql",
     exec(sql: string) {
       return query(sql);
     },

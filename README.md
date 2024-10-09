@@ -3,7 +3,7 @@
 <!-- automd:badges color=yellow -->
 
 [![npm version](https://img.shields.io/npm/v/db0?color=yellow)](https://npmjs.com/package/db0)
-[![npm downloads](https://img.shields.io/npm/dm/db0?color=yellow)](https://npmjs.com/package/db0)
+[![npm downloads](https://img.shields.io/npm/dm/db0?color=yellow)](https://npm.chart.dev/db0)
 
 <!-- /automd -->
 
