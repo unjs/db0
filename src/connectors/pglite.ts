@@ -1,18 +1,7 @@
-import { PGlite, type Extensions } from "@electric-sql/pglite";
+import { PGlite, type PGliteOptions } from "@electric-sql/pglite";
 import type { Connector, Statement } from "../types";
 
-// Since Filesystem is not exported, we will type it as `any` for now
-export type ConnectorOptions = {
-  dataDir?: string;
-  debug?: 1 | 2 | 3 | 4 | 5;
-  relaxedDurability?: boolean;
-  fs?: any;  // Change to any or remove if not needed
-  loadDataDir?: Blob | File;
-  extensions?: Extensions;
-  username?: string;
-  database?: string;
-  initialMemory?: number;
-};
+export type ConnectorOptions = PGliteOptions
 
 export default function pgliteConnector(opts: ConnectorOptions = {}) {
   let _client: PGlite | undefined;
