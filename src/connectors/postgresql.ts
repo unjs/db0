@@ -25,6 +25,7 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
 
   return <Connector>{
     name: "postgresql",
+    dialect: "postgresql",
     exec(sql: string) {
       return query(sql);
     },

@@ -3,6 +3,8 @@
  */
 export type Primitive = string | number | boolean | undefined | null;
 
+export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
+
 export type Statement = {
   /**
    * Binds parameters to the statement and returns itself for concatenation.
@@ -48,6 +50,11 @@ export type Connector = {
   name: string;
 
   /**
+   * The SQL dialect used by the connector.
+   */
+  dialect: SQLDialect;
+
+  /**
    * Executes an SQL query directly and returns the result.
    * @param {string} sql - The SQL string to execute.
    * @returns {ExecResult | Promise<ExecResult>} The result of the execution.
@@ -73,6 +80,8 @@ type DefaultSQLResult = {
 };
 
 export interface Database {
+  readonly dialect: SQLDialect;
+
   /**
    * Executes a raw SQL string.
    * @param {string} sql - The SQL string to execute.

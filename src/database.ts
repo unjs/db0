@@ -13,6 +13,10 @@ const SQL_WITH_RES_RE = /^select/i;
  */
 export function createDatabase(connector: Connector): Database {
   return <Database>{
+    get dialect() {
+      return connector.dialect;
+    },
+
     exec: (sql: string) => {
       return Promise.resolve(connector.exec(sql));
     },

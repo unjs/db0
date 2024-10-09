@@ -22,6 +22,7 @@ export default function planetscaleConnector(opts: Config) {
 
   return <Connector>{
     name: "planetscale",
+    dialect: "mysql",
     exec(sql: string) {
       return query(sql);
     },

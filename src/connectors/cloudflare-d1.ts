@@ -16,6 +16,7 @@ export default function cloudflareD1Connector(options: ConnectorOptions) {
 
   return <Connector>{
     name: "cloudflare-d1",
+    dialect: "sqlite",
     exec: (sql: string) => getDB().exec(sql),
     prepare: (sql: string) => {
       const _stmt = getDB().prepare(sql);

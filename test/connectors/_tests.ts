@@ -1,13 +1,7 @@
 import { beforeAll, expect, it } from "vitest";
 import { Connector, Database, createDatabase } from "../../src";
 
-const dialects = [
-  "mysql",
-  "postgresql",
-  "sqlite",
-  "libsql",
-] as const;
-type SQLDialect = typeof dialects[number];
+export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
 
 export function testConnector(opts: { connector: Connector, dialect: SQLDialect }) {
   let db: Database;
@@ -16,6 +10,10 @@ export function testConnector(opts: { connector: Connector, dialect: SQLDialect 
   });
 
   const userId = "1001";
+
+  it("dialect matches", () => {
+    expect(db.dialect).toBe(opts.dialect);
+  })
 
   it("drop and create table", async () => {
     await db.sql`DROP TABLE IF EXISTS users`;
