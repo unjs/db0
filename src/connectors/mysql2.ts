@@ -18,6 +18,7 @@ export default function mysqlConnector(opts: mysql.ConnectionOptions) {
 
   return <Connector>{
     name: "mysql",
+    dialect: "mysql",
     exec(sql: string) {
       return getConnection().then((c) => c.query(sql).then((res) => res[0]));
     },

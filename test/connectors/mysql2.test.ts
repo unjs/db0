@@ -6,6 +6,7 @@ describe.runIf(process.env.POSTGRESQL_URL)(
   "connectors: mysql2.test",
   () => {
     testConnector({
+      dialect: "mysql",
       connector: connector({
         host: "localhost",
         user: "root",
