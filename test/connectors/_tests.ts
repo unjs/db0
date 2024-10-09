@@ -9,7 +9,7 @@ const dialects = [
 ] as const;
 type SQLDialect = typeof dialects[number];
 
-export function testConnector(opts: { connector: Connector, dialect?: SQLDialect }) {
+export function testConnector(opts: { connector: Connector, dialect: SQLDialect }) {
   let db: Database;
   beforeAll(() => {
     db = createDatabase(opts.connector);
