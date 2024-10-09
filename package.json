@@ -50,6 +50,7 @@
     "test:bun": "bun test ./test/connectors/bun-test.ts"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.2.4",
     "@libsql/client": "^0.14.0",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.11",
@@ -76,7 +77,8 @@
     "@libsql/client": "*",
     "better-sqlite3": "*",
     "drizzle-orm": "*",
-    "mysql2": "*"
+    "mysql2": "*",
+    "@electric-sql/pglite": "*"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
@@ -89,6 +91,9 @@
       "optional": true
     },
     "mysql2": {
+      "optional": true
+    },
+    "@electric-sql/pglite": {
       "optional": true
     }
   },
