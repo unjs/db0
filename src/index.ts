@@ -16,6 +16,7 @@ export const connectors = {
   "libsql-web": "db0/connectors/libsql/web",
   bun: "db0/connectors/bun-sqlite",
   "bun-sqlite": "db0/connectors/bun-sqlite",
+  planetscale: "db0/connectors/planetscale",
 } as const;
 
 /**

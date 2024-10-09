@@ -46,11 +46,12 @@
     "lint:fix": "eslint . --fix && prettier -w src test",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
-    "test:bun": "bun test ./test/connectors/bun-test.ts",
-    "test": "pnpm lint && vitest run --coverage && pnpm test:bun"
+    "test": "pnpm lint && vitest run --coverage && pnpm test:bun",
+    "test:bun": "bun test ./test/connectors/bun-test.ts"
   },
   "devDependencies": {
     "@libsql/client": "^0.14.0",
+    "@planetscale/database": "^1.16.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/bun": "^1.1.10",
     "@types/pg": "^8.11.10",
