@@ -17,7 +17,7 @@ For this connector, you need to install [`@planetscale/database`](https://www.np
 Use `planetscale` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import planetscale from "db0/connectors/planetscale";
 
 const db = createDatabase(

@@ -19,21 +19,21 @@ Choose on of the `libsql`, `libsql/http` or `libsql/web` connectors depending on
 ::code-group
 
 ```ts [libsql.node.js]
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import libSql from "db0/connectors/libsql";
 
 const db = createDatabase(libSql({ url: `file:local.db` }));
 ```
 
 ```ts [libsql.http.js]
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import libSql from "db0/connectors/libsql/http";
 
 const db = createDatabase(libSql({}));
 ```
 
 ```ts [libsql.web.js]
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import libSql from "db0/connectors/libsql/web";
 
 const db = createDatabase(libSql({}));

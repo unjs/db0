@@ -16,7 +16,7 @@ icon: devicon-plain:cloudflareworkers
 Use `cloudflare-d1` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import cloudflareD1 from "db0/connectors/cloudflare-d1";
 
 const db = createDatabase(

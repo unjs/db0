@@ -15,7 +15,7 @@ For this connector, you need to install [`mysql2`](https://www.npmjs.com/package
 Use `mysql2` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import mysql from "db0/connectors/mysql2";
 
 const db = createDatabase(

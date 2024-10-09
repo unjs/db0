@@ -16,7 +16,7 @@ icon: simple-icons:bun
 Use `bun-sqlite` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import bunSqlite from "db0/connectors/bun-sqlite";
 
 const db = createDatabase(bunSqlite({}));

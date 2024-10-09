@@ -17,7 +17,7 @@ For this connector, you need to install [`better-sqlite3`](https://www.npmjs.com
 Use `better-sqlite3` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import sqlite from "db0/connectors/better-sqlite3";
 
 const db = createDatabase(

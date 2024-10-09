@@ -17,7 +17,7 @@ For this connector, you need to install [`pg`](https://www.npmjs.com/package/pg)
 Use `postgresql` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import postgresql from "db0/connectors/postgresql";
 
 const db = createDatabase(

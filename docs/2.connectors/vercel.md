@@ -17,7 +17,7 @@ A dedicated `vercel` connector is planned to be supported. Follow up via [unjs/d
 Use [`postgres`](/connectors/postgresql) connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import postgres from "db0/connectors/postgres";
 
 const db = createDatabase(

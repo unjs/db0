@@ -17,7 +17,7 @@ For this connector, you need to install [`@electric-sql/pglite`](https://www.npm
 Use `pglite` connector:
 
 ```js
-import { createDatabase, sql } from "db0";
+import { createDatabase } from "db0";
 import pglite from "db0/connectors/pglite";
 
 const db = createDatabase(
@@ -28,6 +28,7 @@ const db = createDatabase(
 ```
 
 <!-- copy from https://pglite.dev/docs/api#main-constructor -->
+
 ## Options
 
 ### `dataDir`
