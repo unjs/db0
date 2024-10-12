@@ -50,7 +50,7 @@
     "test:bun": "bun test ./test/connectors/bun-test.ts"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.4",
+    "@electric-sql/pglite": "^0.2.12",
     "@libsql/client": "^0.14.0",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.11",
@@ -60,7 +60,7 @@
     "automd": "^0.3.12",
     "better-sqlite3": "^11.3.0",
     "changelogen": "^0.5.7",
-    "db0": "^0.1.4",
+    "db0": "^0.2.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.34.1",
     "eslint": "^9.12.0",
