@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.2.1
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.0...v0.2.1)
+
+### 🩹 Fixes
+
+- **sqlite:** Support `:memory:` ([1a40c4f](https://github.com/unjs/db0/commit/1a40c4f))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+
 ## v0.2.0
 
 [compare changes](https://github.com/unjs/db0/compare/v0.1.4...v0.2.0)
