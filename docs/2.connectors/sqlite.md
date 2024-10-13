@@ -22,7 +22,7 @@ import sqlite from "db0/connectors/better-sqlite3";
 
 const db = createDatabase(
   sqlite({
-    /* options */
+    name: ":memory:",
   }),
 );
 ```
@@ -35,7 +35,10 @@ Working directory to create database. Default is current working directory of pr
 
 ### `name`
 
-Database (file) name. Default is `db`
+Database (file) name. Default is `db`.
+
+> [!NOTE]
+> You can use `:memory:` as name for in-memory storage.
 
 ### `path`
 

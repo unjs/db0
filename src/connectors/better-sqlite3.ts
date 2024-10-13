@@ -16,6 +16,10 @@ export default function sqliteConnector(opts: ConnectorOptions) {
     if (_db) {
       return _db;
     }
+    if (opts.name === ":memory:") {
+      _db = new Database(":memory:");
+      return _db;
+    }
     const filePath = resolve(
       opts.cwd || ".",
       opts.path || `.data/${opts.name || "db"}.sqlite3`,
