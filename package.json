@@ -52,6 +52,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.12",
     "@libsql/client": "^0.14.0",
+    "@neondatabase/serverless": "^0.10.1",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/bun": "^1.1.11",
@@ -74,11 +75,12 @@
     "vitest": "^2.1.2"
   },
   "peerDependencies": {
+    "@electric-sql/pglite": "*",
     "@libsql/client": "*",
+    "@neondatabase/serverless": "*",
     "better-sqlite3": "*",
     "drizzle-orm": "*",
-    "mysql2": "*",
-    "@electric-sql/pglite": "*"
+    "mysql2": "*"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
