@@ -77,6 +77,7 @@ type DefaultSQLResult = {
   changes?: number;
   error?: string;
   rows?: { id?: string | number; [key: string]: unknown }[];
+  success?: boolean
 };
 
 export interface Database {
