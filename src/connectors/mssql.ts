@@ -192,8 +192,8 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
           };
         },
         async get(...params) {
-          const { rows } = await _run(this._sql, params || this._params);
-          return rows[0];
+          const { rows: [ row ] } = await _run(this._sql, params || this._params);
+          return row;
         },
       };
       return stmt;
