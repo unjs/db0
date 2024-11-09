@@ -16,7 +16,7 @@ Use `mssql` connector:
 
 ```js
 import { createDatabase } from "db0";
-import mysql from "db0/connectors/mssql";
+import mssql from "db0/connectors/mssql";
 
 const db = createDatabase(
   mssql({
