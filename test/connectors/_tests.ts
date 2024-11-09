@@ -20,6 +20,15 @@ export function testConnector(opts: { connector: Connector, dialect: SQLDialect 
         await db.sql`CREATE TABLE users (\`id\` VARCHAR(4) PRIMARY KEY, \`firstName\` TEXT, \`lastName\` TEXT, \`email\` TEXT)`;
         break;
       }
+      case "mssql": {
+        await db.sql`CREATE TABLE users (
+            [id] NVARCHAR(4) PRIMARY KEY,
+            [firstName] NVARCHAR(255),
+            [lastName] NVARCHAR(255),
+            [email] NVARCHAR(255)
+        )`;
+        break;
+      }
       default: {
         await db.sql`CREATE TABLE users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
         break;
