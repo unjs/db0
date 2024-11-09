@@ -148,7 +148,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
         reject(error);
       });
       
-      return connection.execSql(request);
+      connection.execSql(request);
     });
     
     try {
