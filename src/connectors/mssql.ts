@@ -66,7 +66,7 @@ function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) 
   }
   
   return {
-    sql: tokens.join(''),
+    sql: tokens.join(''), // join the tokens back into a SQL string
     parameters: namedParameters,
   };
 };
