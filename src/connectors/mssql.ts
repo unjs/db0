@@ -26,17 +26,9 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
         _client = client;
       });
       
-      client.on('connect', () => {
-        resolve(_client);
-      });
-      
-      client.on('error', (error) => {
-        reject(error);
-      });
-      
-      client.on('end', () => {
-        client.close();
-      });
+      client.on('connect', () => resolve(_client));
+      client.on('error', reject);
+      client.on('end', () =>client.close());
     });
   };
   
@@ -144,10 +136,6 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
       request.on('error', (error) => {
         connection.close();
         reject(error);
-      });
-      
-      request.on('done', () => {
-        connection.close();
       });
       
       return connection.execSql(request);
