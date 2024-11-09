@@ -5,6 +5,7 @@
   "repository": "unjs/db0",
   "license": "MIT",
   "sideEffects": false,
+  "type": "module",
   "exports": {
     "./connectors/libsql": {
       "import": "./connectors/libsql/node.mjs",
