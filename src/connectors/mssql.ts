@@ -96,10 +96,13 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
       parameters: _parameters,
     } = prepareSqlParameters(sql, parameters);
     
-    const query = new Promise<{ rows: unknown[], rowCount: number }>((resolve, reject) => {
-      const request = new Request(_sql, (error, rowCount = 0) => {
+    const query = new Promise<{ rows: unknown[], success: boolean }>((resolve, reject) => {
+      let success = false;
+      const request = new Request(_sql, (error) => {
         if (error) {
           reject(error);
+        } else {
+          success = true;
         }
       });
       
@@ -129,7 +132,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
       
       request.on('requestCompleted', () => {
         connection.close();
-        resolve({ rows, rowCount: rows.length });
+        resolve({ rows, success });
       });
       
       request.on('error', (error) => {
@@ -143,12 +146,12 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     try {
       const {
         rows,
-        rowCount
+        success,
       } = await query;
       
       return {
         rows,
-        rowCount,
+        success,
       };
     } catch (error) {
       error.sql = _sql;
@@ -180,11 +183,11 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
         async run(...params) {
           const {
             rows,
-            rowCount,
+            success,
           } = await _run(this._sql, params || this._params);
           
           return {
-            success: rowCount > 0,
+            success,
             result: rows,
           };
         },
