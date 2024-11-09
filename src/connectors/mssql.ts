@@ -156,7 +156,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     } catch (error) {
       error.sql = _sql;
       error.parameters = parameters;
-      console.error('Query failed:', error);
+      console.error(error);
     }
   }
   
