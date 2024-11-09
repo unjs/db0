@@ -9,68 +9,6 @@ import type { DataType } from "tedious/lib/data-type";
 
 import type { Connector, Statement } from "../types";
 
-// taken from the `kysely` library: https://github.com/kysely-org/kysely/blob/413a88516c20be42dc8cbebade68c27669a3ac1a/src/dialect/mssql/mssql-driver.ts#L440
-function getTediousDataType(value: unknown): DataType {
-  if (value === null || value === undefined || typeof value === 'string') {
-    return TYPES.NVarChar;
-  }
-  
-  if (typeof value === 'bigint' || (typeof value === 'number' && value % 1 === 0)) {
-    return value < -2_147_483_648 || value > 2_147_483_647 ? TYPES.BigInt : TYPES.Int;
-  }
-  
-  if (typeof value === 'number') {
-    return TYPES.Float;
-  }
-  
-  if (typeof value === 'boolean') {
-    return TYPES.Bit;
-  }
-  
-  if (value instanceof Date) {
-    return TYPES.DateTime;
-  }
-  
-  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) {
-    return TYPES.VarBinary;
-  }
-  
-  return TYPES.NVarChar;
-};
-
-// replace `?` placeholders with `@1`, `@2`, etc.
-function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) {
-  const parameterIndexes = [];
-  const tokens = [...sql];
-  
-  // find all `?` placeholders in the SQL string
-  for (let i = 0; i < sql.length; i++) {
-    const token = tokens[i];
-    
-    if (token === '?') {
-      parameterIndexes.push(i);
-    }
-  };
-  
-  const namedParameters = {};
-  for (const [index, parameterIndex] of parameterIndexes.entries()) {
-    const incrementedIndex = index + 1;
-    // replace `?` placeholder with index-based parameter name
-    tokens[parameterIndex] = `@${incrementedIndex}`;
-    // store the parameter value and type with the index-based parameter name
-    namedParameters[`@${incrementedIndex}`] = {
-      name: String(incrementedIndex),
-      type: getTediousDataType(parameters[index]),
-      value: parameters[index],
-    };
-  }
-  
-  return {
-    sql: tokens.join(''), // join the tokens back into a SQL string
-    parameters: namedParameters,
-  };
-};
-
 export default function mssqlConnector(opts: ConnectionConfiguration) {
   let _client: undefined | TediousConnection;
   async function getClient(): Promise<TediousConnection> {
@@ -202,5 +140,67 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
       
       return statement;
     },
+  };
+};
+
+// taken from the `kysely` library: https://github.com/kysely-org/kysely/blob/413a88516c20be42dc8cbebade68c27669a3ac1a/src/dialect/mssql/mssql-driver.ts#L440
+function getTediousDataType(value: unknown): DataType {
+  if (value === null || value === undefined || typeof value === 'string') {
+    return TYPES.NVarChar;
+  }
+  
+  if (typeof value === 'bigint' || (typeof value === 'number' && value % 1 === 0)) {
+    return value < -2_147_483_648 || value > 2_147_483_647 ? TYPES.BigInt : TYPES.Int;
+  }
+  
+  if (typeof value === 'number') {
+    return TYPES.Float;
+  }
+  
+  if (typeof value === 'boolean') {
+    return TYPES.Bit;
+  }
+  
+  if (value instanceof Date) {
+    return TYPES.DateTime;
+  }
+  
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) {
+    return TYPES.VarBinary;
+  }
+  
+  return TYPES.NVarChar;
+};
+
+// replace `?` placeholders with `@1`, `@2`, etc.
+function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) {
+  const parameterIndexes = [];
+  const tokens = [...sql];
+  
+  // find all `?` placeholders in the SQL string
+  for (let i = 0; i < sql.length; i++) {
+    const token = tokens[i];
+    
+    if (token === '?') {
+      parameterIndexes.push(i);
+    }
+  };
+  
+  const namedParameters = {};
+  for (const [index, parameterIndex] of parameterIndexes.entries()) {
+    const incrementedIndex = index + 1;
+    // replace `?` placeholder with index-based parameter name
+    tokens[parameterIndex] = `@${incrementedIndex}`;
+    // store the parameter value and type with the index-based parameter name
+    namedParameters[`@${incrementedIndex}`] = {
+      name: String(incrementedIndex),
+      type: getTediousDataType(parameters[index]),
+      value: parameters[index],
+    };
+  }
+  
+  return {
+    sql: tokens.join(''), // join the tokens back into a SQL string
+    parameters: namedParameters,
   };
 };
