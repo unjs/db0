@@ -74,7 +74,6 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     };
     
     const namedParameters = {};
-    
     for (const [index, parameterIndex] of parameterIndexes.entries()) {
       tokens[parameterIndex] = `@${index + 1}`;
       namedParameters[`@${index + 1}`] = {
