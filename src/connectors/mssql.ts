@@ -156,7 +156,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     } catch (error) {
       error.sql = _sql;
       error.parameters = parameters;
-      console.error(error);
+      console.error('Query failed:', error);
     }
   }
   
@@ -167,14 +167,14 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
       return _run(sql, []);
     },
     prepare(sql: string) {
-      const stmt = <Statement>{
+      const statement = <Statement>{
         _sql: sql,
         _params: [],
         bind(...params) {
           if (params.length > 0) {
             this._params = params;
           }
-          return stmt;
+          return statement;
         },
         async all(...params) {
           const { rows } = await _run(this._sql, params || this._params);
@@ -191,7 +191,8 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
           return row;
         },
       };
-      return stmt;
+      
+      return statement;
     },
   };
 };
