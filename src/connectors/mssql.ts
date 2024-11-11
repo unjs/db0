@@ -178,7 +178,7 @@ function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) 
   const tokens = [...sql];
   
   // find all `?` placeholders in the SQL string
-  for (let i = 0; i < sql.length; i++) {
+  for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     
     if (token === '?') {
