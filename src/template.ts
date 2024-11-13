@@ -5,7 +5,7 @@ export function sqlTemplate(
   ...values: Primitive[]
 ): [string, Primitive[]] {
   if (!isTemplateStringsArray(strings) || !Array.isArray(values)) {
-    throw new Error("[db0] invalid template invokation");
+    throw new Error("[db0] invalid template invocation");
   }
 
   const staticIndexes: number[] = [];
