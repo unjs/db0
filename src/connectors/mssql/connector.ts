@@ -7,7 +7,7 @@ import {
 } from "tedious";
 import type { DataType } from "tedious/lib/data-type";
 
-import type { Connector, Statement } from "../types";
+import type { Connector, Statement } from "../../types";
 
 export default function mssqlConnector(opts: ConnectionConfiguration) {
   let _client: undefined | TediousConnection;
@@ -144,7 +144,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
 };
 
 // taken from the `kysely` library: https://github.com/kysely-org/kysely/blob/413a88516c20be42dc8cbebade68c27669a3ac1a/src/dialect/mssql/mssql-driver.ts#L440
-function getTediousDataType(value: unknown): DataType {
+export function getTediousDataType(value: unknown): DataType {
   if (value === null || value === undefined || typeof value === 'string') {
     return TYPES.NVarChar;
   }
@@ -173,7 +173,7 @@ function getTediousDataType(value: unknown): DataType {
 };
 
 // replace `?` placeholders with `@1`, `@2`, etc.
-function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) {
+export function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) {
   const parameterIndexes = [];
   const tokens = [...sql];
   
