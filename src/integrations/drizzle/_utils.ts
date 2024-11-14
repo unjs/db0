@@ -26,7 +26,7 @@ export function mapResultRow<TResult>(
       if (is(field, Column)) {
         decoder = field;
       } else if (is(field, SQL)) {
-        decoder = 'decoder'in field && field.decoder as any;
+        decoder = 'decoder' in field && field.decoder as any;
       } else {
         decoder = 'decoder' in field.sql && field.sql.decoder as any;
       }
