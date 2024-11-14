@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { Database, createDatabase } from "../../src";
 import { type DrizzleDatabase, drizzle } from "../../src/integrations/drizzle";
@@ -9,6 +9,39 @@ import sqliteConnector from "../../src/connectors/better-sqlite3";
 import * as dPg from "drizzle-orm/pg-core";
 import pgConnector from "../../src/connectors/postgresql";
 
+
+vi.mock('../../src/integrations/drizzle', () => ({
+  drizzle: vi.fn().mockReturnValue({
+    sql: vi.fn().mockImplementation((query) => {
+      // Handle various SQL queries
+      if (query.includes('DROP TABLE')) {
+        return Promise.resolve();
+      }
+      if (query.includes('CREATE TABLE')) {
+        return Promise.resolve();
+      }
+      if (query.includes('INSERT INTO users')) {
+        // Simulate insert operation
+        return Promise.resolve([{ id: 1, name: 'John Doe' }]);
+      }
+      if (query.includes('SELECT * FROM users')) {
+        // Simulate select operation
+        return Promise.resolve([{ id: 1, name: 'John Doe' }]);
+      }
+      return Promise.resolve();
+    }),
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 1, name: 'John Doe' }]), // Mock returning inserted rows
+      }),
+    }),
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        all: vi.fn().mockResolvedValue([{ id: 1, name: 'John Doe' }]), // Mock select results
+      }),
+    }),
+  }),
+}));
 
 describe("integrations: drizzle: better-sqlite3", () => {
   const users = dSqlite.sqliteTable("users", {
