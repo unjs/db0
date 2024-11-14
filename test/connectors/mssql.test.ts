@@ -71,6 +71,10 @@ describe("getTediousDataType", () => {
   it("should return VarBinary for Buffer objects", () => {
     expect(getTediousDataType(Buffer.from("test"))).toBe(TYPES.VarBinary);
   });
+  
+  it("should return NVarChar by default for other types", () => {
+    expect(getTediousDataType({})).toBe(TYPES.NVarChar);
+  });
 });
 
 describe("prepareSqlParameters", () => {
