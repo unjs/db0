@@ -1,7 +1,7 @@
 import { sqlTemplate } from "./template";
 import type { Connector, Database } from "./types";
 
-const SQL_WITH_RES_RE = /^select/i;
+export const SQL_WITH_RES_RE = /^select/i;
 
 /**
  * Creates and returns a database interface using the specified connector.

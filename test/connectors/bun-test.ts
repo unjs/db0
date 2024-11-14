@@ -1,12 +1,17 @@
-import { describe, expect, test } from "bun:test";
+import { expect, it, mock } from "bun:test";
 
 import connector from "../../src/connectors/bun-sqlite";
-import { createDatabase } from "../../src";
+import { getCreateDatabaseMock, userId } from "./mocks";
 
-test("connectors: bun", async () => {
+it("connectors: bun", async () => {
+  // Mock the module before importing
+  mock(() => getCreateDatabaseMock());
+
+  // Lazily import the module after mocking (this is necessary to avoid errors)
+  const { createDatabase } = await import('../../src');
+
+  // Initialize the database after the module has been imported and mock is applied
   const db = createDatabase(connector({ name: ":memory:" }));
-
-  const userId = "1001";
 
   await db.sql`DROP TABLE IF EXISTS users`;
   await db.sql`CREATE TABLE users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;

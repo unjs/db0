@@ -1,33 +1,19 @@
 import { beforeAll, expect, it, vi } from "vitest";
-import { Connector, Database, createDatabase, type SQLDialect } from "../../src";
+import { Connector, Database, type SQLDialect } from "../../src";
+import { getCreateDatabaseMock, userId } from "./mocks";
 
 export function testConnector(opts: { connector: Connector, dialect: SQLDialect }) {
   let db: Database;
-  const userId = "1001";
-  const user = {
-    id: userId,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-  };
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Mock the module before importing
+    vi.mock('../../src', () => getCreateDatabaseMock());
+
+    // Lazily import the module after mocking (this is necessary to avoid errors)
+    const { createDatabase } = await import('../../src');
+
+    // Initialize the database after the module has been imported and mock is applied
     db = createDatabase(opts.connector);
-
-    vi.spyOn(db, 'sql').mockImplementation(async (queryArray, ..._params) => {
-      if (queryArray.some(query => query.includes("DROP TABLE"))) { // Simulate successful drop table
-        return { rows: [] };
-      } else if (queryArray.some(query => query.includes("CREATE TABLE"))) { // Simulate successful table creation
-        return { rows: [] };
-      } else if (queryArray.some(query => query.includes("INSERT INTO users"))) { // Simulate successful insert
-        return { rows: [] };
-      } else if (queryArray.some(query => query.includes("SELECT * FROM users WHERE id"))) { // Simulate successful select retrieval
-        return {
-          rows: [user],
-        };
-      }
-      return { rows: [] };
-    });
   });
 
   it("dialect matches", () => {
@@ -58,6 +44,11 @@ export function testConnector(opts: { connector: Connector, dialect: SQLDialect 
 
   it("select", async () => {
     const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
-    expect(rows).toEqual([user]);
+    expect(rows).toEqual([{
+      id: userId,
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com",
+    }]);
   });
 }

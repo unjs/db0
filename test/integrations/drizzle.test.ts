@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { Database, createDatabase } from "../../src";
+import { Database } from "../../src";
 import { type DrizzleDatabase, drizzle } from "../../src/integrations/drizzle";
 
 import * as dSqlite from "drizzle-orm/sqlite-core";
@@ -8,6 +8,7 @@ import sqliteConnector from "../../src/connectors/better-sqlite3";
 
 import * as dPg from "drizzle-orm/pg-core";
 import pgConnector from "../../src/connectors/postgresql";
+import { getCreateDatabaseMock } from "../connectors/mocks";
 
 
 vi.mock('../../src/integrations/drizzle', () => ({
@@ -53,13 +54,15 @@ describe("integrations: drizzle: better-sqlite3", () => {
   let db: Database;
 
   beforeAll(async () => {
+    // Mock the module before importing
+    vi.mock('../../src', () => getCreateDatabaseMock());
+
+    // Lazily import the module after mocking (this is necessary to avoid errors)
+    const { createDatabase } = await import('../../src');
+
+    // Initialize the database after the module has been imported and mock is applied
     db = createDatabase(sqliteConnector({}));
     drizzleDb = drizzle(db);
-    await db.sql`DROP TABLE IF EXISTS users`;
-    await db.sql`create table if not exists users (
-      id integer primary key autoincrement,
-      name text
-    )`;
   })
 
   it("insert", async () => {
@@ -93,6 +96,13 @@ describe.runIf(process.env.POSTGRESQL_URL)("integrations: drizzle: postgres", ()
   let db: Database;
 
   beforeAll(async () => {
+    // Mock the module before importing
+    vi.mock('../../src', () => getCreateDatabaseMock());
+
+    // Lazily import the module after mocking (this is necessary to avoid errors)
+    const { createDatabase } = await import('../../src');
+
+    // Initialize the database after the module has been imported and mock is applied
     db = createDatabase(pgConnector({
       url: process.env.POSTGRESQL_URL as string,
     }));
