@@ -31,7 +31,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     });
   };
   
-  async function _run(sql: string, parameters?: Record<string, unknown>) {
+  async function _run(sql: string, parameters?: unknown[]) {
     if (!sql) {
       throw new Error('SQL query must be provided');
     }
@@ -110,7 +110,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     name: "mssql",
     dialect: "mssql",
     exec(sql: string) {
-      return _run(sql, {});
+      return _run(sql, []);
     },
     prepare(sql: string) {
       const statement = <Statement>{
@@ -173,7 +173,7 @@ export function getTediousDataType(value: unknown): DataType {
 };
 
 // replace `?` placeholders with `@1`, `@2`, etc.
-export function prepareSqlParameters(sql: string, parameters: Record<string, unknown>) {
+export function prepareSqlParameters(sql: string, parameters: unknown[]) {
   const parameterIndexes = [];
   const tokens = [...sql];
   
