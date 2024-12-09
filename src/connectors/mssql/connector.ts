@@ -162,7 +162,7 @@ export function getTediousDataType(value: unknown): DataType {
   }
   
   if (value instanceof Date) {
-    return TYPES.DateTime;
+    return TYPES.DateTime2;
   }
   
   if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) {
