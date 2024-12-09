@@ -65,7 +65,7 @@ describe("getTediousDataType", () => {
   });
   
   it("should return DateTime for Date objects", () => {
-    expect(getTediousDataType(new Date())).toBe(TYPES.DateTime);
+    expect(getTediousDataType(new Date())).toBe(TYPES.DateTime2);
   });
   
   it("should return VarBinary for Buffer objects", () => {
