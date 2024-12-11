@@ -1,20 +1,22 @@
-import { PGlite, type PGliteOptions } from "@electric-sql/pglite";
+import type { PGliteOptions, PGliteInterfaceExtensions } from "@electric-sql/pglite";
+import { PGlite as PGliteClass } from "@electric-sql/pglite";
 import type { Connector, Statement } from "../types";
 
 export type ConnectorOptions = PGliteOptions
+export type PGlite<TOptions extends PGliteOptions = ConnectorOptions> = PGliteClass & PGliteInterfaceExtensions<TOptions['extensions']>
 
 export default function pgliteConnector(opts: ConnectorOptions = {}) {
   let _client: PGlite | undefined;
 
-  function getClient(): PGlite {
+  async function getClient(): Promise<PGlite> {
     if (_client) {
       return _client;
     }
-    _client = new PGlite(opts);
+    _client = await PGliteClass.create(opts);
     return _client;
   }
 
-  async function query(sql: string, params: unknown[] = []) {
+  async function query(sql: string, params: unknown[] = undefined) {
     const client = await getClient();
     const normalizedSql = normalizeParams(sql);
     const result = await client.query(normalizedSql, params);
