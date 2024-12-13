@@ -31,6 +31,7 @@ export function createDatabase(connector: Connector): Database {
         const rows = await connector.prepare(sql).all(...params);
         return {
           rows,
+          success: true,
         };
       } else {
         const res = await connector.prepare(sql).run(...params);
