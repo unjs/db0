@@ -8,7 +8,7 @@ export type PGlite<TOptions extends PGliteOptions = ConnectorOptions> = PGliteCl
 export default function pgliteConnector(opts: ConnectorOptions = {}) {
   let _client: PGlite | undefined;
 
-  async function getClient(): Promise<PGlite> {
+  async function getClient(): Promise<PGlite<typeof opts>> {
     if (_client) {
       return _client;
     }
