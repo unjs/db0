@@ -50,28 +50,28 @@
     "test:bun": "bun test ./test/connectors/bun-test.ts"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.14",
+    "@electric-sql/pglite": "^0.2.15",
     "@libsql/client": "^0.14.0",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/bun": "^1.1.14",
     "@types/pg": "^8.11.10",
-    "@vitest/coverage-v8": "^2.1.6",
+    "@vitest/coverage-v8": "^2.1.8",
     "automd": "^0.3.12",
-    "better-sqlite3": "^11.6.0",
+    "better-sqlite3": "^11.7.0",
     "changelogen": "^0.5.7",
     "db0": "^0.2.1",
-    "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.36.4",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.1",
     "eslint": "^9.16.0",
     "eslint-config-unjs": "^0.4.2",
     "jiti": "^2.4.1",
     "mysql2": "^3.11.5",
     "pg": "^8.13.1",
-    "prettier": "^3.4.1",
+    "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "unbuild": "^2.0.0",
-    "vitest": "^2.1.6"
+    "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "@libsql/client": "*",
@@ -97,5 +97,5 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@9.14.4"
+  "packageManager": "pnpm@9.15.0"
 }
