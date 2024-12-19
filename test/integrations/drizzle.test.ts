@@ -17,7 +17,7 @@ describe("integrations: drizzle: better-sqlite3", () => {
   });
 
   let drizzleDb: DrizzleDatabase;
-  let db: Database;
+  let db: Database<ReturnType<typeof sqliteConnector>>;
 
   beforeAll(async () => {
     db = createDatabase(sqliteConnector({}));
@@ -57,7 +57,7 @@ describe.runIf(process.env.POSTGRESQL_URL)("integrations: drizzle: postgres", ()
   });
 
   let drizzleDb: DrizzleDatabase;
-  let db: Database;
+  let db: Database<ReturnType<typeof pgConnector>>;
 
   beforeAll(async () => {
     db = createDatabase(pgConnector({

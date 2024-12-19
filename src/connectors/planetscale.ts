@@ -20,9 +20,10 @@ export default function planetscaleConnector(opts: Config) {
     return client.execute(sql, params);
   }
 
-  return <Connector>{
+  return <Connector<Client>>{
     name: "planetscale",
     dialect: "mysql",
+    getInstance: async () => getClient(),
     exec(sql: string) {
       return query(sql);
     },

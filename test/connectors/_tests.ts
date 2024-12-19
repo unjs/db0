@@ -1,8 +1,8 @@
 import { beforeAll, expect, it } from "vitest";
 import { Connector, Database, createDatabase, type SQLDialect } from "../../src";
 
-export function testConnector(opts: { connector: Connector, dialect: SQLDialect }) {
-  let db: Database;
+export function testConnector<TConnector extends Connector = Connector>(opts: { connector: TConnector, dialect: SQLDialect }) {
+  let db: Database<TConnector>;
   beforeAll(() => {
     db = createDatabase(opts.connector);
   });

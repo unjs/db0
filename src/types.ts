@@ -43,7 +43,7 @@ export type ExecResult = unknown;
 /**
  * Defines a database connector for executing SQL queries and preparing statements.
  */
-export type Connector = {
+export type Connector<TInstance = any> = {
   /**
    * The name of the connector.
    */
@@ -53,6 +53,11 @@ export type Connector = {
    * The SQL dialect used by the connector.
    */
   dialect: SQLDialect;
+
+  /**
+   * The client instance used internally.
+   */
+  getInstance: () => Promise<TInstance>;
 
   /**
    * Executes an SQL query directly and returns the result.
@@ -79,8 +84,14 @@ type DefaultSQLResult = {
   rows?: { id?: string | number; [key: string]: unknown }[];
 };
 
-export interface Database {
+export interface Database<TConnector extends Connector = Connector> {
   readonly dialect: SQLDialect;
+
+  /**
+   * The client instance used internally.
+   * @returns {Promise<TInstance>} A promise that resolves with the client instance.
+   */
+  getInstance: () => Promise<TConnector["getInstance"]>;
 
   /**
    * Executes a raw SQL string.
