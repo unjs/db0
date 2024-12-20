@@ -2,7 +2,9 @@ import { Client, type Config } from "@planetscale/database";
 
 import type { Connector, Statement } from "../types";
 
-export default function planetscaleConnector(opts: Config) {
+export type ConnectorOptions = Config
+
+export default function planetscaleConnector(opts: ConnectorOptions) {
   let _client: undefined | Client;
   function getClient() {
     if (_client) {

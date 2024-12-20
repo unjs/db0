@@ -2,7 +2,9 @@ import mysql from "mysql2/promise";
 
 import type { Connector, Statement } from "../types";
 
-export default function mysqlConnector(opts: mysql.ConnectionOptions) {
+export type ConnectorOptions = mysql.ConnectionOptions
+
+export default function mysqlConnector(opts: ConnectorOptions) {
   let _connection: mysql.Connection | undefined;
   const getConnection = async () => {
     if (_connection) {
