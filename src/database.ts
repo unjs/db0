@@ -1,7 +1,9 @@
 import { sqlTemplate } from "./template";
-import type { Connector, Database } from "./types";
+import type { Connector, Database, SQLDialect } from "./types";
 
-const SQL_WITH_RES_RE = /(^select)|([\s]returning[\s])/i;
+const SQL_WITH_RES_RE = /^select/i;
+const SQL_WITH_RET_RE = /[\s]returning[\s]/i;
+const DIALECTS_WITH_RET: Set<SQLDialect> = new Set(["postgresql", "sqlite"]);
 
 /**
  * Creates and returns a database interface using the specified connector.
@@ -27,7 +29,10 @@ export function createDatabase(connector: Connector): Database {
 
     sql: async (strings, ...values) => {
       const [sql, params] = sqlTemplate(strings, ...values);
-      if (SQL_WITH_RES_RE.test(sql)) {
+      const res = SQL_WITH_RES_RE.test(sql);
+      const ret =
+        SQL_WITH_RET_RE.test(sql) && DIALECTS_WITH_RET.has(connector.dialect);
+      if (res || ret) {
         const rows = await connector.prepare(sql).all(...params);
         return {
           rows,
