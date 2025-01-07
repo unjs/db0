@@ -21,8 +21,8 @@ importers:
         specifier: ^7.6.12
         version: 7.6.12
       '@types/bun':
-        specifier: ^1.1.14
-        version: 1.1.14
+        specifier: ^1.1.15
+        version: 1.1.15
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.10
@@ -40,13 +40,13 @@ importers:
         version: 0.5.7(magicast@0.3.5)
       db0:
         specifier: ^0.2.1
-        version: 0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0)
+        version: 0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0)
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
       drizzle-orm:
         specifier: ^0.38.3
-        version: 0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1)
+        version: 0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1)
       eslint:
         specifier: ^9.17.0
         version: 9.17.0(jiti@2.4.2)
@@ -79,13 +79,13 @@ importers:
     devDependencies:
       db0:
         specifier: latest
-        version: 0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0)
+        version: 0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0)
       drizzle-kit:
         specifier: ^0.20.14
         version: 0.20.18
       drizzle-orm:
         specifier: ^0.29.4
-        version: 0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1)
+        version: 0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1)
       jiti:
         specifier: ^1.21.0
         version: 1.21.7
@@ -1242,8 +1242,8 @@ packages:
   '@types/better-sqlite3@7.6.12':
     resolution: {integrity: sha512-fnQmj8lELIj7BSrZQAdBMHEHX8OZLYIHXqAKT1O7tDfLxaINzf00PMjw22r3N/xXh0w/sGHlO6SVaCQ2mj78lg==}
 
-  '@types/bun@1.1.14':
-    resolution: {integrity: sha512-opVYiFGtO2af0dnWBdZWlioLBoxSdDO5qokaazLhq8XQtGZbY4pY3/JxY8Zdf/hEwGubbp7ErZXoN1+h2yesxA==}
+  '@types/bun@1.1.15':
+    resolution: {integrity: sha512-Fi7ND1jCq8O5iU3s9z3TKHggD0hidgpe7wSxyisviXpbMmY4B1KiokF3f/mmjOoDrEcf873tSpixgen7Wm9X0g==}
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
@@ -1462,8 +1462,8 @@ packages:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
 
-  bun-types@1.1.37:
-    resolution: {integrity: sha512-C65lv6eBr3LPJWFZ2gswyrGZ82ljnH8flVE03xeXxKhi2ZGtFiO4isRKTKnitbSqtRAcaqYSR6djt1whI66AbA==}
+  bun-types@1.1.42:
+    resolution: {integrity: sha512-beMbnFqWbbBQHll/bn3phSwmoOQmnX2nt8NI9iOQKFbgR5Z6rlH3YuaMdlid8vp5XGct3/W4QVQBmhoOEoe4nw==}
 
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
@@ -4415,9 +4415,9 @@ snapshots:
     dependencies:
       '@types/node': 22.10.2
 
-  '@types/bun@1.1.14':
+  '@types/bun@1.1.15':
     dependencies:
-      bun-types: 1.1.37
+      bun-types: 1.1.42
 
   '@types/estree@1.0.6': {}
 
@@ -4449,7 +4449,7 @@ snapshots:
 
   '@types/ws@8.5.13':
     dependencies:
-      '@types/node': 20.12.14
+      '@types/node': 22.10.2
 
   '@typescript-eslint/eslint-plugin@8.18.1(@typescript-eslint/parser@8.18.1(eslint@9.17.0(jiti@2.4.2))(typescript@5.7.2))(eslint@9.17.0(jiti@2.4.2))(typescript@5.7.2)':
     dependencies:
@@ -4705,7 +4705,7 @@ snapshots:
 
   builtin-modules@3.3.0: {}
 
-  bun-types@1.1.37:
+  bun-types@1.1.42:
     dependencies:
       '@types/node': 20.12.14
       '@types/ws': 8.5.13
@@ -4966,20 +4966,20 @@ snapshots:
 
   data-uri-to-buffer@4.0.1: {}
 
-  db0@0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0):
+  db0@0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0):
     optionalDependencies:
       '@electric-sql/pglite': 0.2.15
       '@libsql/client': 0.14.0
       better-sqlite3: 11.7.2
-      drizzle-orm: 0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1)
+      drizzle-orm: 0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1)
       mysql2: 3.12.0
 
-  db0@0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0):
+  db0@0.2.1(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(better-sqlite3@11.7.2)(drizzle-orm@0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1))(mysql2@3.12.0):
     optionalDependencies:
       '@electric-sql/pglite': 0.2.15
       '@libsql/client': 0.14.0
       better-sqlite3: 11.7.2
-      drizzle-orm: 0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1)
+      drizzle-orm: 0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1)
       mysql2: 3.12.0
 
   debug@4.4.0:
@@ -5075,18 +5075,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1):
+  drizzle-orm@0.29.5(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1):
     optionalDependencies:
       '@libsql/client': 0.14.0
       '@planetscale/database': 1.19.0
       '@types/better-sqlite3': 7.6.12
       '@types/pg': 8.11.10
       better-sqlite3: 11.7.2
-      bun-types: 1.1.37
+      bun-types: 1.1.42
       mysql2: 3.12.0
       pg: 8.13.1
 
-  drizzle-orm@0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.37)(mysql2@3.12.0)(pg@8.13.1):
+  drizzle-orm@0.38.3(@electric-sql/pglite@0.2.15)(@libsql/client@0.14.0)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.10)(better-sqlite3@11.7.2)(bun-types@1.1.42)(mysql2@3.12.0)(pg@8.13.1):
     optionalDependencies:
       '@electric-sql/pglite': 0.2.15
       '@libsql/client': 0.14.0
@@ -5094,7 +5094,7 @@ snapshots:
       '@types/better-sqlite3': 7.6.12
       '@types/pg': 8.11.10
       better-sqlite3: 11.7.2
-      bun-types: 1.1.37
+      bun-types: 1.1.42
       mysql2: 3.12.0
       pg: 8.13.1
 
