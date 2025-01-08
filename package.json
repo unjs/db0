@@ -54,7 +54,7 @@
     "@libsql/client": "^0.14.0",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.12",
-    "@types/bun": "^1.1.14",
+    "@types/bun": "^1.1.15",
     "@types/pg": "^8.11.10",
     "@vitest/coverage-v8": "^2.1.8",
     "automd": "^0.3.12",
@@ -97,5 +97,5 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@9.15.2"
+  "packageManager": "pnpm@9.15.3"
 }
