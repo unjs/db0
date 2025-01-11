@@ -27,6 +27,7 @@ export const connectors = {
   "bun-sqlite": "db0/connectors/bun-sqlite",
   planetscale: "db0/connectors/planetscale",
   mssql: "db0/connectors/mssql",
+  mysql: "db0/connectors/mysql2",
 } as const;
 
 /**
