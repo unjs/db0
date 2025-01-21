@@ -9,6 +9,11 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
 
   const userId = "1001";
 
+  it("instance matches", async () => {
+    const instance = await db.getInstance();
+    expect(instance).toBe(await opts.connector.getInstance());
+  })
+
   it("dialect matches", () => {
     expect(db.dialect).toBe(opts.dialect);
   })
