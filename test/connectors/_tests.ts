@@ -11,6 +11,7 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
 
   it("instance matches", async () => {
     const instance = await db.getInstance();
+    expect(instance).toBeDefined();
     expect(instance).toBe(await opts.connector.getInstance());
   })
 
