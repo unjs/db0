@@ -19,6 +19,10 @@ export function createDatabase<TConnector extends Connector = Connector>(
       return connector.dialect;
     },
 
+    get getInstance() {
+      return connector.getInstance;
+    },
+
     exec: (sql: string) => {
       return Promise.resolve(connector.exec(sql));
     },
