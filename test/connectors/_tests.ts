@@ -1,8 +1,8 @@
 import { beforeAll, expect, it } from "vitest";
 import { Connector, Database, createDatabase, type SQLDialect } from "../../src";
 
-export function testConnector(opts: { connector: Connector, dialect: SQLDialect }) {
-  let db: Database;
+export function testConnector<TConnector extends Connector = Connector>(opts: { connector: TConnector, dialect: SQLDialect }) {
+  let db: Database<TConnector>;
   beforeAll(() => {
     db = createDatabase(opts.connector);
   });
@@ -18,6 +18,12 @@ export function testConnector(opts: { connector: Connector, dialect: SQLDialect 
       },
     ]
   `;
+
+  it("instance matches", async () => {
+    const instance = await db.getInstance();
+    expect(instance).toBeDefined();
+    expect(instance).toBe(await opts.connector.getInstance());
+  })
 
   it("dialect matches", () => {
     expect(db.dialect).toBe(opts.dialect);

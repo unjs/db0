@@ -2,7 +2,9 @@ import { Client, type Config } from "@planetscale/database";
 
 import type { Connector, Statement } from "../types";
 
-export default function planetscaleConnector(opts: Config) {
+export type ConnectorOptions = Config
+
+export default function planetscaleConnector(opts: ConnectorOptions) {
   let _client: undefined | Client;
   function getClient() {
     if (_client) {
@@ -20,9 +22,10 @@ export default function planetscaleConnector(opts: Config) {
     return client.execute(sql, params);
   }
 
-  return <Connector>{
+  return <Connector<Client>>{
     name: "planetscale",
     dialect: "mysql",
+    getInstance: () => getClient(),
     exec(sql: string) {
       return query(sql);
     },

@@ -23,9 +23,10 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
     return client.query(normalizeParams(sql), params);
   }
 
-  return <Connector>{
+  return <Connector<pg.Client>>{
     name: "postgresql",
     dialect: "postgresql",
+    getInstance: () => getClient(),
     exec(sql: string) {
       return query(sql);
     },

@@ -12,9 +12,10 @@ export default function libSqlCoreConnector(opts: ConnectorOptions) {
     return client.execute(sql);
   }
 
-  return <Connector>{
+  return <Connector<Client>>{
     name: opts.name || "libsql-core",
     dialect: "libsql",
+    getInstance: async () => opts.getClient(),
     exec(sql: string) {
       return query(sql);
     },
