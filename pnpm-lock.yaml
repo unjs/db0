@@ -106,18 +106,6 @@ importers:
         specifier: ^1.21.0
         version: 1.21.7
 
-  examples/neon:
-    devDependencies:
-      '@neondatabase/serverless':
-        specifier: ^0.10.1
-        version: 0.10.4
-      db0:
-        specifier: latest
-        version: 0.2.1(@electric-sql/pglite@0.2.16)(@libsql/client@0.14.0)(better-sqlite3@11.8.1)(drizzle-orm@0.38.4(@electric-sql/pglite@0.2.16)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.12)(@types/pg@8.11.11)(better-sqlite3@11.8.1)(bun-types@1.2.0)(mysql2@3.12.0)(pg@8.13.1)(sqlite3@5.1.7))(mysql2@3.12.0)
-      jiti:
-        specifier: ^1.21.0
-        version: 1.21.7
-
 packages:
 
   '@ampproject/remapping@2.3.0':
