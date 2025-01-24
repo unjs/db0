@@ -8,6 +8,16 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
   });
 
   const userId = "1001";
+  const userSnapshot = `
+    [
+      {
+        "email": "",
+        "firstName": "John",
+        "id": "1001",
+        "lastName": "Doe",
+      },
+    ]
+  `;
 
   it("instance matches", async () => {
     const instance = await db.getInstance();
@@ -34,20 +44,21 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
   });
 
   it("insert", async () => {
-    await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '')`;
+    switch(opts.dialect) {
+      case "mysql": {
+        await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '')`;
+        break;
+      }
+      default: {
+        const { rows } = await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '') RETURNING *`;
+        expect(rows).toMatchInlineSnapshot(userSnapshot);
+        break;
+      }
+    }
   });
 
   it("select", async () => {
     const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
-    expect(rows).toMatchInlineSnapshot(`
-      [
-        {
-          "email": "",
-          "firstName": "John",
-          "id": "1001",
-          "lastName": "Doe",
-        },
-      ]
-    `);
+    expect(rows).toMatchInlineSnapshot(userSnapshot);
   });
 }
