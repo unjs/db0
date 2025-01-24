@@ -11,10 +11,16 @@ const SQL_WITH_RES_RE = /^select/i;
  * @param {Connector} connector - The database connector used to execute and prepare SQL statements. See {@link Connector}.
  * @returns {Database} The database interface that allows SQL operations. See {@link Database}.
  */
-export function createDatabase(connector: Connector): Database {
-  return <Database>{
+export function createDatabase<TConnector extends Connector = Connector>(
+  connector: TConnector,
+): Database<TConnector> {
+  return <Database<TConnector>>{
     get dialect() {
       return connector.dialect;
+    },
+
+    getInstance() {
+      return connector.getInstance();
     },
 
     exec: (sql: string) => {

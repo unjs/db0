@@ -2,7 +2,9 @@ import mysql from "mysql2/promise";
 
 import type { Connector, Statement } from "../types";
 
-export default function mysqlConnector(opts: mysql.ConnectionOptions) {
+export type ConnectorOptions = mysql.ConnectionOptions
+
+export default function mysqlConnector(opts: ConnectorOptions) {
   let _connection: mysql.Connection | undefined;
   const getConnection = async () => {
     if (_connection) {
@@ -16,9 +18,10 @@ export default function mysqlConnector(opts: mysql.ConnectionOptions) {
     return _connection;
   };
 
-  return <Connector>{
+  return <Connector<mysql.Connection>>{
     name: "mysql",
     dialect: "mysql",
+    getInstance: () => getConnection(),
     exec(sql: string) {
       return getConnection().then((c) => c.query(sql).then((res) => res[0]));
     },
