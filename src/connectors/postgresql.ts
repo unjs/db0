@@ -26,7 +26,7 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
   return <Connector<pg.Client>>{
     name: "postgresql",
     dialect: "postgresql",
-    getInstance: async () => getClient(),
+    getInstance: () => getClient(),
     exec(sql: string) {
       return query(sql);
     },

@@ -17,7 +17,7 @@ describe("integrations: drizzle: better-sqlite3", () => {
   });
 
   let drizzleDb: DrizzleDatabase;
-  let db: Database<ReturnType<typeof sqliteConnector>>;
+  let db: Database;
 
   beforeAll(async () => {
     db = createDatabase(sqliteConnector({}));

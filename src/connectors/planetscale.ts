@@ -25,7 +25,7 @@ export default function planetscaleConnector(opts: ConnectorOptions) {
   return <Connector<Client>>{
     name: "planetscale",
     dialect: "mysql",
-    getInstance: async () => getClient(),
+    getInstance: () => getClient(),
     exec(sql: string) {
       return query(sql);
     },

@@ -32,7 +32,7 @@ export default function bunSqliteConnector(opts: ConnectorOptions) {
   return <Connector<Database>>{
     name: "sqlite",
     dialect: "sqlite",
-    getInstance: async () => getDB(),
+    getInstance: () => getDB(),
     exec(sql: string) {
       return getDB().exec(sql);
     },

@@ -57,7 +57,7 @@ export type Connector<TInstance = any> = {
   /**
    * The client instance used internally.
    */
-  getInstance: () => Promise<TInstance>;
+  getInstance: () => TInstance | Promise<TInstance>;
 
   /**
    * Executes an SQL query directly and returns the result.

@@ -24,7 +24,7 @@ export default function pgliteConnector(opts: ConnectorOptions = {}) {
   return <Connector<PGlite>>{
     name: "pglite",
     dialect: "postgresql",
-    getInstance: async () => getClient(),
+    getInstance: () => getClient(),
     exec(sql: string) {
       return query(sql);
     },
