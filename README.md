@@ -14,7 +14,7 @@ DB0 is a lightweight SQL connector:
 
 ✅ Works with several SQL [connectors](https://db0.unjs.io/connectors).
 
-✅ Can be [integrated](https://db0.unjs.io/integrations) with ORMs and embeded into frameworks.
+✅ Can be [integrated](https://db0.unjs.io/integrations) with ORMs and embedded into frameworks.
 
 ✅ Provides a simple but elegant query API out of the box.
 
