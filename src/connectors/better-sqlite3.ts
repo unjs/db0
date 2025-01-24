@@ -29,9 +29,10 @@ export default function sqliteConnector(opts: ConnectorOptions) {
     return _db;
   };
 
-  return <Connector>{
+  return <Connector<Database.Database>>{
     name: "sqlite",
     dialect: "sqlite",
+    getInstance: () => getDB(),
     exec(sql: string) {
       return getDB().exec(sql);
     },
