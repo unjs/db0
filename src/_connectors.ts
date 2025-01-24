@@ -34,7 +34,7 @@ export type BuiltinConnectorOptions = {
   "postgresql": PostgreSQLOptions;
 };
 
-export const builtinConnectors = {
+export const builtinConnectors = Object.freeze({
   "better-sqlite3": "db0/connectors/better-sqlite3",
   /** @deprecated Alias of better-sqlite3 */
   "sqlite": "db0/connectors/better-sqlite3",
@@ -52,4 +52,4 @@ export const builtinConnectors = {
   "pglite": "db0/connectors/pglite",
   "planetscale": "db0/connectors/planetscale",
   "postgresql": "db0/connectors/postgresql",
-} as const;
+} as const);

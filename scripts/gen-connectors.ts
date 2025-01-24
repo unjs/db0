@@ -102,9 +102,9 @@ export type BuiltinConnectorOptions = {
     .join("\n  ")}
 };
 
-export const builtinConnectors = {
+export const builtinConnectors = Object.freeze({
   ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** @deprecated Alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
-} as const;
+} as const);
 `;
 
 await writeFile(connectorsMetaFile, genCode, "utf8");
