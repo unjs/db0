@@ -3,7 +3,10 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "db0/connectors/*": ["./src/connectors/*"]
+    }
   },
   "include": [
     "src"
