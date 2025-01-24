@@ -2,7 +2,7 @@ import { resolve, dirname } from 'node:path'
 import { mkdirSync } from 'node:fs'
 import sqlite3 from 'sqlite3'
 
-import type { Connector, Statement } from 'db0'
+import type { Connector, Statement } from '../types'
 
 export interface ConnectorOptions {
   cwd?: string
@@ -29,9 +29,10 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions) {
     return _db
   }
 
-  return <Connector>{
+  return <Connector<sqlite3.Database>>{
     name: 'node-sqlite3',
     dialect: 'sqlite',
+    getInstance: () => getDB(),
     exec(sql: string) {
       return new Promise((resolve, reject) => {
         getDB().exec(sql, (err: Error) => {

@@ -8,11 +8,12 @@ import type { ConnectorOptions as LibSQLHttpOptions } from "db0/connectors/libsq
 import type { ConnectorOptions as LibSQLNodeOptions } from "db0/connectors/libsql/node";
 import type { ConnectorOptions as LibSQLWebOptions } from "db0/connectors/libsql/web";
 import type { ConnectorOptions as MySQL2Options } from "db0/connectors/mysql2";
+import type { ConnectorOptions as NodeSQLite3Options } from "db0/connectors/node-sqlite3";
 import type { ConnectorOptions as PgliteOptions } from "db0/connectors/pglite";
 import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/planetscale";
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 
-export type BuiltinConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "pglite" | "planetscale" | "postgresql";
+export type BuiltinConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite3" | "pglite" | "planetscale" | "postgresql";
 
 export type BuiltinConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
@@ -29,6 +30,7 @@ export type BuiltinConnectorOptions = {
   "libsql": LibSQLNodeOptions;
   "libsql-web": LibSQLWebOptions;
   "mysql2": MySQL2Options;
+  "node-sqlite3": NodeSQLite3Options;
   "pglite": PgliteOptions;
   "planetscale": PlanetscaleOptions;
   "postgresql": PostgreSQLOptions;
@@ -49,6 +51,7 @@ export const builtinConnectors = Object.freeze({
   "libsql": "db0/connectors/libsql/node",
   "libsql-web": "db0/connectors/libsql/web",
   "mysql2": "db0/connectors/mysql2",
+  "node-sqlite3": "db0/connectors/node-sqlite3",
   "pglite": "db0/connectors/pglite",
   "planetscale": "db0/connectors/planetscale",
   "postgresql": "db0/connectors/postgresql",
