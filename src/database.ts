@@ -1,8 +1,8 @@
 import { sqlTemplate } from "./template";
 import type { Connector, Database, SQLDialect } from "./types";
 
-const SQL_WITH_RES_RE = /^select/i;
-const SQL_WITH_RET_RE = /[\s]returning[\s]/i;
+const SQL_SELECT_RE = /^select/i;
+const SQL_RETURNING_RE = /[\s]returning[\s]/i;
 const DIALECTS_WITH_RET: Set<SQLDialect> = new Set(["postgresql", "sqlite"]);
 
 /**
@@ -29,10 +29,11 @@ export function createDatabase(connector: Connector): Database {
 
     sql: async (strings, ...values) => {
       const [sql, params] = sqlTemplate(strings, ...values);
-      const res = SQL_WITH_RES_RE.test(sql);
-      const ret =
-        SQL_WITH_RET_RE.test(sql) && DIALECTS_WITH_RET.has(connector.dialect);
-      if (res || ret) {
+      if (
+        SQL_SELECT_RE.test(sql) /* select */ ||
+        // prettier-ignore
+        (DIALECTS_WITH_RET.has(connector.dialect) && SQL_RETURNING_RE.test(sql)) /* returning */
+      ) {
         const rows = await connector.prepare(sql).all(...params);
         return {
           rows,
