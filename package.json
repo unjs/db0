@@ -78,7 +78,8 @@
     "@libsql/client": "*",
     "better-sqlite3": "*",
     "drizzle-orm": "*",
-    "mysql2": "*"
+    "mysql2": "*",
+    "sqlite3": "*"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
@@ -94,6 +95,9 @@
       "optional": true
     },
     "@electric-sql/pglite": {
+      "optional": true
+    },
+    "sqlite3": {
       "optional": true
     }
   },
