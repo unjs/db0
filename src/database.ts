@@ -37,6 +37,7 @@ export function createDatabase<TConnector extends Connector = Connector>(
         const rows = await connector.prepare(sql).all(...params);
         return {
           rows,
+          success: true,
         };
       } else {
         const res = await connector.prepare(sql).run(...params);
