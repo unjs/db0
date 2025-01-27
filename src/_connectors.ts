@@ -13,9 +13,9 @@ import type { ConnectorOptions as PgliteOptions } from "db0/connectors/pglite";
 import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/planetscale";
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 
-export type BuiltinConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite3" | "pglite" | "planetscale" | "postgresql";
+export type ConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite3" | "pglite" | "planetscale" | "postgresql";
 
-export type BuiltinConnectorOptions = {
+export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
   /** @deprecated Alias of better-sqlite3 */
   "sqlite": BetterSQLite3Options;
@@ -36,7 +36,7 @@ export type BuiltinConnectorOptions = {
   "postgresql": PostgreSQLOptions;
 };
 
-export const builtinConnectors = Object.freeze({
+export const connectors = Object.freeze({
   "better-sqlite3": "db0/connectors/better-sqlite3",
   /** @deprecated Alias of better-sqlite3 */
   "sqlite": "db0/connectors/better-sqlite3",

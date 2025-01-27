@@ -88,9 +88,9 @@ ${connectors
   )
   .join("\n")}
 
-export type BuiltinConnectorName = ${connectors.flatMap((d) => d.names.map((name) => `"${name}"`)).join(" | ")};
+export type ConnectorName = ${connectors.flatMap((d) => d.names.map((name) => `"${name}"`)).join(" | ")};
 
-export type BuiltinConnectorOptions = {
+export type ConnectorOptions = {
   ${connectors
     .filter((d) => d.optionsTExport)
     .flatMap((d) =>
@@ -102,7 +102,7 @@ export type BuiltinConnectorOptions = {
     .join("\n  ")}
 };
 
-export const builtinConnectors = Object.freeze({
+export const connectors = Object.freeze({
   ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** @deprecated Alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
 } as const);
 `;
