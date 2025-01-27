@@ -7,12 +7,12 @@
   "sideEffects": false,
   "exports": {
     "./connectors/libsql": {
-      "import": "./connectors/libsql/node.mjs",
-      "require": "./connectors/libsql/node.cjs",
       "web": {
         "import": "./connectors/libsql/node.mjs",
         "require": "./connectors/libsql/node.cjs"
-      }
+      },
+      "import": "./connectors/libsql/node.mjs",
+      "require": "./connectors/libsql/node.cjs"
     },
     "./connectors/*": {
       "types": "./connectors/*.d.ts",
