@@ -5,9 +5,11 @@ import type { Connector, Statement } from "../types";
 export type ConnectorOptions = PGliteOptions
 
 export default function pgliteConnector<TOptions extends ConnectorOptions>(opts?: TOptions) {
-  let _client: PGlite & PGliteInterfaceExtensions<TOptions['extensions']> | undefined;
+  type PGLiteInstance = PGlite & PGliteInterfaceExtensions<TOptions['extensions']>
 
-  async function getClient(): Promise<PGlite & PGliteInterfaceExtensions<TOptions['extensions']>> {
+  let _client: undefined | PGLiteInstance;
+
+  async function getClient(): Promise<PGLiteInstance> {
     if (_client) {
       return _client;
     }
@@ -22,7 +24,7 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(opts?
     return result;
   }
 
-  return <Connector<PGlite & PGliteInterfaceExtensions<TOptions['extensions']>>>{
+  return <Connector<PGLiteInstance>>{
     name: "pglite",
     dialect: "postgresql",
     getInstance: () => getClient(),
