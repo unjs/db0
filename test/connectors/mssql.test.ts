@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { TYPES } from "tedious";
 
-import { getTediousDataType, prepareSqlParameters } from "../../src/connectors/mssql/connector";
-import connector from "../../src/connectors/mssql/index";
+import { getTediousDataType, prepareSqlParameters } from "../../src/connectors/mssql";
+import connector from "../../src/connectors/mssql";
 import { testConnector } from "./_tests";
 
 describe.runIf(
