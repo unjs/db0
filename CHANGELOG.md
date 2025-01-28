@@ -1,6 +1,56 @@
 # Changelog
 
 
+## v0.2.3
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.2...v0.2.3)
+
+### 📦 Build
+
+- Export `connectors` and connector ([d411f91](https://github.com/unjs/db0/commit/d411f91))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+
+## v0.2.2
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.1...v0.2.2)
+
+### 🚀 Enhancements
+
+- Export database instances ([#132](https://github.com/unjs/db0/pull/132))
+- Add `node-sqlite3` connector ([#147](https://github.com/unjs/db0/pull/147))
+- Support `RETURNING` clause ([#139](https://github.com/unjs/db0/pull/139))
+- **pglite:** Use async init ([#130](https://github.com/unjs/db0/pull/130))
+
+### 🩹 Fixes
+
+- Add missing `mysql` to `connectors` map ([#127](https://github.com/unjs/db0/pull/127))
+- Always add `{ success: true }` to select results ([#118](https://github.com/unjs/db0/pull/118))
+
+### 📦 Build
+
+- Generate drivers meta ([#136](https://github.com/unjs/db0/pull/136))
+- Field export condition for `libsql` + `web` ([97630f3](https://github.com/unjs/db0/commit/97630f3))
+
+### 🏡 Chore
+
+- Fix typos ([#122](https://github.com/unjs/db0/pull/122))
+- Update deps ([00e7454](https://github.com/unjs/db0/commit/00e7454))
+- Update deps ([37d2d3c](https://github.com/unjs/db0/commit/37d2d3c))
+- Update deps ([d0b5ca8](https://github.com/unjs/db0/commit/d0b5ca8))
+
+### ❤️ Contributors
+
+- Sandro Circi ([@sandros94](http://github.com/sandros94))
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Jonathan Ginn ([@ginnwork](http://github.com/ginnwork))
+- Aman Desai ([@amandesai01](http://github.com/amandesai01))
+- Farnabaz <farnabaz@gmail.com>
+- Hotdogc1017 ([@hotdogc1017](http://github.com/hotdogc1017))
+- Nick-w-nick ([@nick-w-nick](http://github.com/nick-w-nick))
+
 ## v0.2.1
 
 [compare changes](https://github.com/unjs/db0/compare/v0.2.0...v0.2.1)

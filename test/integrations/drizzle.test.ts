@@ -57,7 +57,7 @@ describe.runIf(process.env.POSTGRESQL_URL)("integrations: drizzle: postgres", ()
   });
 
   let drizzleDb: DrizzleDatabase;
-  let db: Database;
+  let db: Database<ReturnType<typeof pgConnector>>;
 
   beforeAll(async () => {
     db = createDatabase(pgConnector({
