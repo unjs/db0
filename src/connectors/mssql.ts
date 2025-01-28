@@ -7,9 +7,11 @@ import {
 } from "tedious";
 import type { DataType } from "tedious/lib/data-type";
 
-import type { Connector, Statement } from "../../types";
+import type { Connector, Statement } from "../types";
 
-export default function mssqlConnector(opts: ConnectionConfiguration) {
+export type ConnectorOptions = ConnectionConfiguration;
+
+export default function mssqlConnector(opts: ConnectorOptions) {
   let _client: undefined | TediousConnection;
   async function getClient(): Promise<TediousConnection> {
     if (_client && _client.state === _client.STATE.LOGGED_IN) {
@@ -106,7 +108,7 @@ export default function mssqlConnector(opts: ConnectionConfiguration) {
     }
   }
   
-  return <Connector>{
+  return <Connector<TediousConnection>>{
     name: "mssql",
     dialect: "mssql",
     exec(sql: string) {
