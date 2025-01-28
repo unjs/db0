@@ -13,7 +13,7 @@ import type { ConnectorOptions as PgliteOptions } from "db0/connectors/pglite";
 import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/planetscale";
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 
-export type ConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite3" | "pglite" | "planetscale" | "postgresql";
+export type ConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mssql-connector" | "mssql-index" | "mysql2" | "node-sqlite3" | "pglite" | "planetscale" | "postgresql";
 
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
@@ -50,6 +50,8 @@ export const connectors = Object.freeze({
   /** @deprecated Alias of libsql-node */
   "libsql": "db0/connectors/libsql/node",
   "libsql-web": "db0/connectors/libsql/web",
+  "mssql-connector": "db0/connectors/mssql/connector",
+  "mssql-index": "db0/connectors/mssql/index",
   "mysql2": "db0/connectors/mysql2",
   "node-sqlite3": "db0/connectors/node-sqlite3",
   "pglite": "db0/connectors/pglite",
