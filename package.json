@@ -14,14 +14,6 @@
       "import": "./connectors/libsql/node.mjs",
       "require": "./connectors/libsql/node.cjs"
     },
-    "./connectors/mssql": {
-      "import": "./connectors/mssql/index.mjs",
-      "require": "./connectors/mssql/index.cjs",
-      "web": {
-        "import": "./connectors/mssql/index.mjs",
-        "require": "./connectors/mssql/index.cjs"
-      }
-    },
     "./connectors/*": {
       "types": "./connectors/*.d.ts",
       "import": "./connectors/*.mjs",
