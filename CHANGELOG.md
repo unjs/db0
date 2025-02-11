@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.2.4
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.3...v0.2.4)
+
+### 🩹 Fixes
+
+- **bun-sqlite:** Remove in-memory fallback when name is not provided ([#153](https://github.com/unjs/db0/pull/153))
+
+### 🏡 Chore
+
+- Update deps ([cd49cad](https://github.com/unjs/db0/commit/cd49cad))
+- Update ci ([b7a6ec9](https://github.com/unjs/db0/commit/b7a6ec9))
+- Remove extra `@types/sqlite3` dev dependency ([a4df52b](https://github.com/unjs/db0/commit/a4df52b))
+- Add pnpm stuff ([5c2d3cd](https://github.com/unjs/db0/commit/5c2d3cd))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Artem Melnyk ([@MellKam](http://github.com/MellKam))
+
 ## v0.2.3
 
 [compare changes](https://github.com/unjs/db0/compare/v0.2.2...v0.2.3)
