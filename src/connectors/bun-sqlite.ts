@@ -16,7 +16,7 @@ export default function bunSqliteConnector(opts: ConnectorOptions) {
     if (_db) {
       return _db;
     }
-    if (!opts.name || opts.name === ":memory:") {
+    if (opts.name === ":memory:") {
       _db = new Database(":memory:");
     } else {
       const filePath = resolve(
