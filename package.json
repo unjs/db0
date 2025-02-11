@@ -104,5 +104,16 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.3.0"
+  "packageManager": "pnpm@10.3.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "sqlite3"
+    ],
+    "ignoredBuiltDependencies": [
+      "@parcel/watcher",
+      "es5-ext"
+    ]
+  }
 }
