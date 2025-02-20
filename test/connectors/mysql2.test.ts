@@ -9,8 +9,8 @@ describe.runIf(process.env.MYSQL_URL)(
       dialect: "mysql",
       connector: connector({
         host: "localhost",
-        user: "root",
-        password: "root",
+        user: "test",
+        password: "test",
         database: "db0",
       }),
     });

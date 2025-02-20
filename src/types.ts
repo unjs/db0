@@ -7,11 +7,11 @@ export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
 
 export type Statement = {
   /**
-   * Binds parameters to the statement and returns itself for concatenation.
+   * Binds parameters to the statement.
    * @param {...Primitive[]} params - Parameters to bind to the SQL statement.
-   * @returns {Statement} The instance of the statement for further cascading.
+   * @returns {PreparedStatement} The instance of the statement with bound parameters.
    */
-  bind(...params: Primitive[]): Statement;
+  bind(...params: Primitive[]): PreparedStatement;
 
   /**
    * Executes the statement and returns all resulting rows as an array.
@@ -33,6 +33,33 @@ export type Statement = {
    * @returns {Promise<unknown>} A promise that resolves to the first row in the result set.
    */
   get(...params: Primitive[]): Promise<unknown>;
+};
+
+export type PreparedStatement = {
+  /**
+   * Binds parameters to the statement.
+   * @param {...Primitive[]} params - Parameters to bind to the SQL statement.
+   * @returns {PreparedStatement} The instance of the statement with bound parameters.
+   */
+  bind(...params: Primitive[]): PreparedStatement;
+
+  /**
+   * Executes the statement and returns all resulting rows as an array.
+   * @returns {Promise<unknown[]>} A promise that resolves to an array of rows.
+   */
+  all(): Promise<unknown[]>;
+
+  /**
+   * Executes the statement as an action (e.g. insert, update, delete).
+   * @returns {Promise<{ success: boolean }>} A promise that resolves to the success state of the action.
+   */
+  run(): Promise<{ success: boolean }>;
+
+  /**
+   * Executes the statement and returns a single row.
+   * @returns {Promise<unknown>} A promise that resolves to the first row in the result set.
+   */
+  get(): Promise<unknown>;
 };
 
 /**

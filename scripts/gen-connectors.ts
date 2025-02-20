@@ -23,6 +23,9 @@ async function getConnectorFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
+    if (entry.name.startsWith("_")) {
+      continue;
+    }
     if (entry.isDirectory()) {
       files.push(...(await getConnectorFiles(join(dir, entry.name))));
     } else if (entry.isFile()) {
