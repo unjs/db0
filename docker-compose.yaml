@@ -1,0 +1,18 @@
+services:
+  pg:
+    # https://hub.docker.com/_/postgres
+    image: postgres:alpine
+    network_mode: "host"
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: db0
+  mysql:
+    # https://hub.docker.com/_/mysql
+    image: mysql
+    network_mode: "host"
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: db0
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test

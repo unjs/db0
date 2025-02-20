@@ -1,8 +1,12 @@
 import pg from "pg";
 
-import type { Connector, Statement } from "../types";
+import type { Connector, Statement, Primitive } from "../types";
+
+import { BoundableStatement } from "./_internal/statement";
 
 export type ConnectorOptions = { url: string } | pg.ClientConfig;
+
+type InternalQuery = (sql: string, params?: Primitive[]) => Promise<pg.QueryResult>;
 
 export default function postgresqlConnector(opts: ConnectorOptions) {
   let _client: undefined | pg.Client | Promise<pg.Client>;
@@ -18,7 +22,7 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
     return _client;
   }
 
-  async function query(sql: string, params?: unknown[]) {
+  const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
     return client.query(normalizeParams(sql), params);
   }
@@ -27,37 +31,8 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
     name: "postgresql",
     dialect: "postgresql",
     getInstance: () => getClient(),
-    exec(sql: string) {
-      return query(sql);
-    },
-    prepare(sql: string) {
-      const stmt = <Statement>{
-        _sql: sql,
-        _params: [],
-        bind(...params) {
-          if (params.length > 0) {
-            this._params = params;
-          }
-          return stmt;
-        },
-        all(...params) {
-          return query(this._sql, params || this._params).then((r) => r.rows);
-        },
-        run(...params) {
-          return query(this._sql, params || this._params).then((r) => ({
-            result: r,
-            rows: r.rows,
-          }));
-        },
-        get(...params) {
-          // TODO: Append limit?
-          return query(this._sql, params || this._params).then(
-            (r) => r.rows[0],
-          );
-        },
-      };
-      return stmt;
-    },
+    exec: sql => query(sql),
+    prepare: sql => new StatementWrapper(sql, query)
   };
 }
 
@@ -65,4 +40,33 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
 function normalizeParams(sql: string) {
   let i = 0;
   return sql.replace(/\?/g, () => `$${++i}`);
+}
+
+class StatementWrapper extends BoundableStatement<void> {
+  #query: InternalQuery;
+  #sql: string;
+
+  constructor(sql: string, query: InternalQuery) {
+    super();
+    this.#sql = sql;
+    this.#query = query;
+  }
+
+  async all(...params) {
+    const res = await this.#query(this.#sql, params);
+    return res.rows;
+  }
+
+  async run(...params) {
+    const res = await this.#query(this.#sql, params)
+    return {
+      success: true,
+      ...res,
+    };
+  }
+
+  async get(...params) {
+    const res = await this.#query(this.#sql, params)
+    return res.rows[0];
+  }
 }

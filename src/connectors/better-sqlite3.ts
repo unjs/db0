@@ -1,8 +1,9 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import Database from "better-sqlite3";
-
-import type { Connector, Statement } from "../types";
+import type { Connector } from "../types";
+import type { Statement as RawStatement } from 'better-sqlite3'
+import { BoundableStatement } from "./_internal/statement";
 
 export interface ConnectorOptions {
   cwd?: string;
@@ -33,30 +34,22 @@ export default function sqliteConnector(opts: ConnectorOptions) {
     name: "sqlite",
     dialect: "sqlite",
     getInstance: () => getDB(),
-    exec(sql: string) {
-      return getDB().exec(sql);
-    },
-    prepare(sql: string) {
-      const _stmt = getDB().prepare(sql);
-      const stmt = <Statement>{
-        bind(...params) {
-          if (params.length > 0) {
-            _stmt.bind(...params);
-          }
-          return stmt;
-        },
-        all(...params) {
-          return Promise.resolve(_stmt.all(...params));
-        },
-        run(...params) {
-          const res = _stmt.run(...params);
-          return Promise.resolve({ success: res.changes > 0 });
-        },
-        get(...params) {
-          return Promise.resolve(_stmt.get(...params));
-        },
-      };
-      return stmt;
-    },
+    exec: sql => getDB().exec(sql),
+    prepare: sql => new StatementWrapper(getDB().prepare(sql))
   };
+}
+
+class StatementWrapper extends BoundableStatement<RawStatement> {
+  all(...params) {
+    return Promise.resolve(this._rawStmt.all(...params));
+  }
+
+  run(...params) {
+    const res = this._rawStmt.run(...params);
+    return Promise.resolve({ success: res.changes > 0, ...res });
+  }
+
+  get(...params) {
+    return Promise.resolve(this._rawStmt.get(...params));
+  }
 }

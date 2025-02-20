@@ -1,5 +1,6 @@
-import type { D1Database } from '@cloudflare/workers-types'
+import type { D1Database, D1PreparedStatement as RawStatement  } from '@cloudflare/workers-types'
 import type { Connector, Statement } from "../types";
+import { BoundableStatement } from "./_internal/statement";
 
 export interface ConnectorOptions {
   bindingName?: string;
@@ -19,44 +20,24 @@ export default function cloudflareD1Connector(options: ConnectorOptions) {
     name: "cloudflare-d1",
     dialect: "sqlite",
     getInstance: () => getDB(),
-    exec: (sql: string) => getDB().exec(sql),
-    prepare: (sql: string) => {
-      const _stmt = getDB().prepare(sql);
-      const onError = (err) => {
-        if (err.cause) {
-          err.message = err.cause.message + ' "' + sql + '"';
-        }
-        throw err;
-      };
-      const stmt = <Statement>{
-        bind(...params) {
-          _stmt.bind(...params);
-          return stmt;
-        },
-        all(...params) {
-          return _stmt
-            .bind(...params)
-            .all()
-            .then(r => r.results)
-            .catch(onError);
-        },
-        run(...params) {
-          return _stmt
-            .bind(...params)
-            .run()
-            .then((res) => {
-              return { success: res.success };
-            })
-            .catch(onError);
-        },
-        get(...params) {
-          return _stmt
-            .bind(...params)
-            .first()
-            .catch(onError);
-        },
-      };
-      return stmt;
-    },
+    exec: (sql) => getDB().exec(sql),
+    prepare: sql => new StatementWrapper(getDB().prepare(sql))
   };
+}
+
+class StatementWrapper extends BoundableStatement<RawStatement> {
+  async all(...params) {
+    const res = await this._rawStmt.bind(...params).all()
+    return res.results
+  }
+
+  async run(...params) {
+    const res = await this._rawStmt.bind(...params).run()
+    return res
+  }
+
+  async get(...params) {
+    const res = await this._rawStmt.bind(...params).first()
+    return res
+  }
 }
