@@ -1,8 +1,10 @@
 import mysql from "mysql2/promise";
-
 import type { Connector, Statement } from "../types";
+import { BoundableStatement } from "./_internal/statement";
 
 export type ConnectorOptions = mysql.ConnectionOptions
+
+type InternalQuery = (sql: string, params?: unknown[]) => Promise<mysql.QueryResult>
 
 export default function mysqlConnector(opts: ConnectorOptions) {
   let _connection: mysql.Connection | undefined;
@@ -18,34 +20,42 @@ export default function mysqlConnector(opts: ConnectorOptions) {
     return _connection;
   };
 
+  const query: InternalQuery = (sql, params) => getConnection().then((c) => c.query(sql, params)).then((res) => res[0]);
+
   return <Connector<mysql.Connection>>{
     name: "mysql",
     dialect: "mysql",
     getInstance: () => getConnection(),
-    exec(sql: string) {
-      return getConnection().then((c) => c.query(sql).then((res) => res[0]));
-    },
-    prepare(sql: string) {
-      const stmt = <Statement>{
-        _sql: sql,
-        _params: [],
-        bind(...params) {
-          if (params.length > 0) {
-            this._params = params;
-          }
-          return stmt;
-        },
-        all(...params) {
-          return getConnection().then((c) => c.query(this._sql, params || this._params).then((res) => res[0]));
-        },
-        run(...params) {
-          return getConnection().then((c) => c.query(this._sql, params || this._params).then((res) => res[0]));
-        },
-        get(...params) {
-          return getConnection().then((c) => c.query(this._sql, params || this._params).then((res) => res[0][0]));
-        },
-      };
-      return stmt;
-    },
+    exec: sql => query(sql),
+    prepare: sql => new StatementWrapper(sql, query)
   };
+}
+
+class StatementWrapper extends BoundableStatement<void> {
+  #query: InternalQuery;
+  #sql: string;
+
+  constructor(sql: string, query: InternalQuery) {
+    super();
+    this.#sql = sql;
+    this.#query = query;
+  }
+
+  async all(...params) {
+    const res =  await this.#query(this.#sql, params) as mysql.RowDataPacket[]
+    return res
+  }
+
+  async run(...params) {
+    const res = await this.#query(this.#sql, params) as mysql.RowDataPacket[]
+    return {
+      success: true,
+      ...res,
+    }
+  }
+
+  async get(...params) {
+    const res = await this.#query(this.#sql, params) as mysql.RowDataPacket[]
+    return res[0]
+  }
 }
