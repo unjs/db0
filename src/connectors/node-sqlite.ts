@@ -1,7 +1,8 @@
 import { resolve, dirname } from 'node:path'
 import { mkdirSync } from 'node:fs'
-import { DatabaseSync } from 'node:sqlite'
-import type { Connector, Statement, Primitive } from "../types";
+import type { Connector } from "../types";
+import type { DatabaseSync, StatementSync } from "node:sqlite";
+import { BoundableStatement } from './_internal/statement';
 
 export interface ConnectorOptions {
   cwd?: string
@@ -16,16 +17,20 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions) {
     if (_db) {
       return _db
     }
+    const nodeSqlite = globalThis.process?.getBuiltinModule?.('node:sqlite')
+    if (!nodeSqlite) {
+      throw new Error('`node:sqlite` module is not available. Please ensure you are running in Node.js >= 22.5 or Deno >= 2.2.')
+    }
     if (opts.name === ':memory:') {
-      _db = new DatabaseSync(':memory:')
+      _db = new nodeSqlite.DatabaseSync(':memory:')
       return _db
     }
     const filePath = resolve(
       opts.cwd || '.',
-      opts.path || `.data/${opts.name || 'db'}.sqlite3`,
+      opts.path || `.data/${opts.name || 'db'}.sqlite`,
     )
     mkdirSync(dirname(filePath), { recursive: true })
-    _db = new DatabaseSync(filePath)
+    _db = new nodeSqlite.DatabaseSync(filePath)
     return _db
   }
 
@@ -37,32 +42,21 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions) {
       getDB().exec(sql)
       return { success: true }
     },
-    prepare(sql: string) {
-      // TODO: investgate if it is really a Node.js limit or types issue
-      type SupportedValueTypes = Array<Exclude<Primitive, boolean>>
+    prepare: sql => new StatementWrapper(getDB().prepare(sql)),
+  }
+}
 
-      const _stmt = getDB().prepare(sql)
-
-      let bindParams: SupportedValueTypes | undefined
-
-      const stmt = <Statement>{
-        bind(...params) {
-          bindParams = params as SupportedValueTypes
-        },
-        all(...callParams) {
-          const params = callParams.length > 0 ? callParams : (bindParams || [])
-          return _stmt.all(...params as SupportedValueTypes) as any
-        },
-        run(...callParams) {
-          const params = callParams.length > 0 ? callParams : (bindParams || [])
-          return _stmt.run(...params as SupportedValueTypes) as any
-        },
-        get(...callParams) {
-          const params = callParams.length > 0 ? callParams : (bindParams || [])
-          return _stmt.get(...params as SupportedValueTypes) as any
-        },
-      }
-      return stmt
-    },
+class StatementWrapper extends BoundableStatement<StatementSync> {
+  async all(...params) {
+    const raws = this._statement.all(...params)
+    return raws
+  }
+  async run(...params) {
+    const res = this._statement.run(...params)
+    return { success: true, ...res }
+  }
+  async get(...params) {
+    const raw = this._statement.get(...params)
+    return raw
   }
 }
