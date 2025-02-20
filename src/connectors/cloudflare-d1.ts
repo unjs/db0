@@ -1,3 +1,4 @@
+import type { D1Database } from '@cloudflare/workers-types'
 import type { Connector, Statement } from "../types";
 
 export interface ConnectorOptions {
@@ -7,14 +8,14 @@ export interface ConnectorOptions {
 export default function cloudflareD1Connector(options: ConnectorOptions) {
   const getDB = () => {
     // TODO: Remove legacy __cf_env__ support in next major version
-    const binding = globalThis.__env__?.[options.bindingName] || globalThis.__cf_env__?.[options.bindingName];
+    const binding: D1Database = globalThis.__env__?.[options.bindingName] || globalThis.__cf_env__?.[options.bindingName];
     if (!binding) {
       throw new Error(`[db0] [d1] binding \`${options.bindingName}\` not found`);
     }
     return binding;
   }
 
-  return <Connector>{
+  return <Connector<D1Database>>{
     name: "cloudflare-d1",
     dialect: "sqlite",
     getInstance: () => getDB(),
@@ -36,6 +37,7 @@ export default function cloudflareD1Connector(options: ConnectorOptions) {
           return _stmt
             .bind(...params)
             .all()
+            .then(r => r.results)
             .catch(onError);
         },
         run(...params) {
