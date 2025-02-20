@@ -40,15 +40,15 @@ export default function bunSqliteConnector(opts: ConnectorOptions) {
 
 class StatementWrapper extends BoundableStatement<RawStatement> {
   all(...params) {
-    return Promise.resolve(this._rawStmt.all(...params));
+    return Promise.resolve(this._statement.all(...params));
   }
 
   run(...params) {
-    const res = this._rawStmt.run(...params);
+    const res = this._statement.run(...params);
     return Promise.resolve({ success: true, ...res });
   }
 
   get(...params) {
-    return Promise.resolve(this._rawStmt.get(...params));
+    return Promise.resolve(this._statement.get(...params));
   }
 }

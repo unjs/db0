@@ -27,17 +27,17 @@ export default function cloudflareD1Connector(options: ConnectorOptions) {
 
 class StatementWrapper extends BoundableStatement<RawStatement> {
   async all(...params) {
-    const res = await this._rawStmt.bind(...params).all()
+    const res = await this._statement.bind(...params).all()
     return res.results
   }
 
   async run(...params) {
-    const res = await this._rawStmt.bind(...params).run()
+    const res = await this._statement.bind(...params).run()
     return res
   }
 
   async get(...params) {
-    const res = await this._rawStmt.bind(...params).first()
+    const res = await this._statement.bind(...params).first()
     return res
   }
 }

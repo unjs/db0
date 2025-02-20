@@ -1,10 +1,10 @@
 import type { Primitive, Statement, PreparedStatement } from "../../types";
 
 export abstract class BoundableStatement<T> implements Statement {
-  _rawStmt: T;
+  _statement: T;
 
   constructor(rawStmt: T) {
-    this._rawStmt = rawStmt;
+    this._statement = rawStmt;
   }
 
   bind(...params: Primitive[]): PreparedStatement {

@@ -51,19 +51,19 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions) {
 class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
   async all(...params) {
     const rows = await new Promise<unknown[]>((resolve, reject) => {
-      this._rawStmt.all(...params, (err, rows) => err ? reject(err) : resolve(rows))
+      this._statement.all(...params, (err, rows) => err ? reject(err) : resolve(rows))
     })
     return rows
   }
   async run(...params) {
     await new Promise<void>((resolve, reject) => {
-      this._rawStmt.run(...params, (err) => err ? reject(err) : resolve())
+      this._statement.run(...params, (err) => err ? reject(err) : resolve())
     })
     return { success: true }
   }
   async get(...params) {
     const row = await new Promise((resolve, reject) => {
-      this._rawStmt.get(...params, (err, row) => err ? reject(err) : resolve(row))
+      this._statement.get(...params, (err, row) => err ? reject(err) : resolve(row))
     })
     return row
   }
