@@ -51,32 +51,32 @@
     "test:bun": "bun test ./test/connectors/bun-test.ts"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250214.0",
+    "@cloudflare/workers-types": "^4.20250224.0",
     "@electric-sql/pglite": "^0.2.17",
     "@libsql/client": "^0.14.0",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.12",
-    "@types/bun": "^1.2.2",
+    "@types/bun": "^1.2.4",
     "@types/pg": "^8.11.11",
-    "@vitest/coverage-v8": "^3.0.6",
-    "automd": "^0.3.12",
+    "@vitest/coverage-v8": "^3.0.7",
+    "automd": "^0.4.0",
     "better-sqlite3": "^11.8.1",
-    "changelogen": "^0.5.7",
+    "changelogen": "^0.6.0",
     "db0": "^0.2.4",
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.39.3",
-    "eslint": "^9.20.1",
+    "drizzle-orm": "^0.40.0",
+    "eslint": "^9.21.0",
     "eslint-config-unjs": "^0.4.2",
     "jiti": "^2.4.2",
     "mlly": "^1.7.4",
     "mysql2": "^3.12.0",
     "pg": "^8.13.3",
-    "prettier": "^3.5.1",
+    "prettier": "^3.5.2",
     "scule": "^1.3.0",
     "typescript": "^5.7.3",
-    "unbuild": "^3.3.1",
-    "vitest": "^3.0.6",
-    "wrangler": "^3.109.2"
+    "unbuild": "^3.5.0",
+    "vitest": "^3.0.7",
+    "wrangler": "^3.110.0"
   },
   "peerDependencies": {
     "@electric-sql/pglite": "*",
@@ -106,7 +106,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "pnpm@10.5.1",
   "pnpm": {
     "onlyBuiltDependencies": [
       "better-sqlite3",
