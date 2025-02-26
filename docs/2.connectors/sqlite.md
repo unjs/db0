@@ -4,12 +4,32 @@ icon: simple-icons:sqlite
 
 # SQLite
 
-> Connect DB0 to local SQLite database with Node.js
+> Connect DB0 to local SQLite database with Node.js and Deno
 
-You have two options for using SQLite with Node.js: [`better-sqlite3`](#better-sqlite3) and [`sqlite3`](#node-sqlite3).
+You have 3 options for using SQLite:
 
-> [!NOTE]
-> Unless needed for compatibility reasons, `better-sqlite3` is recommended.
+- [`node-sqlite`](#node-sqlite) (recommended)
+- [`better-sqlite3`](#better-sqlite3)
+- [`sqlite3`](#node-sqlite3)
+
+## `node-sqlite`
+
+This driver uses native [`node:sqlite`](https://nodejs.org/api/sqlite.html) supported in Node.js >= 22.5 (experimental) and Deno >= [2.2](https://deno.com/blog/v2.2) and requires **no dependencies**!
+
+:read-more{to="https://nodejs.org/api/sqlite.html" title="Node.js docs"}
+
+:read-more{to="https://docs.deno.com/api/node/sqlite/" title="Deno docs"}
+
+```js
+import { createDatabase } from "db0";
+import sqlite from "db0/connectors/node-sqlite";
+
+const db = createDatabase(
+  sqlite({
+    name: ":memory:",
+  }),
+);
+```
 
 ## `better-sqlite3`
 
