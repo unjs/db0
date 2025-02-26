@@ -1,7 +1,7 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import Database from "better-sqlite3";
-import type { Connector } from "../types";
+import type { Connector } from "db0";
 import type { Statement as RawStatement } from 'better-sqlite3'
 import { BoundableStatement } from "./_internal/statement";
 
@@ -11,7 +11,7 @@ export interface ConnectorOptions {
   name?: string;
 }
 
-export default function sqliteConnector(opts: ConnectorOptions) {
+export default function sqliteConnector(opts: ConnectorOptions): Connector<Database.Database> {
   let _db: Database.Database;
   const getDB = () => {
     if (_db) {
@@ -30,7 +30,7 @@ export default function sqliteConnector(opts: ConnectorOptions) {
     return _db;
   };
 
-  return <Connector<Database.Database>>{
+  return {
     name: "sqlite",
     dialect: "sqlite",
     getInstance: () => getDB(),

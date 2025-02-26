@@ -1,12 +1,12 @@
 import mysql from "mysql2/promise";
-import type { Connector, Statement } from "../types";
+import type { Connector } from "db0";
 import { BoundableStatement } from "./_internal/statement";
 
 export type ConnectorOptions = mysql.ConnectionOptions
 
 type InternalQuery = (sql: string, params?: unknown[]) => Promise<mysql.QueryResult>
 
-export default function mysqlConnector(opts: ConnectorOptions) {
+export default function mysqlConnector(opts: ConnectorOptions): Connector<mysql.Connection> {
   let _connection: mysql.Connection | undefined;
   const getConnection = async () => {
     if (_connection) {
@@ -22,7 +22,7 @@ export default function mysqlConnector(opts: ConnectorOptions) {
 
   const query: InternalQuery = (sql, params) => getConnection().then((c) => c.query(sql, params)).then((res) => res[0]);
 
-  return <Connector<mysql.Connection>>{
+  return {
     name: "mysql",
     dialect: "mysql",
     getInstance: () => getConnection(),

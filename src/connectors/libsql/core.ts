@@ -1,5 +1,5 @@
 import type { Client, InStatement } from "@libsql/client";
-import type { Connector, Statement } from "../../types";
+import type { Connector } from "db0";
 import { BoundableStatement } from "../_internal/statement";
 
 export type ConnectorOptions = {
@@ -9,10 +9,10 @@ export type ConnectorOptions = {
 
 type InternalQuery = (sql: InStatement) => Promise<any>;
 
-export default function libSqlCoreConnector(opts: ConnectorOptions) {
+export default function libSqlCoreConnector(opts: ConnectorOptions): Connector<Client> {
   const query: InternalQuery = (sql) => opts.getClient().execute(sql);
 
-  return <Connector<Client>>{
+  return {
     name: opts.name || "libsql-core",
     dialect: "libsql",
     getInstance: async () => opts.getClient(),

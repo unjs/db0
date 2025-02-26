@@ -1,6 +1,6 @@
 import type { PGliteOptions, PGliteInterfaceExtensions, Results as PGLiteQueryResults } from "@electric-sql/pglite";
 import { PGlite } from "@electric-sql/pglite";
-import type { Connector } from "../types";
+import type { Connector } from "db0";
 import { BoundableStatement } from "./_internal/statement";
 
 export type ConnectorOptions = PGliteOptions

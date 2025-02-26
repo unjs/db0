@@ -19,7 +19,7 @@
       "default": "./dist/integrations/*/index.mjs"
     },
     "./connectors/libsql/*": {
-      "types": "./dist/connectors/libsql/*.ts",
+      "types": "./dist/connectors/libsql/*.d.ts",
       "default": "./dist/connectors/libsql/*.mjs"
     }
   },

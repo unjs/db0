@@ -2,7 +2,7 @@ import {
   BaseSQLiteDatabase,
   SQLiteAsyncDialect,
 } from "drizzle-orm/sqlite-core";
-import type { Database } from "../../types";
+import type { Database } from "db0";
 import { DB0Session } from "./_session";
 
 export type DrizzleDatabase<

@@ -1,6 +1,6 @@
 import pg from "pg";
 
-import type { Connector, Statement, Primitive } from "../types";
+import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement";
 
@@ -8,7 +8,7 @@ export type ConnectorOptions = { url: string } | pg.ClientConfig;
 
 type InternalQuery = (sql: string, params?: Primitive[]) => Promise<pg.QueryResult>;
 
-export default function postgresqlConnector(opts: ConnectorOptions) {
+export default function postgresqlConnector(opts: ConnectorOptions): Connector<pg.Client> {
   let _client: undefined | pg.Client | Promise<pg.Client>;
   function getClient() {
     if (_client) {
@@ -27,7 +27,7 @@ export default function postgresqlConnector(opts: ConnectorOptions) {
     return client.query(normalizeParams(sql), params);
   }
 
-  return <Connector<pg.Client>>{
+  return {
     name: "postgresql",
     dialect: "postgresql",
     getInstance: () => getClient(),

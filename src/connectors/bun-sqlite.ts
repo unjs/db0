@@ -1,7 +1,7 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import { Database, Statement as RawStatement } from "bun:sqlite";
-import type { Connector, Statement } from "../types";
+import type { Connector } from "db0";
 import { BoundableStatement } from "./_internal/statement";
 
 export interface ConnectorOptions {
@@ -10,7 +10,7 @@ export interface ConnectorOptions {
   name?: string;
 }
 
-export default function bunSqliteConnector(opts: ConnectorOptions) {
+export default function bunSqliteConnector(opts: ConnectorOptions): Connector<Database> {
   let _db: Database;
   const getDB = () => {
     if (_db) {
@@ -29,7 +29,7 @@ export default function bunSqliteConnector(opts: ConnectorOptions) {
     return _db;
   };
 
-  return <Connector<Database>>{
+  return {
     name: "sqlite",
     dialect: "sqlite",
     getInstance: () => getDB(),

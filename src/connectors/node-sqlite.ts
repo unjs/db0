@@ -1,6 +1,6 @@
 import { resolve, dirname } from 'node:path'
 import { mkdirSync } from 'node:fs'
-import type { Connector } from "../types";
+import type { Connector } from "db0";
 import type { DatabaseSync, StatementSync } from "node:sqlite";
 import { BoundableStatement } from './_internal/statement';
 
@@ -10,7 +10,7 @@ export interface ConnectorOptions {
   name?: string
 }
 
-export default function nodeSqlite3Connector(opts: ConnectorOptions) {
+export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<DatabaseSync> {
   let _db: DatabaseSync | undefined
 
   const getDB = () => {
@@ -34,7 +34,7 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions) {
     return _db
   }
 
-  return <Connector<DatabaseSync>>{
+  return {
     name: 'node-sqlite',
     dialect: 'sqlite',
     getInstance: () => getDB(),

@@ -1,6 +1,6 @@
 import { Client, type ExecutedQuery, type Config } from "@planetscale/database";
 
-import type { Connector, Statement } from "../types";
+import type { Connector } from "db0";
 
 import { BoundableStatement } from "./_internal/statement";
 
@@ -8,7 +8,7 @@ export type ConnectorOptions = Config
 
 type InternalQuery = (sql: string, params?: unknown[]) => Promise<ExecutedQuery>;
 
-export default function planetscaleConnector(opts: ConnectorOptions) {
+export default function planetscaleConnector(opts: ConnectorOptions): Connector<Client> {
   let _client: undefined | Client;
   function getClient() {
     if (_client) {
@@ -23,7 +23,7 @@ export default function planetscaleConnector(opts: ConnectorOptions) {
   // https://github.com/drizzle-team/drizzle-orm/issues/1743#issuecomment-1879479647
   const query: InternalQuery = (sql, params) => getClient().execute(sql, params);
 
-  return <Connector<Client>>{
+  return {
     name: "planetscale",
     dialect: "mysql",
     getInstance: () => getClient(),

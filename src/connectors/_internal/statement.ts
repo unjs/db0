@@ -1,4 +1,4 @@
-import type { Primitive, Statement, PreparedStatement } from "../../types";
+import type { Primitive, Statement, PreparedStatement } from "db0";
 
 export abstract class BoundableStatement<T> implements Statement {
   _statement: T;

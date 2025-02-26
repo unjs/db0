@@ -9,6 +9,7 @@ export type {
   Primitive,
   SQLDialect,
   Statement,
+  PreparedStatement,
 } from "./types";
 
 export type { ConnectorName, ConnectorOptions } from "./_connectors";

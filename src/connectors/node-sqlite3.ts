@@ -2,7 +2,7 @@ import { resolve, dirname } from 'node:path'
 import { mkdirSync } from 'node:fs'
 import sqlite3 from 'sqlite3'
 
-import type { Connector, Statement } from '../types'
+import type { Connector } from 'db0'
 import { BoundableStatement } from "./_internal/statement";
 
 export interface ConnectorOptions {
@@ -11,7 +11,7 @@ export interface ConnectorOptions {
   name?: string
 }
 
-export default function nodeSqlite3Connector(opts: ConnectorOptions) {
+export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<sqlite3.Database> {
   let _db: sqlite3.Database
   const getDB = () => {
     if (_db) {
@@ -39,7 +39,7 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions) {
     })
   })
 
-  return <Connector<sqlite3.Database>>{
+  return {
     name: 'node-sqlite3',
     dialect: 'sqlite',
     getInstance: () => getDB(),

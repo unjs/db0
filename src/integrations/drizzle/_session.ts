@@ -20,7 +20,7 @@ import type {
   SQLiteTransactionConfig,
 } from "drizzle-orm/sqlite-core";
 
-import type { Database, Statement } from "../../types";
+import type { Database, Statement } from "db0";
 
 // Used as reference: https://github.com/drizzle-team/drizzle-orm/blob/main/drizzle-orm/src/d1/session.ts
 
