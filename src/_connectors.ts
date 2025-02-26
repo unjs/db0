@@ -19,18 +19,18 @@ export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflar
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
   "bun-sqlite": BunSQLiteOptions;
-  /** @deprecated Alias of bun-sqlite */
+  /** alias of bun-sqlite */
   "bun": BunSQLiteOptions;
   "cloudflare-d1": CloudflareD1Options;
   "libsql-core": LibSQLCoreOptions;
   "libsql-http": LibSQLHttpOptions;
   "libsql-node": LibSQLNodeOptions;
-  /** @deprecated Alias of libsql-node */
+  /** alias of libsql-node */
   "libsql": LibSQLNodeOptions;
   "libsql-web": LibSQLWebOptions;
   "mysql2": MySQL2Options;
   "node-sqlite": NodeSQLiteOptions;
-  /** @deprecated Alias of node-sqlite */
+  /** alias of node-sqlite */
   "sqlite": NodeSQLiteOptions;
   "pglite": PgliteOptions;
   "planetscale": PlanetscaleOptions;
@@ -41,18 +41,18 @@ export type ConnectorOptions = {
 export const connectors = Object.freeze({
   "better-sqlite3": "db0/connectors/better-sqlite3",
   "bun-sqlite": "db0/connectors/bun-sqlite",
-  /** @deprecated Alias of bun-sqlite */
+  /** alias of bun-sqlite */
   "bun": "db0/connectors/bun-sqlite",
   "cloudflare-d1": "db0/connectors/cloudflare-d1",
   "libsql-core": "db0/connectors/libsql/core",
   "libsql-http": "db0/connectors/libsql/http",
   "libsql-node": "db0/connectors/libsql/node",
-  /** @deprecated Alias of libsql-node */
+  /** alias of libsql-node */
   "libsql": "db0/connectors/libsql/node",
   "libsql-web": "db0/connectors/libsql/web",
   "mysql2": "db0/connectors/mysql2",
   "node-sqlite": "db0/connectors/node-sqlite",
-  /** @deprecated Alias of node-sqlite */
+  /** alias of node-sqlite */
   "sqlite": "db0/connectors/node-sqlite",
   "pglite": "db0/connectors/pglite",
   "planetscale": "db0/connectors/planetscale",
