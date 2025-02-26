@@ -1,6 +1,49 @@
 # Changelog
 
 
+## v0.3.0
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.4...v0.3.0)
+
+### 🚀 Enhancements
+
+- ⚠️  Prepared statements ([#157](https://github.com/unjs/db0/pull/157))
+- `node-sqlite` driver with native `node:sqlite` ([#155](https://github.com/unjs/db0/pull/155))
+
+### 🩹 Fixes
+
+- **cloudflare-d1:** Correctly return results array ([#156](https://github.com/unjs/db0/pull/156))
+- Fix type exports ([0d5a151](https://github.com/unjs/db0/commit/0d5a151))
+- Correct `.getInstance()` type ([6a7dc5a](https://github.com/unjs/db0/commit/6a7dc5a))
+
+### 💅 Refactors
+
+- ⚠️  Rename `node-sqlite3` to `sqlite3` ([eb8c06d](https://github.com/unjs/db0/commit/eb8c06d))
+
+### 📖 Documentation
+
+- Add `node-sqlite` ([4da62b4](https://github.com/unjs/db0/commit/4da62b4))
+
+### 📦 Build
+
+- ⚠️  Esm-only dist ([7d7bdec](https://github.com/unjs/db0/commit/7d7bdec))
+
+### 🏡 Chore
+
+- Update deps ([a442671](https://github.com/unjs/db0/commit/a442671))
+- Update deps ([77bee33](https://github.com/unjs/db0/commit/77bee33))
+- Fix db0 link ([18b2bbc](https://github.com/unjs/db0/commit/18b2bbc))
+
+#### ⚠️ Breaking Changes
+
+- ⚠️  Prepared statements ([#157](https://github.com/unjs/db0/pull/157))
+- ⚠️  Rename `node-sqlite3` to `sqlite3` ([eb8c06d](https://github.com/unjs/db0/commit/eb8c06d))
+- ⚠️  Esm-only dist ([7d7bdec](https://github.com/unjs/db0/commit/7d7bdec))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.2.4
 
 [compare changes](https://github.com/unjs/db0/compare/v0.2.3...v0.2.4)
