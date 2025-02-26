@@ -70,7 +70,7 @@ export type ExecResult = unknown;
 /**
  * Defines a database connector for executing SQL queries and preparing statements.
  */
-export type Connector<TInstance = any> = {
+export type Connector<TInstance = unknown> = {
   /**
    * The name of the connector.
    */
@@ -119,7 +119,7 @@ export interface Database<TConnector extends Connector = Connector> {
    * The client instance used internally.
    * @returns {Promise<TInstance>} A promise that resolves with the client instance.
    */
-  getInstance: () => Promise<TConnector["getInstance"]>;
+  getInstance: () => Promise<Awaited<ReturnType<TConnector["getInstance"]>>>;
 
   /**
    * Executes a raw SQL string.
