@@ -1,35 +1,16 @@
 import { defineBuildConfig } from "unbuild";
+import { rm } from "node:fs/promises";
 
 export default defineBuildConfig({
   declaration: true,
-  rollup: {
-    emitCJS: true,
-  },
   entries: [
     "src/index",
-    {
-      input: "src/connectors/",
-      outDir: "connectors",
-      format: "esm",
-    },
-    {
-      input: "src/connectors/",
-      outDir: "connectors",
-      format: "cjs",
-      ext: "cjs",
-      declaration: false,
-    },
-    {
-      input: "src/integrations/",
-      outDir: "integrations",
-      format: "esm",
-    },
-    {
-      input: "src/integrations/",
-      outDir: "integrations",
-      format: "cjs",
-      ext: "cjs",
-      declaration: false,
-    },
+    { input: "src/connectors/", outDir: "dist/connectors" },
+    { input: "src/integrations/", outDir: "dist/integrations" },
   ],
+  hooks: {
+    async "build:done"() {
+      await rm("dist/index.d.ts");
+    },
+  },
 });

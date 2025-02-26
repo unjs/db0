@@ -6,37 +6,26 @@
   "license": "MIT",
   "sideEffects": false,
   "exports": {
-    "./connectors/libsql": {
-      "web": {
-        "import": "./connectors/libsql/node.mjs",
-        "require": "./connectors/libsql/node.cjs"
-      },
-      "import": "./connectors/libsql/node.mjs",
-      "require": "./connectors/libsql/node.cjs"
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     },
     "./connectors/*": {
-      "types": "./connectors/*.d.ts",
-      "import": "./connectors/*.mjs",
-      "require": "./connectors/*.cjs"
+      "types": "./dist/connectors/*.d.ts",
+      "default": "./dist/connectors/*.mjs"
     },
     "./integrations/*": {
-      "types": "./integrations/*/index.d.ts",
-      "import": "./integrations/*/index.mjs",
-      "require": "./integrations/*/index.cjs"
+      "types": "./dist/integrations/*/index.d.ts",
+      "default": "./dist/integrations/*/index.mjs"
     },
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+    "./connectors/libsql/*": {
+      "types": "./dist/connectors/libsql/*.ts",
+      "default": "./dist/connectors/libsql/*.mjs"
     }
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "files": [
-    "dist",
-    "connectors",
-    "integrations"
+    "dist"
   ],
   "scripts": {
     "build": "pnpm gen-connectors && unbuild",
