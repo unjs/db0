@@ -99,14 +99,14 @@ export type ConnectorOptions = {
     .flatMap((d) =>
       d.names.map(
         (name, i) =>
-          `${i === 0 ? "" : `/** @deprecated Alias of ${d.name} */\n  `}"${name}": ${d.optionsTName};`,
+          `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": ${d.optionsTName};`,
       ),
     )
     .join("\n  ")}
 };
 
 export const connectors = Object.freeze({
-  ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** @deprecated Alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
+  ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
 } as const);
 `;
 
