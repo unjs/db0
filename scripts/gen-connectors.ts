@@ -13,7 +13,7 @@ const connectorsMetaFile = fileURLToPath(
 );
 
 const aliases = {
-  "better-sqlite3": ["sqlite"],
+  "node-sqlite": ["sqlite"],
   "bun-sqlite": ["bun"],
   "libsql-node": ["libsql"],
 } as const;

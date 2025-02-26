@@ -14,12 +14,10 @@ import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/plan
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 import type { ConnectorOptions as SQLite3Options } from "db0/connectors/sqlite3";
 
-export type ConnectorName = "better-sqlite3" | "sqlite" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
+export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
 
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
-  /** @deprecated Alias of better-sqlite3 */
-  "sqlite": BetterSQLite3Options;
   "bun-sqlite": BunSQLiteOptions;
   /** @deprecated Alias of bun-sqlite */
   "bun": BunSQLiteOptions;
@@ -32,6 +30,8 @@ export type ConnectorOptions = {
   "libsql-web": LibSQLWebOptions;
   "mysql2": MySQL2Options;
   "node-sqlite": NodeSQLiteOptions;
+  /** @deprecated Alias of node-sqlite */
+  "sqlite": NodeSQLiteOptions;
   "pglite": PgliteOptions;
   "planetscale": PlanetscaleOptions;
   "postgresql": PostgreSQLOptions;
@@ -40,8 +40,6 @@ export type ConnectorOptions = {
 
 export const connectors = Object.freeze({
   "better-sqlite3": "db0/connectors/better-sqlite3",
-  /** @deprecated Alias of better-sqlite3 */
-  "sqlite": "db0/connectors/better-sqlite3",
   "bun-sqlite": "db0/connectors/bun-sqlite",
   /** @deprecated Alias of bun-sqlite */
   "bun": "db0/connectors/bun-sqlite",
@@ -54,6 +52,8 @@ export const connectors = Object.freeze({
   "libsql-web": "db0/connectors/libsql/web",
   "mysql2": "db0/connectors/mysql2",
   "node-sqlite": "db0/connectors/node-sqlite",
+  /** @deprecated Alias of node-sqlite */
+  "sqlite": "db0/connectors/node-sqlite",
   "pglite": "db0/connectors/pglite",
   "planetscale": "db0/connectors/planetscale",
   "postgresql": "db0/connectors/postgresql",
