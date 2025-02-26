@@ -51,7 +51,7 @@
     "automd": "^0.4.0",
     "better-sqlite3": "^11.8.1",
     "changelogen": "^0.6.0",
-    "db0": "^0.2.4",
+    "db0": "link:.",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.40.0",
     "eslint": "^9.21.0",
