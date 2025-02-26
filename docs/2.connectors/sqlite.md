@@ -10,7 +10,7 @@ You have 3 options for using SQLite:
 
 - [`node-sqlite`](#node-sqlite) (recommended)
 - [`better-sqlite3`](#better-sqlite3)
-- [`sqlite3`](#node-sqlite3)
+- [`sqlite3`](#sqlite3)
 
 ## `node-sqlite`
 
@@ -69,19 +69,19 @@ Database (file) name. Default is `db`.
 
 Related (to `cwd`) or absolute path to the sql file. By default it is stored in `{cwd}/.data/{name}.sqlite3` / `.data/db.sqlite3`
 
-## `node-sqlite3`
+## `sqlite3`
 
-:read-more{to="https://github.com/TryGhost/node-sqlite3" title="node-sqlite3"}
+:read-more{to="https://github.com/TryGhost/sqlite3" title="sqlite3"}
 
 For this connector, you need to install [`sqlite3`](https://www.npmjs.com/package/sqlite3) dependency:
 
 :pm-install{name="sqlite3"}
 
-Use `node-sqlite3` connector:
+Use `sqlite3` connector:
 
 ```js
 import { createDatabase } from "db0";
-import sqlite from "db0/connectors/node-sqlite3";
+import sqlite from "db0/connectors/sqlite3";
 
 const db = createDatabase(
   sqlite({

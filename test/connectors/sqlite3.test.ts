@@ -1,8 +1,8 @@
 import { describe } from "vitest";
-import connector from "../../src/connectors/node-sqlite3";
+import connector from "../../src/connectors/sqlite3";
 import { testConnector } from "./_tests";
 
-describe("connectors: node-sqlite3", () => {
+describe("connectors: sqlite3", () => {
   testConnector({
     dialect: "sqlite",
     connector: connector({
