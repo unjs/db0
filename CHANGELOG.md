@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.3.1
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.0...v0.3.1)
+
+### 💅 Refactors
+
+- Alias `sqlite` to `node-sqlite` ([55df331](https://github.com/unjs/db0/commit/55df331))
+
+### 📦 Build
+
+- Remove deprecated for aliases ([0011d57](https://github.com/unjs/db0/commit/0011d57))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.3.0
 
 [compare changes](https://github.com/unjs/db0/compare/v0.2.4...v0.3.0)
