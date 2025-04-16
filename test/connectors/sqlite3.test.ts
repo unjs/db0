@@ -15,7 +15,7 @@ describe("connectors: sqlite3", () => {
       name: ":memory:",
     })
 
-    // Node Sqlite3 prepare callback only calls prepare callback on error
+    // Node Sqlite3 only calls prepare callback on error
     const instance = await db.getInstance();
     const result = await new Promise((resolve) => {
       const calls = [] as string[]
