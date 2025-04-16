@@ -27,7 +27,7 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
     }
     const filePath = resolve(
       opts.cwd || '.',
-      opts.path || `.data/${opts.name || 'db'}.sqlite`,
+      opts.path || `.data/${opts.name || 'db'}.sqlite3`,
     )
     mkdirSync(dirname(filePath), { recursive: true })
     _db = new nodeSqlite.DatabaseSync(filePath)
