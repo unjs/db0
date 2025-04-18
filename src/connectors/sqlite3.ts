@@ -49,7 +49,7 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
 }
 
 class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
-  #onError?: (err: Error | null) => void
+  #onError?: (err: Error | null) => void  // #162
 
   constructor(sql: string, db: sqlite3.Database) {
     super(db.prepare(sql, (err) => {
