@@ -1,6 +1,34 @@
 # Changelog
 
 
+## v0.3.2
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.1...v0.3.2)
+
+### 🩹 Fixes
+
+- **sqlite:** Defer prepare errors ([#162](https://github.com/unjs/db0/pull/162))
+
+### 📖 Documentation
+
+- Fix link to node-sqlite3 ([#159](https://github.com/unjs/db0/pull/159))
+
+### 🏡 Chore
+
+- Apply automated updates ([91b9863](https://github.com/unjs/db0/commit/91b9863))
+- Update deps ([ad995db](https://github.com/unjs/db0/commit/ad995db))
+
+### ✅ Tests
+
+- Only include src for coverage report ([#161](https://github.com/unjs/db0/pull/161))
+
+### ❤️ Contributors
+
+- Farnabaz <farnabaz@gmail.com>
+- Kanon ([@ysknsid25](https://github.com/ysknsid25))
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Tsotne Nazarashvili <cotne.95@gmail.com>
+
 ## v0.3.1
 
 [compare changes](https://github.com/unjs/db0/compare/v0.3.0...v0.3.1)
