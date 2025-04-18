@@ -42,21 +42,21 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
       getDB().exec(sql)
       return { success: true }
     },
-    prepare: sql => new StatementWrapper(getDB().prepare(sql)),
+    prepare: sql => new StatementWrapper(() => getDB().prepare(sql)),
   }
 }
 
-class StatementWrapper extends BoundableStatement<StatementSync> {
+class StatementWrapper extends BoundableStatement<() => StatementSync> {
   async all(...params) {
-    const raws = this._statement.all(...params)
+    const raws = this._statement().all(...params)
     return raws
   }
   async run(...params) {
-    const res = this._statement.run(...params)
+    const res = this._statement().run(...params)
     return { success: true, ...res }
   }
   async get(...params) {
-    const raw = this._statement.get(...params)
+    const raw = this._statement().get(...params)
     return raw
   }
 }

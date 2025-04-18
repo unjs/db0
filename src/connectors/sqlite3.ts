@@ -44,25 +44,37 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
     dialect: 'sqlite',
     getInstance: () => getDB(),
     exec: (sql: string) => query(sql),
-    prepare: sql => new StatementWrapper(getDB().prepare(sql)),
+    prepare: (sql) => new StatementWrapper(sql, getDB())
   }
 }
 
 class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
+  #onError?: (err: Error | null) => void  // #162
+
+  constructor(sql: string, db: sqlite3.Database) {
+    super(db.prepare(sql, (err) => {
+      if (err && this.#onError) {
+        return this.#onError(err);
+      }
+    }))
+  }
   async all(...params) {
     const rows = await new Promise<unknown[]>((resolve, reject) => {
+      this.#onError = reject
       this._statement.all(...params, (err, rows) => err ? reject(err) : resolve(rows))
     })
     return rows
   }
   async run(...params) {
     await new Promise<void>((resolve, reject) => {
+      this.#onError = reject
       this._statement.run(...params, (err) => err ? reject(err) : resolve())
     })
     return { success: true }
   }
   async get(...params) {
     const row = await new Promise((resolve, reject) => {
+      this.#onError = reject
       this._statement.get(...params, (err, row) => err ? reject(err) : resolve(row))
     })
     return row
