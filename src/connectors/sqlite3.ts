@@ -44,43 +44,39 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
     dialect: 'sqlite',
     getInstance: () => getDB(),
     exec: (sql: string) => query(sql),
-    prepare: (sql) => {
-      const stm = new StatementWrapper()
-      stm._statement = getDB().prepare(sql, stm._prepareCallback.bind(stm))
-      return stm
-    }
+    prepare: (sql) => new StatementWrapper(sql, getDB())
   }
 }
 
 class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
-  _callback;
-  _prepareCallback(err, res) {
-    // forward the error and result to the callback
-    if (this._callback && err) {
-      return this._callback(err, res);
-    }
-  }
-  constructor() {
-    super(undefined);
+  #callback;
+
+  constructor(sql: string, db: sqlite3.Database) {
+    super(db.prepare(sql, (err, res) => {
+      // Forward the error and result to the callback
+      if (this.#callback && err) {
+        return this.#callback(err, res);
+      }
+    }))
   }
   async all(...params) {
     const rows = await new Promise<unknown[]>((resolve, reject) => {
-      this._callback = (err, rows) => err ? reject(err) : resolve(rows);
-      this._statement.all(...params, this._callback)
+      this.#callback = (err, rows) => err ? reject(err) : resolve(rows);
+      this._statement.all(...params, this.#callback);
     })
     return rows
   }
   async run(...params) {
     await new Promise<void>((resolve, reject) => {
-      this._callback = (err) => err ? reject(err) : resolve();
-      this._statement.run(...params, this._callback)
+      this.#callback = (err) => err ? reject(err) : resolve();
+      this._statement.run(...params, this.#callback)
     })
     return { success: true }
   }
   async get(...params) {
     const row = await new Promise((resolve, reject) => {
-      this._callback = (err, row) => err ? reject(err) : resolve(row);
-      this._statement.get(...params, this._callback)
+      this.#callback = (err, row) => err ? reject(err) : resolve(row);
+      this._statement.get(...params, this.#callback)
     })
     return row
   }
