@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe } from "vitest";
 import connector from "../../src/connectors/sqlite3";
 import { testConnector } from "./_tests";
 

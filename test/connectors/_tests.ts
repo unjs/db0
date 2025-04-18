@@ -62,7 +62,7 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
     expect(rows).toMatchInlineSnapshot(userSnapshot);
   });
 
-  it("prepare errors", async () => {
+  it("deferred prepare errors", async () => {
     await expect(db.prepare("SELECT * FROM non_existing_table").all()).rejects.toThrowError("non_existing_table")
   });
 }
