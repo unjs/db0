@@ -49,34 +49,33 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
 }
 
 class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
-  #callback?: (err: Error | null, res?: unknown) => void
+  #onError?: (err: Error | null) => void
 
   constructor(sql: string, db: sqlite3.Database) {
-    super(db.prepare(sql, (err, res) => {
-      // Forward the error and result to the callback
-      if (this.#callback && err) {
-        return this.#callback(err, res);
+    super(db.prepare(sql, (err) => {
+      if (err && this.#onError) {
+        return this.#onError(err);
       }
     }))
   }
   async all(...params) {
     const rows = await new Promise<unknown[]>((resolve, reject) => {
-      this.#callback = (err, rows) => err ? reject(err) : resolve(rows);
-      this._statement.all(...params, this.#callback);
+      this.#onError = reject
+      this._statement.all(...params, (err, rows) => err ? reject(err) : resolve(rows))
     })
     return rows
   }
   async run(...params) {
     await new Promise<void>((resolve, reject) => {
-      this.#callback = (err) => err ? reject(err) : resolve();
-      this._statement.run(...params, this.#callback)
+      this.#onError = reject
+      this._statement.run(...params, (err) => err ? reject(err) : resolve())
     })
     return { success: true }
   }
   async get(...params) {
     const row = await new Promise((resolve, reject) => {
-      this.#callback = (err, row) => err ? reject(err) : resolve(row);
-      this._statement.get(...params, this.#callback)
+      this.#onError = reject
+      this._statement.get(...params, (err, row) => err ? reject(err) : resolve(row))
     })
     return row
   }
