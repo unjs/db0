@@ -61,4 +61,8 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
     const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
     expect(rows).toMatchInlineSnapshot(userSnapshot);
   });
+
+  it("prepare errors", async () => {
+    await expect(db.prepare("SELECT * FROM non_existing_table").all()).rejects.toThrowError("non_existing_table")
+  });
 }

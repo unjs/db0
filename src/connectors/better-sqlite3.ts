@@ -35,21 +35,21 @@ export default function sqliteConnector(opts: ConnectorOptions): Connector<Datab
     dialect: "sqlite",
     getInstance: () => getDB(),
     exec: sql => getDB().exec(sql),
-    prepare: sql => new StatementWrapper(getDB().prepare(sql))
+    prepare: sql => new StatementWrapper(() => getDB().prepare(sql))
   };
 }
 
-class StatementWrapper extends BoundableStatement<RawStatement> {
-  all(...params) {
-    return Promise.resolve(this._statement.all(...params));
+class StatementWrapper extends BoundableStatement<() => RawStatement> {
+  async all(...params) {
+    return this._statement().all(...params)
   }
 
-  run(...params) {
-    const res = this._statement.run(...params);
-    return Promise.resolve({ success: res.changes > 0, ...res });
+  async run(...params) {
+    const res = this._statement().run(...params)
+    return { success: res.changes > 0, ...res }
   }
 
-  get(...params) {
-    return Promise.resolve(this._statement.get(...params));
+  async get(...params) {
+    return this._statement().get(...params)
   }
 }
