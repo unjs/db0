@@ -14,11 +14,11 @@ type InternalQuery = (sql: string, params?: Primitive[]) => Promise<pg.QueryResu
 
 export default function cloudflareHyperdrivePostgresqlConnector(opts: ConnectorOptions): Connector<pg.Client> {
   let _client: undefined | pg.Client | Promise<pg.Client>;
-  function getClient() {
+  async function getClient() {
     if (_client) {
       return _client;
     }
-    const hyperdrive = getHyperdrive(opts.bindingName);
+    const hyperdrive = await getHyperdrive(opts.bindingName);
     const client = new pg.Client({
       ...opts,
       connectionString: hyperdrive.connectionString,

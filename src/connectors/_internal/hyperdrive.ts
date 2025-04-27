@@ -10,7 +10,7 @@ async function getCloudflareEnv() {
   }
 }
 
-export const getHyperdrive = async (bindingName: string) => {
+export async function getHyperdrive(bindingName: string) {
   const env = await getCloudflareEnv();
   const binding: Hyperdrive = env[bindingName] || globalThis.__env__?.[bindingName];
   if (!binding) {

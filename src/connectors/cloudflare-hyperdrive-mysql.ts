@@ -17,7 +17,7 @@ export default function cloudflareHyperdriveMysqlConnector(opts: ConnectorOption
       return _connection;
     }
 
-    const hyperdrive = getHyperdrive(opts.bindingName);
+    const hyperdrive = await getHyperdrive(opts.bindingName);
     _connection = await mysql.createConnection({
       ...opts,
       host: hyperdrive.host,
