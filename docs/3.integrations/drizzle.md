@@ -93,9 +93,3 @@ export default defineConfig({
   }
 });
 ```
-
-This approach provides:
-- ✅ Full TypeScript type safety
-- ✅ Automatic schema migrations  
-- ✅ No raw SQL required
-- ✅ Consistent drizzle patterns throughout
