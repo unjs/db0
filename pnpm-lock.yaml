@@ -40,20 +40,20 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0(magicast@0.3.5)
       better-sqlite3:
-        specifier: ^11.10.0
-        version: 11.10.0
+        specifier: ^12.2.0
+        version: 12.2.0
       changelogen:
         specifier: ^0.6.1
         version: 0.6.1(magicast@0.3.5)
       db0:
         specifier: ^0.3.2
-        version: 0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@11.10.0)(drizzle-orm@0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7)
+        version: 0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@12.2.0)(drizzle-orm@0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7)
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
+        version: 0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
       eslint:
         specifier: ^9.30.1
         version: 9.30.1(jiti@2.4.2)
@@ -95,13 +95,13 @@ importers:
     devDependencies:
       db0:
         specifier: latest
-        version: 0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@11.10.0)(drizzle-orm@0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7)
+        version: 0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@12.2.0)(drizzle-orm@0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7)
       drizzle-kit:
         specifier: ^0.20.14
         version: 0.20.18
       drizzle-orm:
         specifier: ^0.29.4
-        version: 0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
+        version: 0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
       jiti:
         specifier: ^1.21.0
         version: 1.21.7
@@ -1568,8 +1568,9 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  better-sqlite3@11.10.0:
-    resolution: {integrity: sha512-EwhOpyXiOEL/lKzHz9AW1msWFNzGc/z+LzeB3/jnFJpxu+th2yqvzsSWas1v9jgs9+xiXJcD5A8CJxAG2TaghQ==}
+  better-sqlite3@12.2.0:
+    resolution: {integrity: sha512-eGbYq2CT+tos1fBwLQ/tkBt9J5M3JEHjku4hbvQUePCckkvVf14xWj+1m7dGoK81M/fOjFT7yM9UMeKT/+vFLQ==}
+    engines: {node: 20.x || 22.x || 23.x || 24.x}
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -5045,7 +5046,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  better-sqlite3@11.10.0:
+  better-sqlite3@12.2.0:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
@@ -5370,21 +5371,21 @@ snapshots:
 
   data-uri-to-buffer@4.0.1: {}
 
-  db0@0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@11.10.0)(drizzle-orm@0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7):
+  db0@0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@12.2.0)(drizzle-orm@0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7):
     optionalDependencies:
       '@electric-sql/pglite': 0.3.4
       '@libsql/client': 0.15.9
-      better-sqlite3: 11.10.0
-      drizzle-orm: 0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
+      better-sqlite3: 12.2.0
+      drizzle-orm: 0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
       mysql2: 3.14.1
       sqlite3: 5.1.7
 
-  db0@0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@11.10.0)(drizzle-orm@0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7):
+  db0@0.3.2(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(better-sqlite3@12.2.0)(drizzle-orm@0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7))(mysql2@3.14.1)(sqlite3@5.1.7):
     optionalDependencies:
       '@electric-sql/pglite': 0.3.4
       '@libsql/client': 0.15.9
-      better-sqlite3: 11.10.0
-      drizzle-orm: 0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
+      better-sqlite3: 12.2.0
+      drizzle-orm: 0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7)
       mysql2: 3.14.1
       sqlite3: 5.1.7
 
@@ -5488,20 +5489,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7):
+  drizzle-orm@0.29.5(@cloudflare/workers-types@4.20250702.0)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20250702.0
       '@libsql/client': 0.15.9
       '@planetscale/database': 1.19.0
       '@types/better-sqlite3': 7.6.13
       '@types/pg': 8.15.4
-      better-sqlite3: 11.10.0
+      better-sqlite3: 12.2.0
       bun-types: 1.2.17
       mysql2: 3.14.1
       pg: 8.16.3
       sqlite3: 5.1.7
 
-  drizzle-orm@0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@11.10.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7):
+  drizzle-orm@0.44.2(@cloudflare/workers-types@4.20250702.0)(@electric-sql/pglite@0.3.4)(@libsql/client@0.15.9)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.4)(better-sqlite3@12.2.0)(bun-types@1.2.17)(mysql2@3.14.1)(pg@8.16.3)(sqlite3@5.1.7):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20250702.0
       '@electric-sql/pglite': 0.3.4
@@ -5509,7 +5510,7 @@ snapshots:
       '@planetscale/database': 1.19.0
       '@types/better-sqlite3': 7.6.13
       '@types/pg': 8.15.4
-      better-sqlite3: 11.10.0
+      better-sqlite3: 12.2.0
       bun-types: 1.2.17
       mysql2: 3.14.1
       pg: 8.16.3
