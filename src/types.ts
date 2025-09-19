@@ -99,6 +99,12 @@ export type Connector<TInstance = unknown> = {
    * @returns {statement} The prepared SQL statement.
    */
   prepare: (sql: string) => Statement;
+
+  /**
+   * Closes the database connection and cleans up resources.
+   * @returns {void | Promise<void>} A promise that resolves when the connection is closed.
+   */
+  close?: () => void | Promise<void>;
 };
 
 /**
@@ -112,7 +118,8 @@ type DefaultSQLResult = {
   success?: boolean;
 };
 
-export interface Database<TConnector extends Connector = Connector> {
+export interface Database<TConnector extends Connector = Connector>
+  extends AsyncDisposable {
   readonly dialect: SQLDialect;
 
   /**
@@ -146,4 +153,16 @@ export interface Database<TConnector extends Connector = Connector> {
     strings: TemplateStringsArray,
     ...values: Primitive[]
   ) => Promise<T>;
+
+  /**
+   * Closes the database connection and cleans up resources.
+   * @returns {Promise<void>} A promise that resolves when the connection is closed.
+   */
+  close: () => Promise<void>;
+
+  /**
+   * AsyncDisposable implementation for using syntax support.
+   * @returns {Promise<void>} A promise that resolves when the connection is disposed.
+   */
+  [Symbol.asyncDispose]: () => Promise<void>;
 }

@@ -29,6 +29,9 @@ export default function planetscaleConnector(opts: ConnectorOptions): Connector<
     getInstance: () => getClient(),
     exec: sql => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
+    close: () => {
+      _client = undefined;
+    }
   };
 }
 

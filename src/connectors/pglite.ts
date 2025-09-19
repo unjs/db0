@@ -28,7 +28,17 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(opts?
     dialect: "postgresql",
     getInstance: () => getClient(),
     exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    prepare: sql => new StatementWrapper(sql, query),
+    close: async () => {
+      if (_client && _client instanceof PGlite) {
+        await _client.close();
+        _client = undefined;
+      } else if (_client && typeof _client.then === 'function') {
+        const client = await _client;
+        await client.close();
+        _client = undefined;
+      }
+    }
   };
 }
 

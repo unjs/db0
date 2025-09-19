@@ -27,7 +27,13 @@ export default function mysqlConnector(opts: ConnectorOptions): Connector<mysql.
     dialect: "mysql",
     getInstance: () => getConnection(),
     exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    prepare: sql => new StatementWrapper(sql, query),
+    close: async () => {
+      if (_connection) {
+        await _connection.end();
+        _connection = undefined;
+      }
+    }
   };
 }
 
