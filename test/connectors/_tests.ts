@@ -65,4 +65,16 @@ export function testConnector<TConnector extends Connector = Connector>(opts: { 
   it("deferred prepare errors", async () => {
     await expect(db.prepare("SELECT * FROM non_existing_table").all()).rejects.toThrowError("non_existing_table")
   });
+
+  it("close", async () => {
+    expect(db.close).toBeDefined();
+    expect(typeof db.close).toBe("function");
+
+    const closePromise = db.close();
+    expect(closePromise).toBeInstanceOf(Promise);
+
+    await closePromise;
+
+    await expect(db.close()).resolves.toBeUndefined();
+  });
 }
