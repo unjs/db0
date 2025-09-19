@@ -1,11 +1,12 @@
 {
   "private": true,
-  "name": "docs",
+  "type": "module",
   "scripts": {
-    "dev": "undocs dev",
-    "build": "undocs build"
+    "build": "undocs build",
+    "dev": "undocs dev"
   },
   "devDependencies": {
-    "undocs": "^0.2.30"
-  }
+    "undocs": "^0.4.3"
+  },
+  "packageManager": "pnpm@10.17.0"
 }

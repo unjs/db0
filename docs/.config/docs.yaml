@@ -5,6 +5,11 @@ shortDescription: "tiny sql connector"
 description: "Connect and query any compatible SQL database and integrate with your favorite tools."
 github: "unjs/db0"
 url: "https://db0.unjs.io"
+socials:
+  twitter: "https://twitter.com/unjsio"
+  bluesky: "https://bsky.app/profile/unjs.io"
+sponsors:
+  api: https://sponsors.pi0.io/sponsors.json
 automd: true
 themeColor: "orange"
 landing:
