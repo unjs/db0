@@ -50,5 +50,13 @@ export function createDatabase<TConnector extends Connector = Connector>(
         return res;
       }
     },
+
+    close: async () => {
+      await connector?.close?.();
+    },
+
+    [Symbol.asyncDispose]: async () => {
+      await connector?.close?.();
+    },
   };
 }

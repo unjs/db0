@@ -32,7 +32,12 @@ export default function postgresqlConnector(opts: ConnectorOptions): Connector<p
     dialect: "postgresql",
     getInstance: () => getClient(),
     exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    prepare: sql => new StatementWrapper(sql, query),
+    close: async () => {
+      const client = await _client;
+      await client?.end?.();
+      _client = undefined;
+    }
   };
 }
 

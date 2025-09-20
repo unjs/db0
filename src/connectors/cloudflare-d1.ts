@@ -21,7 +21,7 @@ export default function cloudflareD1Connector(options: ConnectorOptions): Connec
     dialect: "sqlite",
     getInstance: () => getDB(),
     exec: (sql) => getDB().exec(sql),
-    prepare: sql => new StatementWrapper(getDB().prepare(sql))
+    prepare: sql => new StatementWrapper(getDB().prepare(sql)),
   };
 }
 
