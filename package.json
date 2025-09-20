@@ -40,7 +40,7 @@
     "test:bun": "bun test ./test/connectors/bun-test.ts"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250918.0",
+    "@cloudflare/workers-types": "^4.20250920.0",
     "@electric-sql/pglite": "^0.3.8",
     "@libsql/client": "^0.15.15",
     "@planetscale/database": "^1.19.0",
@@ -54,7 +54,7 @@
     "db0": "^0.3.2",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
-    "eslint": "^9.35.0",
+    "eslint": "^9.36.0",
     "eslint-config-unjs": "^0.5.0",
     "jiti": "^2.5.1",
     "mlly": "^1.8.0",
