@@ -47,14 +47,9 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
     prepare: (sql) => new StatementWrapper(sql, getDB()),
     close: () => {
       return new Promise<void>((resolve) => {
-        if (_db) {
-          _db.close((err) => {
-            _db = undefined as any;
-            resolve();
-          });
-        } else {
-          resolve();
-        }
+        _db?.close?.()
+        _db = undefined as any;
+        resolve();
       });
     }
   }

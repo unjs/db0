@@ -22,9 +22,6 @@ export default function cloudflareD1Connector(options: ConnectorOptions): Connec
     getInstance: () => getDB(),
     exec: (sql) => getDB().exec(sql),
     prepare: sql => new StatementWrapper(getDB().prepare(sql)),
-    close: () => {
-      // Cloudflare D1 doesn't require explicit connection closing
-    }
   };
 }
 

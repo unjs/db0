@@ -20,9 +20,7 @@ export default function libSqlCoreConnector(opts: ConnectorOptions): Connector<C
     prepare: (sql) => new StatementWrapper(sql, query),
     close: async () => {
       const client = opts.getClient();
-      if (client && typeof client.close === 'function') {
-        client.close();
-      }
+      client?.close?.();
     }
   };
 }

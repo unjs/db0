@@ -30,14 +30,9 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(opts?
     exec: sql => query(sql),
     prepare: sql => new StatementWrapper(sql, query),
     close: async () => {
-      if (_client && _client instanceof PGlite) {
-        await _client.close();
-        _client = undefined;
-      } else if (_client && typeof _client.then === 'function') {
-        const client = await _client;
-        await client.close();
-        _client = undefined;
-      }
+      const client = await _client;
+      await client?.close?.();
+      _client = undefined;
     }
   };
 }

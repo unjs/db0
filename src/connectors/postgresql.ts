@@ -34,11 +34,9 @@ export default function postgresqlConnector(opts: ConnectorOptions): Connector<p
     exec: sql => query(sql),
     prepare: sql => new StatementWrapper(sql, query),
     close: async () => {
-      if (_client) {
-        const client = await _client;
-        await client.end();
-        _client = undefined;
-      }
+      const client = await _client;
+      await client?.end?.();
+      _client = undefined;
     }
   };
 }

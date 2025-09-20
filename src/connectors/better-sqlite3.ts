@@ -37,10 +37,8 @@ export default function sqliteConnector(opts: ConnectorOptions): Connector<Datab
     exec: sql => getDB().exec(sql),
     prepare: sql => new StatementWrapper(() => getDB().prepare(sql)),
     close: () => {
-      if (_db) {
-        _db.close();
-        _db = undefined as any;
-      }
+      _db?.close?.();
+      _db = undefined as any;
     }
   };
 }
