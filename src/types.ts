@@ -123,6 +123,12 @@ export interface Database<TConnector extends Connector = Connector>
   readonly dialect: SQLDialect;
 
   /**
+   * Indicates whether the database instance has been disposed/closed.
+   * @returns {boolean} True if the database has been disposed, false otherwise.
+   */
+  readonly disposed: boolean;
+
+  /**
    * The client instance used internally.
    * @returns {Promise<TInstance>} A promise that resolves with the client instance.
    */

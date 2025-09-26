@@ -16,24 +16,40 @@ const DIALECTS_WITH_RET: Set<SQLDialect> = new Set(["postgresql", "sqlite"]);
 export function createDatabase<TConnector extends Connector = Connector>(
   connector: TConnector,
 ): Database<TConnector> {
+  let _disposed = false;
+
+  const checkDisposed = () => {
+    if (_disposed) {
+      throw new Error("Database instance has been disposed and cannot be used");
+    }
+  };
+
   return <Database<TConnector>>{
     get dialect() {
       return connector.dialect;
     },
 
+    get disposed() {
+      return _disposed;
+    },
+
     getInstance() {
+      checkDisposed();
       return connector.getInstance();
     },
 
     exec: (sql: string) => {
+      checkDisposed();
       return Promise.resolve(connector.exec(sql));
     },
 
     prepare: (sql: string) => {
+      checkDisposed();
       return connector.prepare(sql);
     },
 
     sql: async (strings, ...values) => {
+      checkDisposed();
       const [sql, params] = sqlTemplate(strings, ...values);
       if (
         SQL_SELECT_RE.test(sql) /* select */ ||
@@ -52,11 +68,15 @@ export function createDatabase<TConnector extends Connector = Connector>(
     },
 
     close: async () => {
-      await connector?.close?.();
+      if (!connector?.close) return;
+      _disposed = true;
+      await connector.close();
     },
 
     [Symbol.asyncDispose]: async () => {
-      await connector?.close?.();
+      if (!connector?.close) return;
+      _disposed = true;
+      await connector.close();
     },
   };
 }

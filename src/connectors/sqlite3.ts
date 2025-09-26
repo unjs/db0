@@ -13,6 +13,8 @@ export interface ConnectorOptions {
 
 export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<sqlite3.Database> {
   let _db: sqlite3.Database
+  const _statements = new Set<StatementWrapper>()
+
   const getDB = () => {
     if (_db) {
       return _db
@@ -44,9 +46,23 @@ export default function nodeSqlite3Connector(opts: ConnectorOptions): Connector<
     dialect: 'sqlite',
     getInstance: () => getDB(),
     exec: (sql: string) => query(sql),
-    prepare: (sql) => new StatementWrapper(sql, getDB()),
+    prepare: (sql) => {
+      const stmt = new StatementWrapper(sql, getDB())
+      _statements.add(stmt)
+      return stmt
+    },
     close: () => {
       return new Promise<void>((resolve) => {
+        // Finalize all prepared statements first
+        for (const stmt of _statements) {
+          try {
+            stmt.finalize()
+          } catch {
+            // Ignore errors during finalization
+          }
+        }
+        _statements.clear()
+
         _db?.close?.()
         _db = undefined as any;
         resolve();
@@ -85,5 +101,9 @@ class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
       this._statement.get(...params, (err, row) => err ? reject(err) : resolve(row))
     })
     return row
+  }
+
+  finalize() {
+    this._statement.finalize()
   }
 }
