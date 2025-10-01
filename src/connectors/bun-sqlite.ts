@@ -10,7 +10,9 @@ export interface ConnectorOptions {
   name?: string;
 }
 
-export default function bunSqliteConnector(opts: ConnectorOptions): Connector<Database> {
+export default function bunSqliteConnector(
+  opts: ConnectorOptions,
+): Connector<Database> {
   let _db: Database;
   const getDB = () => {
     if (_db) {
@@ -33,12 +35,12 @@ export default function bunSqliteConnector(opts: ConnectorOptions): Connector<Da
     name: "sqlite",
     dialect: "sqlite",
     getInstance: () => getDB(),
-    exec: sql => getDB().exec(sql),
-    prepare: sql => new StatementWrapper(getDB().prepare(sql)),
-    close: () => {
+    exec: (sql) => getDB().exec(sql),
+    prepare: (sql) => new StatementWrapper(getDB().prepare(sql)),
+    dispose: () => {
       _db?.close?.();
       _db = undefined as any;
-    }
+    },
   };
 }
 

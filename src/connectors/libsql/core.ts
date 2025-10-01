@@ -9,19 +9,18 @@ export type ConnectorOptions = {
 
 type InternalQuery = (sql: InStatement) => Promise<any>;
 
-export default function libSqlCoreConnector(opts: ConnectorOptions): Connector<Client> {
+export default function libSqlCoreConnector(
+  opts: ConnectorOptions,
+): Connector<Client> {
   const query: InternalQuery = (sql) => opts.getClient().execute(sql);
 
   return {
     name: opts.name || "libsql-core",
     dialect: "libsql",
     getInstance: async () => opts.getClient(),
-    exec: sql => query(sql),
+    exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
-    close: async () => {
-      const client = opts.getClient();
-      client?.close?.();
-    }
+    dispose: () => opts.getClient()?.close?.(),
   };
 }
 
@@ -36,19 +35,19 @@ class StatementWrapper extends BoundableStatement<void> {
   }
 
   async all(...params) {
-    const res = await this.#query({ sql: this.#sql, args: params })
+    const res = await this.#query({ sql: this.#sql, args: params });
     return res.rows;
   }
 
   async run(...params) {
-   const res = await this.#query({ sql: this.#sql, args: params })
+    const res = await this.#query({ sql: this.#sql, args: params });
     return {
-      ...res
-    }
+      ...res,
+    };
   }
 
   async get(...params) {
-    const res = await this.#query({ sql: this.#sql, args: params })
+    const res = await this.#query({ sql: this.#sql, args: params });
     return res.rows[0];
   }
 }

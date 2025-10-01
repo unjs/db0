@@ -5,6 +5,9 @@ const SQL_SELECT_RE = /^select/i;
 const SQL_RETURNING_RE = /[\s]returning[\s]/i;
 const DIALECTS_WITH_RET: Set<SQLDialect> = new Set(["postgresql", "sqlite"]);
 
+const DISPOSED_ERR =
+  "This database instance has been disposed and cannot be used.";
+
 /**
  * Creates and returns a database interface using the specified connector.
  * This interface allows you to execute raw SQL queries, prepare SQL statements,
@@ -17,10 +20,11 @@ export function createDatabase<TConnector extends Connector = Connector>(
   connector: TConnector,
 ): Database<TConnector> {
   let _disposed = false;
-
   const checkDisposed = () => {
     if (_disposed) {
-      throw new Error("Database instance has been disposed and cannot be used");
+      const err = new Error(DISPOSED_ERR);
+      Error.captureStackTrace?.(err, checkDisposed);
+      throw err;
     }
   };
 
@@ -67,16 +71,17 @@ export function createDatabase<TConnector extends Connector = Connector>(
       }
     },
 
-    close: async () => {
-      if (!connector?.close) return;
+    dispose: () => {
       _disposed = true;
-      await connector.close();
+      try {
+        return Promise.resolve(connector.dispose?.());
+      } catch (error_) {
+        return Promise.reject(error_);
+      }
     },
 
-    [Symbol.asyncDispose]: async () => {
-      if (!connector?.close) return;
-      _disposed = true;
-      await connector.close();
+    [Symbol.asyncDispose]() {
+      return this.dispose();
     },
   };
 }

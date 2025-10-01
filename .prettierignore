@@ -1,5 +1,5 @@
-connectors
-integrations
+/connectors
+/integrations
 src/_connectors.ts
 dist
 node_modules

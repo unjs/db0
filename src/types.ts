@@ -104,7 +104,7 @@ export type Connector<TInstance = unknown> = {
    * Closes the database connection and cleans up resources.
    * @returns {void | Promise<void>} A promise that resolves when the connection is closed.
    */
-  close?: () => void | Promise<void>;
+  dispose?: () => void | Promise<void>;
 };
 
 /**
@@ -164,7 +164,7 @@ export interface Database<TConnector extends Connector = Connector>
    * Closes the database connection and cleans up resources.
    * @returns {Promise<void>} A promise that resolves when the connection is closed.
    */
-  close: () => Promise<void>;
+  dispose: () => Promise<void>;
 
   /**
    * AsyncDisposable implementation for using syntax support.
