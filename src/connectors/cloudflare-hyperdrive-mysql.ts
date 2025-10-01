@@ -1,17 +1,40 @@
 import mysql from "mysql2/promise";
-import type { Connector } from "db0";
-import { BoundableStatement } from "./_internal/statement";
-import { getHyperdrive } from "./_internal/hyperdrive";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "./_internal/statement.ts";
+import { getHyperdrive } from "./_internal/cloudflare.ts";
 
-type OmitMysqlConfig = Omit<mysql.ConnectionOptions, 'user' | 'database' | 'password' | 'password1' | 'password2' | 'password3' | 'port' | 'host' | 'uri' | 'localAddress' | 'socketPath' | 'insecureAuth' | 'passwordSha1' | 'disableEval'>;
+type OmitMysqlConfig = Omit<
+  mysql.ConnectionOptions,
+  | "user"
+  | "database"
+  | "password"
+  | "password1"
+  | "password2"
+  | "password3"
+  | "port"
+  | "host"
+  | "uri"
+  | "localAddress"
+  | "socketPath"
+  | "insecureAuth"
+  | "passwordSha1"
+  | "disableEval"
+>;
+
 export type ConnectorOptions = {
-  bindingName?: string;
+  bindingName: string;
 } & OmitMysqlConfig;
 
-type InternalQuery = (sql: string, params?: unknown[]) => Promise<mysql.QueryResult>
+type InternalQuery = (
+  sql: string,
+  params?: unknown[],
+) => Promise<mysql.QueryResult>;
 
-export default function cloudflareHyperdriveMysqlConnector(opts: ConnectorOptions): Connector<mysql.Connection> {
+export default function cloudflareHyperdriveMysqlConnector(
+  opts: ConnectorOptions,
+): Connector<mysql.Connection> {
   let _connection: mysql.Connection | undefined;
+
   const getConnection = async () => {
     if (_connection) {
       return _connection;
@@ -25,24 +48,30 @@ export default function cloudflareHyperdriveMysqlConnector(opts: ConnectorOption
       password: hyperdrive.password,
       database: hyperdrive.database,
       port: hyperdrive.port,
-
       // The following line is needed for mysql2 compatibility with Workers
       // mysql2 uses eval() to optimize result parsing for rows with > 100 columns
       // Configure mysql2 to use static parsing instead of eval() parsing with disableEval
       disableEval: true,
-    })
+    });
 
     return _connection;
   };
 
-  const query: InternalQuery = (sql, params) => getConnection().then((c) => c.query(sql, params)).then((res) => res[0]);
+  const query: InternalQuery = (sql, params) =>
+    getConnection()
+      .then((c) => c.query(sql, params))
+      .then((res) => res[0]);
 
   return {
     name: "cloudflare-hyperdrive-mysql",
     dialect: "mysql",
     getInstance: () => getConnection(),
-    exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    exec: (sql) => query(sql),
+    prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: async () => {
+      await _connection?.end?.();
+      _connection = undefined;
+    },
   };
 }
 
@@ -56,21 +85,21 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
-    const res = await this.#query(this.#sql, params) as mysql.RowDataPacket[];
-    return res
+  async all(...params: Primitive[]) {
+    const res = (await this.#query(this.#sql, params)) as mysql.RowDataPacket[];
+    return res;
   }
 
-  async run(...params) {
-    const res = await this.#query(this.#sql, params) as mysql.RowDataPacket[];
+  async run(...params: Primitive[]) {
+    const res = (await this.#query(this.#sql, params)) as mysql.RowDataPacket[];
     return {
       success: true,
       ...res,
-    }
+    };
   }
 
-  async get(...params) {
-    const res = await this.#query(this.#sql, params) as mysql.RowDataPacket[];
-    return res[0]
+  async get(...params: Primitive[]) {
+    const res = (await this.#query(this.#sql, params)) as mysql.RowDataPacket[];
+    return res[0];
   }
 }
