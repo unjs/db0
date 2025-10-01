@@ -1,5 +1,6 @@
-import { sqlTemplate } from "./template";
-import type { Connector, Database, SQLDialect } from "./types";
+import { sqlTemplate } from "./template.ts";
+import type { Connector, Database, SQLDialect } from "./types.ts";
+import type { Primitive } from "./types.ts";
 
 const SQL_SELECT_RE = /^select/i;
 const SQL_RETURNING_RE = /[\s]returning[\s]/i;
@@ -33,7 +34,7 @@ export function createDatabase<TConnector extends Connector = Connector>(
       return connector.prepare(sql);
     },
 
-    sql: async (strings, ...values) => {
+    sql: async (strings: TemplateStringsArray, ...values: Primitive[]) => {
       const [sql, params] = sqlTemplate(strings, ...values);
       if (
         SQL_SELECT_RE.test(sql) /* select */ ||

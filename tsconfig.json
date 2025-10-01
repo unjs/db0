@@ -1,14 +1,24 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "composite": true,
+    "allowImportingTsExtensions": true,
+    "isolatedDeclarations": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "noEmit": true,
     "paths": {
       "db0/connectors/*": ["./src/connectors/*"]
     }
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

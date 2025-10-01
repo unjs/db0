@@ -2,7 +2,7 @@ import pg from "pg";
 
 import type { Connector, Primitive } from "db0";
 
-import { BoundableStatement } from "./_internal/statement";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export type ConnectorOptions = { url: string } | pg.ClientConfig;
 
@@ -57,12 +57,12 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
+  async all(...params: Primitive[]) {
     const res = await this.#query(this.#sql, params);
     return res.rows;
   }
 
-  async run(...params) {
+  async run(...params: Primitive[]) {
     const res = await this.#query(this.#sql, params);
     return {
       success: true,
@@ -70,7 +70,7 @@ class StatementWrapper extends BoundableStatement<void> {
     };
   }
 
-  async get(...params) {
+  async get(...params: Primitive[]) {
     const res = await this.#query(this.#sql, params);
     return res.rows[0];
   }
