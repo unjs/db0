@@ -73,11 +73,14 @@ export function createDatabase<TConnector extends Connector = Connector>(
     },
 
     dispose: () => {
+      if (_disposed) {
+        return Promise.resolve();
+      }
       _disposed = true;
       try {
         return Promise.resolve(connector.dispose?.());
-      } catch (error_) {
-        return Promise.reject(error_);
+      } catch (error) {
+        return Promise.reject(error);
       }
     },
 
