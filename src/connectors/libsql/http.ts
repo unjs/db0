@@ -3,10 +3,11 @@ import type { Connector } from "db0";
 import { createClient } from "@libsql/client/http";
 import libSqlCore from "./core";
 
-
 export type ConnectorOptions = Config;
 
-export default function libSqlConnector(opts: ConnectorOptions): Connector<Client> {
+export default function libSqlConnector(
+  opts: ConnectorOptions,
+): Connector<Client> {
   let _client;
   const getClient = () => {
     if (!_client) {

@@ -6,9 +6,14 @@ import { BoundableStatement } from "./_internal/statement";
 
 export type ConnectorOptions = { url: string } | pg.ClientConfig;
 
-type InternalQuery = (sql: string, params?: Primitive[]) => Promise<pg.QueryResult>;
+type InternalQuery = (
+  sql: string,
+  params?: Primitive[],
+) => Promise<pg.QueryResult>;
 
-export default function postgresqlConnector(opts: ConnectorOptions): Connector<pg.Client> {
+export default function postgresqlConnector(
+  opts: ConnectorOptions,
+): Connector<pg.Client> {
   let _client: undefined | pg.Client | Promise<pg.Client>;
   function getClient() {
     if (_client) {
@@ -25,14 +30,14 @@ export default function postgresqlConnector(opts: ConnectorOptions): Connector<p
   const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
     return client.query(normalizeParams(sql), params);
-  }
+  };
 
   return {
     name: "postgresql",
     dialect: "postgresql",
     getInstance: () => getClient(),
-    exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    exec: (sql) => query(sql),
+    prepare: (sql) => new StatementWrapper(sql, query),
   };
 }
 
@@ -58,7 +63,7 @@ class StatementWrapper extends BoundableStatement<void> {
   }
 
   async run(...params) {
-    const res = await this.#query(this.#sql, params)
+    const res = await this.#query(this.#sql, params);
     return {
       success: true,
       ...res,
@@ -66,7 +71,7 @@ class StatementWrapper extends BoundableStatement<void> {
   }
 
   async get(...params) {
-    const res = await this.#query(this.#sql, params)
+    const res = await this.#query(this.#sql, params);
     return res.rows[0];
   }
 }
