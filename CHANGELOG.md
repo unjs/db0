@@ -1,6 +1,39 @@
 # Changelog
 
 
+## v0.3.3
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.2...v0.3.3)
+
+### 🚀 Enhancements
+
+- Support `dispose` and `using createDatabase()` ([#178](https://github.com/unjs/db0/pull/178))
+- Cloudflare hyperdrive ([#164](https://github.com/unjs/db0/pull/164))
+
+### 💅 Refactors
+
+- Strict types ([#179](https://github.com/unjs/db0/pull/179))
+
+### 📖 Documentation
+
+- Improve drizzle integration example with drizzle-kit usage ([#170](https://github.com/unjs/db0/pull/170))
+
+### 🏡 Chore
+
+- Update undocs ([d912de1](https://github.com/unjs/db0/commit/d912de1))
+- Update docs ([d4a3cd5](https://github.com/unjs/db0/commit/d4a3cd5))
+- Update undocs ([5d398ef](https://github.com/unjs/db0/commit/5d398ef))
+- Update deps ([29ca18b](https://github.com/unjs/db0/commit/29ca18b))
+- Update deps ([83f1425](https://github.com/unjs/db0/commit/83f1425))
+- Lint ([9784e4d](https://github.com/unjs/db0/commit/9784e4d))
+- Gitignore tsconfig.tsbuildinfo ([c68b294](https://github.com/unjs/db0/commit/c68b294))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Fayaz Ahmed <fayazara@gmail.com>
+- Rihan Arfan ([@RihanArfan](https://github.com/RihanArfan))
+
 ## v0.3.2
 
 [compare changes](https://github.com/unjs/db0/compare/v0.3.1...v0.3.2)
