@@ -3,6 +3,8 @@
 import type { ConnectorOptions as BetterSQLite3Options } from "db0/connectors/better-sqlite3";
 import type { ConnectorOptions as BunSQLiteOptions } from "db0/connectors/bun-sqlite";
 import type { ConnectorOptions as CloudflareD1Options } from "db0/connectors/cloudflare-d1";
+import type { ConnectorOptions as CloudflareHyperdriveMySQLOptions } from "db0/connectors/cloudflare-hyperdrive-mysql";
+import type { ConnectorOptions as CloudflareHyperdrivePostgreSQLOptions } from "db0/connectors/cloudflare-hyperdrive-postgresql";
 import type { ConnectorOptions as LibSQLCoreOptions } from "db0/connectors/libsql/core";
 import type { ConnectorOptions as LibSQLHttpOptions } from "db0/connectors/libsql/http";
 import type { ConnectorOptions as LibSQLNodeOptions } from "db0/connectors/libsql/node";
@@ -14,7 +16,7 @@ import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/plan
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 import type { ConnectorOptions as SQLite3Options } from "db0/connectors/sqlite3";
 
-export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
+export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
 
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
@@ -22,6 +24,8 @@ export type ConnectorOptions = {
   /** alias of bun-sqlite */
   "bun": BunSQLiteOptions;
   "cloudflare-d1": CloudflareD1Options;
+  "cloudflare-hyperdrive-mysql": CloudflareHyperdriveMySQLOptions;
+  "cloudflare-hyperdrive-postgresql": CloudflareHyperdrivePostgreSQLOptions;
   "libsql-core": LibSQLCoreOptions;
   "libsql-http": LibSQLHttpOptions;
   "libsql-node": LibSQLNodeOptions;
@@ -44,6 +48,8 @@ export const connectors: Record<ConnectorName, string> = Object.freeze({
   /** alias of bun-sqlite */
   "bun": "db0/connectors/bun-sqlite",
   "cloudflare-d1": "db0/connectors/cloudflare-d1",
+  "cloudflare-hyperdrive-mysql": "db0/connectors/cloudflare-hyperdrive-mysql",
+  "cloudflare-hyperdrive-postgresql": "db0/connectors/cloudflare-hyperdrive-postgresql",
   "libsql-core": "db0/connectors/libsql/core",
   "libsql-http": "db0/connectors/libsql/http",
   "libsql-node": "db0/connectors/libsql/node",

@@ -1,0 +1,4 @@
+[[hyperdrive]]
+binding = "POSTGRESQL"
+id = "postgresql"
+# localConnectionString = "postgres://test:test@localhost:5432/db0"

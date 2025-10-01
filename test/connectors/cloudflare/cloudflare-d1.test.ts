@@ -1,7 +1,7 @@
 import { getPlatformProxy, type PlatformProxy } from "wrangler";
 import { afterAll, beforeAll, describe } from "vitest";
-import cloudflareD1 from "../../src/connectors/cloudflare-d1";
-import { testConnector } from "./_tests";
+import cloudflareD1 from "../../../src/connectors/cloudflare-d1";
+import { testConnector } from "../_tests";
 import { fileURLToPath } from "node:url";
 
 describe("connectors: cloudflare-d1", () => {
@@ -9,14 +9,14 @@ describe("connectors: cloudflare-d1", () => {
 
   beforeAll(async () => {
     platformProxy = await getPlatformProxy({
-      configPath: fileURLToPath(new URL("wrangler.toml", import.meta.url)),
+      configPath: fileURLToPath(new URL("wrangler-d1.toml", import.meta.url)),
     });
-    globalThis.__env__ = platformProxy.env;
+    (globalThis as any).__env__ = platformProxy.env;
   });
 
   afterAll(async () => {
     await platformProxy?.dispose();
-    globalThis.__env__ = undefined;
+    (globalThis as any).__env__ = undefined;
   });
 
   testConnector({
