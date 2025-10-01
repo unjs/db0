@@ -14,3 +14,5 @@ __*
 
 /connectors
 /integrations
+
+tsconfig.tsbuildinfo
