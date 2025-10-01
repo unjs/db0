@@ -1,14 +1,19 @@
 import { Client, type ExecutedQuery, type Config } from "@planetscale/database";
 
-import type { Connector } from "db0";
+import type { Connector, Primitive } from "db0";
 
-import { BoundableStatement } from "./_internal/statement";
+import { BoundableStatement } from "./_internal/statement.ts";
 
-export type ConnectorOptions = Config
+export type ConnectorOptions = Config;
 
-type InternalQuery = (sql: string, params?: unknown[]) => Promise<ExecutedQuery>;
+type InternalQuery = (
+  sql: string,
+  params?: unknown[],
+) => Promise<ExecutedQuery>;
 
-export default function planetscaleConnector(opts: ConnectorOptions): Connector<Client> {
+export default function planetscaleConnector(
+  opts: ConnectorOptions,
+): Connector<Client> {
   let _client: undefined | Client;
   function getClient() {
     if (_client) {
@@ -21,14 +26,18 @@ export default function planetscaleConnector(opts: ConnectorOptions): Connector<
 
   // Discussion on how @planetscale/database client works:
   // https://github.com/drizzle-team/drizzle-orm/issues/1743#issuecomment-1879479647
-  const query: InternalQuery = (sql, params) => getClient().execute(sql, params);
+  const query: InternalQuery = (sql, params) =>
+    getClient().execute(sql, params);
 
   return {
     name: "planetscale",
     dialect: "mysql",
     getInstance: () => getClient(),
-    exec: sql => query(sql),
+    exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: () => {
+      _client = undefined;
+    },
   };
 }
 
@@ -42,21 +51,21 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
-    const res = await this.#query(this.#sql, params)
+  async all(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
     return res.rows;
   }
 
-  async run(...params) {
-    const res = await this.#query(this.#sql, params)
+  async run(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
     return {
       success: true,
       ...res,
-    }
+    };
   }
 
-  async get(...params) {
-    const res = await this.#query(this.#sql, params)
-      return res.rows[0];
+  async get(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
+    return res.rows[0];
   }
 }

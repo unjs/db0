@@ -2,13 +2,18 @@ import pg from "pg";
 
 import type { Connector, Primitive } from "db0";
 
-import { BoundableStatement } from "./_internal/statement";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export type ConnectorOptions = { url: string } | pg.ClientConfig;
 
-type InternalQuery = (sql: string, params?: Primitive[]) => Promise<pg.QueryResult>;
+type InternalQuery = (
+  sql: string,
+  params?: Primitive[],
+) => Promise<pg.QueryResult>;
 
-export default function postgresqlConnector(opts: ConnectorOptions): Connector<pg.Client> {
+export default function postgresqlConnector(
+  opts: ConnectorOptions,
+): Connector<pg.Client> {
   let _client: undefined | pg.Client | Promise<pg.Client>;
   function getClient() {
     if (_client) {
@@ -25,14 +30,18 @@ export default function postgresqlConnector(opts: ConnectorOptions): Connector<p
   const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
     return client.query(normalizeParams(sql), params);
-  }
+  };
 
   return {
     name: "postgresql",
     dialect: "postgresql",
     getInstance: () => getClient(),
-    exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    exec: (sql) => query(sql),
+    prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: async () => {
+      await (await _client)?.end?.();
+      _client = undefined;
+    },
   };
 }
 
@@ -52,21 +61,21 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
+  async all(...params: Primitive[]) {
     const res = await this.#query(this.#sql, params);
     return res.rows;
   }
 
-  async run(...params) {
-    const res = await this.#query(this.#sql, params)
+  async run(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
     return {
       success: true,
       ...res,
     };
   }
 
-  async get(...params) {
-    const res = await this.#query(this.#sql, params)
+  async get(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
     return res.rows[0];
   }
 }

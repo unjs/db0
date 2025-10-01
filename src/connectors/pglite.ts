@@ -1,37 +1,50 @@
-import type { PGliteOptions, PGliteInterfaceExtensions, Results as PGLiteQueryResults } from "@electric-sql/pglite";
+import type {
+  PGliteOptions,
+  PGliteInterfaceExtensions,
+  Results as PGLiteQueryResults,
+} from "@electric-sql/pglite";
 import { PGlite } from "@electric-sql/pglite";
-import type { Connector } from "db0";
-import { BoundableStatement } from "./_internal/statement";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "./_internal/statement.ts";
 
-export type ConnectorOptions = PGliteOptions
+export type ConnectorOptions = PGliteOptions;
 
-type InternalQuery = (sql: string, params?: unknown[]) => Promise<PGLiteQueryResults>
+type InternalQuery = (
+  sql: string,
+  params?: Primitive[],
+) => Promise<PGLiteQueryResults<unknown>>;
 
-export default function pgliteConnector<TOptions extends ConnectorOptions>(opts?: TOptions) {
-  type PGLiteInstance = PGlite & PGliteInterfaceExtensions<TOptions['extensions']>
+export default function pgliteConnector<TOptions extends ConnectorOptions>(
+  opts?: TOptions,
+): Connector<PGlite & PGliteInterfaceExtensions<TOptions["extensions"]>> {
+  type PGLiteInstance = PGlite &
+    PGliteInterfaceExtensions<TOptions["extensions"]>;
 
   let _client: undefined | PGLiteInstance | Promise<PGLiteInstance>;
 
   function getClient() {
-    return _client ||= PGlite.create(opts).then((res) => _client = res)
+    return (_client ||= PGlite.create(opts).then((res) => (_client = res)));
   }
 
-  const query: InternalQuery = async (sql, params) =>{
+  const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
     const normalizedSql = normalizeParams(sql);
     const result = await client.query(normalizedSql, params);
     return result;
-  }
+  };
 
   return <Connector<PGLiteInstance>>{
     name: "pglite",
     dialect: "postgresql",
     getInstance: () => getClient(),
-    exec: sql => query(sql),
-    prepare: sql => new StatementWrapper(sql, query)
+    exec: (sql) => query(sql),
+    prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: async () => {
+      await (await _client)?.close?.();
+      _client = undefined;
+    },
   };
 }
-
 
 // https://www.postgresql.org/docs/9.3/sql-prepare.html
 function normalizeParams(sql: string) {
@@ -49,30 +62,21 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
-    const result = await this.#query(
-      this.#sql,
-      params
-    );
+  async all(...params: Primitive[]) {
+    const result = await this.#query(this.#sql, params);
     return result.rows;
   }
 
-  async run(...params) {
-    const result = await this.#query(
-      this.#sql,
-      params
-    );
+  async run(...params: Primitive[]) {
+    const result = await this.#query(this.#sql, params);
     return {
       success: true,
       ...result,
     };
   }
 
-  async get(...params) {
-    const result = await this.#query(
-      this.#sql,
-      params
-    );
+  async get(...params: Primitive[]) {
+    const result = await this.#query(this.#sql, params);
     return result.rows[0];
   }
 }
