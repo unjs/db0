@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.3.4
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.3...v0.3.4)
+
+### 📦 Build
+
+- Migrate to obuild ([8586320](https://github.com/unjs/db0/commit/8586320))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.3.3
 
 [compare changes](https://github.com/unjs/db0/compare/v0.3.2...v0.3.3)
