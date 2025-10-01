@@ -37,7 +37,7 @@ export default function mysqlConnector(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      _connection?.end?.();
+      await _connection?.end?.();
       _connection = undefined;
     },
   };

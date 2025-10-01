@@ -1,4 +1,4 @@
-import  { getPlatformProxy, type PlatformProxy } from "wrangler";
+import { getPlatformProxy, type PlatformProxy } from "wrangler";
 import { afterAll, beforeAll, describe } from "vitest";
 import cloudflareD1 from "../../src/connectors/cloudflare-d1";
 import { testConnector } from "./_tests";
@@ -10,19 +10,19 @@ describe("connectors: cloudflare-d1", () => {
   beforeAll(async () => {
     platformProxy = await getPlatformProxy({
       configPath: fileURLToPath(new URL("wrangler.toml", import.meta.url)),
-    })
-    globalThis.__env__ = platformProxy.env
-  })
+    });
+    globalThis.__env__ = platformProxy.env;
+  });
 
   afterAll(async () => {
-    await platformProxy?.dispose()
-    globalThis.__env__ = undefined
-  })
+    await platformProxy?.dispose();
+    globalThis.__env__ = undefined;
+  });
 
   testConnector({
     dialect: "sqlite",
     connector: cloudflareD1({
-      bindingName: 'test',
+      bindingName: "test",
     }),
   });
 });

@@ -1,6 +1,7 @@
 /connectors
 /integrations
-src/_connectors.ts
-dist
-node_modules
-.output
+/src/_connectors.ts
+/dist
+/node_modules
+/.output
+pnpm-lock.yaml
