@@ -105,7 +105,7 @@ export type ConnectorOptions = {
     .join("\n  ")}
 };
 
-export const connectors = Object.freeze({
+export const connectors: Record<ConnectorName, string> = Object.freeze({
   ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
 } as const);
 `;

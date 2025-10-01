@@ -3,7 +3,7 @@ import {
   SQLiteAsyncDialect,
 } from "drizzle-orm/sqlite-core";
 import type { Database } from "db0";
-import { DB0Session } from "./_session";
+import { DB0Session } from "./_session.ts";
 
 export type DrizzleDatabase<
   TSchema extends Record<string, unknown> = Record<string, never>,
@@ -22,6 +22,8 @@ export function drizzle<
   return new BaseSQLiteDatabase(
     "async",
     dialect,
+    // @ts-expect-error TODO
+
     session,
     schema,
   ) as DrizzleDatabase<TSchema>;

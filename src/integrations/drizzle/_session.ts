@@ -1,9 +1,9 @@
 import {
-  entityKind,
-  Logger,
-  RelationalSchemaConfig,
+  type Logger,
+  type RelationalSchemaConfig,
   type Query,
   type TablesRelationalConfig,
+  entityKind,
   NoopLogger,
 } from "drizzle-orm";
 
@@ -32,7 +32,7 @@ export class DB0Session<
   TFullSchema extends Record<string, unknown>,
   TSchema extends TablesRelationalConfig,
 > extends SQLiteSession<"async", unknown, TFullSchema, TSchema> {
-  dialect: SQLiteAsyncDialect;
+  dialect!: SQLiteAsyncDialect;
 
   private logger: Logger;
 
@@ -46,6 +46,7 @@ export class DB0Session<
     this.logger = options.logger ?? new NoopLogger();
   }
 
+  // @ts-expect-error TODO
   prepareQuery(
     query: Query,
     fields: SelectedFieldsOrdered | undefined,
@@ -94,8 +95,6 @@ export class DB0PreparedQuery<
   values: T["values"];
   execute: T["execute"];
 }> {
-  static readonly [entityKind]: string = "DB0PreparedQuery";
-
   constructor(
     private stmt: Statement,
     query: Query,
@@ -107,19 +106,25 @@ export class DB0PreparedQuery<
     super("async", executeMethod, query);
   }
 
-  run() {
+  run(): Promise<{ success: boolean }> {
     return this.stmt.run(...(this.query.params as any[]));
   }
 
-  all() {
+  all(): Promise<unknown[]> {
     return this.stmt.all(...(this.query.params as any[]));
   }
 
-  get() {
+  get(): Promise<unknown> {
     return this.stmt.get(...(this.query.params as any[]));
   }
 
-  values() {
+  values(): Promise<unknown[]> {
     return Promise.reject(new Error("values is not implemented!"));
   }
 }
+
+// Object.defineProperty(DB0PreparedQuery, entityKind, {
+//   value: "DB0PreparedQuery",
+//   enumerable: true,
+//   configurable: true,
+// });

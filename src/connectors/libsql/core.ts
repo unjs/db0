@@ -1,6 +1,6 @@
 import type { Client, InStatement } from "@libsql/client";
-import type { Connector } from "db0";
-import { BoundableStatement } from "../_internal/statement";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "../_internal/statement.ts";
 
 export type ConnectorOptions = {
   getClient: () => Client;
@@ -33,20 +33,29 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
-    const res = await this.#query({ sql: this.#sql, args: params });
+  async all(...params: Primitive[]) {
+    const res = await this.#query({
+      sql: this.#sql,
+      args: params as Exclude<Primitive, undefined>[],
+    });
     return res.rows;
   }
 
-  async run(...params) {
-    const res = await this.#query({ sql: this.#sql, args: params });
+  async run(...params: Primitive[]) {
+    const res = await this.#query({
+      sql: this.#sql,
+      args: params as Exclude<Primitive, undefined>[],
+    });
     return {
       ...res,
     };
   }
 
-  async get(...params) {
-    const res = await this.#query({ sql: this.#sql, args: params });
+  async get(...params: Primitive[]) {
+    const res = await this.#query({
+      sql: this.#sql,
+      args: params as Exclude<Primitive, undefined>[],
+    });
     return res.rows[0];
   }
 }

@@ -38,7 +38,7 @@ export type ConnectorOptions = {
   "sqlite3": SQLite3Options;
 };
 
-export const connectors = Object.freeze({
+export const connectors: Record<ConnectorName, string> = Object.freeze({
   "better-sqlite3": "db0/connectors/better-sqlite3",
   "bun-sqlite": "db0/connectors/bun-sqlite",
   /** alias of bun-sqlite */

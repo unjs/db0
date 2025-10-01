@@ -1,7 +1,7 @@
 import {
-  AnyColumn,
-  DriverValueDecoder,
-  SelectedFieldsOrdered,
+  type AnyColumn,
+  type DriverValueDecoder,
+  type SelectedFieldsOrdered,
   getTableName,
   is,
   Column,
