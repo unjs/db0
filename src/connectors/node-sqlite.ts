@@ -47,6 +47,10 @@ export default function nodeSqlite3Connector(
       return { success: true };
     },
     prepare: (sql) => new StatementWrapper(() => getDB().prepare(sql)),
+    dispose: () => {
+      _db?.close?.();
+      _db = undefined;
+    },
   };
 }
 

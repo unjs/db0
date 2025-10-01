@@ -39,6 +39,10 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: async () => {
+      await (await _client)?.close?.();
+      _client = undefined;
+    },
   };
 }
 

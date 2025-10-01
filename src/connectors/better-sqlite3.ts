@@ -38,6 +38,10 @@ export default function sqliteConnector(
     getInstance: () => getDB(),
     exec: (sql) => getDB().exec(sql),
     prepare: (sql) => new StatementWrapper(() => getDB().prepare(sql)),
+    dispose: () => {
+      _db?.close?.();
+      _db = undefined as any;
+    },
   };
 }
 

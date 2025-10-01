@@ -20,6 +20,9 @@ export default function libSqlCoreConnector(
     getInstance: async () => opts.getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: () => {
+      opts.getClient()?.close?.();
+    },
   };
 }
 

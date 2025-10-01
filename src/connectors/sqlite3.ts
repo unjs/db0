@@ -15,6 +15,8 @@ export default function nodeSqlite3Connector(
   opts: ConnectorOptions,
 ): Connector<sqlite3.Database> {
   let _db: sqlite3.Database;
+  const _activeStatements = new Set<StatementWrapper>();
+
   const getDB = () => {
     if (_db) {
       return _db;
@@ -47,7 +49,25 @@ export default function nodeSqlite3Connector(
     dialect: "sqlite",
     getInstance: () => getDB(),
     exec: (sql: string) => query(sql),
-    prepare: (sql) => new StatementWrapper(sql, getDB()),
+    prepare: (sql) => {
+      const stmt = new StatementWrapper(sql, getDB());
+      _activeStatements.add(stmt);
+      return stmt;
+    },
+    dispose: async () => {
+      await Promise.all(
+        [..._activeStatements].map((s) =>
+          s.finalize().catch((error) => {
+            console.warn("[db0] [sqlite3] failed to finalize statement", error);
+          }),
+        ),
+      );
+      _activeStatements.clear();
+      await new Promise<void>((resolve, reject) =>
+        _db?.close?.((error) => (error ? reject(error) : resolve())),
+      );
+      _db = undefined as any;
+    },
   };
 }
 
@@ -89,5 +109,15 @@ class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
       );
     });
     return row;
+  }
+
+  finalize() {
+    try {
+      // TODO: Can we await on finalize cb?
+      this._statement.finalize();
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
 }

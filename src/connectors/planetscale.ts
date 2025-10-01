@@ -35,6 +35,9 @@ export default function planetscaleConnector(
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: () => {
+      _client = undefined;
+    },
   };
 }
 

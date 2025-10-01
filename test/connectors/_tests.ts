@@ -76,4 +76,20 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
       db.prepare("SELECT * FROM non_existing_table").all(),
     ).rejects.toThrowError("non_existing_table");
   });
+
+  it("dispose", async () => {
+    await db.dispose();
+    expect(db.disposed).toBe(true);
+
+    let err;
+    try {
+      await db.getInstance();
+    } catch (error) {
+      err = error;
+    }
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).message).toBe(
+      "This database instance has been disposed and cannot be used.",
+    );
+  });
 }
