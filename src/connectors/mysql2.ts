@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
-import type { Connector } from "db0";
-import { BoundableStatement } from "./_internal/statement";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export type ConnectorOptions = mysql.ConnectionOptions;
 
@@ -53,12 +53,12 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
+  async all(...params: Primitive[]) {
     const res = (await this.#query(this.#sql, params)) as mysql.RowDataPacket[];
     return res;
   }
 
-  async run(...params) {
+  async run(...params: Primitive[]) {
     const res = (await this.#query(this.#sql, params)) as mysql.RowDataPacket[];
     return {
       success: true,
@@ -66,7 +66,7 @@ class StatementWrapper extends BoundableStatement<void> {
     };
   }
 
-  async get(...params) {
+  async get(...params: Primitive[]) {
     const res = (await this.#query(this.#sql, params)) as mysql.RowDataPacket[];
     return res[0];
   }

@@ -1,6 +1,6 @@
-export { createDatabase } from "./database";
+export { createDatabase } from "./database.ts";
 
-export { connectors } from "./_connectors";
+export { connectors } from "./_connectors.ts";
 
 export type {
   Connector,
@@ -10,6 +10,6 @@ export type {
   SQLDialect,
   Statement,
   PreparedStatement,
-} from "./types";
+} from "./types.ts";
 
-export type { ConnectorName, ConnectorOptions } from "./_connectors";
+export type { ConnectorName, ConnectorOptions } from "./_connectors.ts";

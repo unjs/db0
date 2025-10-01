@@ -5,6 +5,7 @@
   "repository": "unjs/db0",
   "license": "MIT",
   "sideEffects": false,
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
@@ -36,8 +37,9 @@
     "lint:fix": "eslint . --fix && prettier -w src test",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
-    "test": "pnpm lint && vitest run --coverage && pnpm test:bun",
-    "test:bun": "bun test ./test/connectors/bun-test.ts"
+    "test": "pnpm lint && pnpm test:types && vitest run --coverage && pnpm test:bun",
+    "test:bun": "bun test ./test/connectors/bun-test.ts",
+    "test:types": "tsc --noEmit"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251001.0",
@@ -51,7 +53,7 @@
     "automd": "^0.4.2",
     "better-sqlite3": "^12.4.1",
     "changelogen": "^0.6.2",
-    "db0": "^0.3.2",
+    "db0": "link:.",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.5",
     "eslint": "^9.36.0",

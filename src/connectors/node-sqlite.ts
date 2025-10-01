@@ -1,8 +1,8 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
-import type { Connector } from "db0";
+import type { Connector, Primitive } from "db0";
 import type { DatabaseSync, StatementSync } from "node:sqlite";
-import { BoundableStatement } from "./_internal/statement";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export interface ConnectorOptions {
   cwd?: string;
@@ -55,16 +55,22 @@ export default function nodeSqlite3Connector(
 }
 
 class StatementWrapper extends BoundableStatement<() => StatementSync> {
-  async all(...params) {
-    const raws = this._statement().all(...params);
+  async all(...params: Primitive[]) {
+    const raws = this._statement().all(
+      ...(params as Exclude<Primitive, undefined | boolean>[]),
+    );
     return raws;
   }
-  async run(...params) {
-    const res = this._statement().run(...params);
+  async run(...params: Primitive[]) {
+    const res = this._statement().run(
+      ...(params as Exclude<Primitive, undefined | boolean>[]),
+    );
     return { success: true, ...res };
   }
-  async get(...params) {
-    const raw = this._statement().get(...params);
+  async get(...params: Primitive[]) {
+    const raw = this._statement().get(
+      ...(params as Exclude<Primitive, undefined | boolean>[]),
+    );
     return raw;
   }
 }

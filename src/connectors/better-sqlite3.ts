@@ -1,9 +1,9 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import Database from "better-sqlite3";
-import type { Connector } from "db0";
+import type { Connector, Primitive } from "db0";
 import type { Statement as RawStatement } from "better-sqlite3";
-import { BoundableStatement } from "./_internal/statement";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export interface ConnectorOptions {
   cwd?: string;
@@ -46,16 +46,16 @@ export default function sqliteConnector(
 }
 
 class StatementWrapper extends BoundableStatement<() => RawStatement> {
-  async all(...params) {
+  async all(...params: Primitive[]) {
     return this._statement().all(...params);
   }
 
-  async run(...params) {
+  async run(...params: Primitive[]) {
     const res = this._statement().run(...params);
     return { success: res.changes > 0, ...res };
   }
 
-  async get(...params) {
+  async get(...params: Primitive[]) {
     return this._statement().get(...params);
   }
 }

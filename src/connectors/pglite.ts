@@ -4,19 +4,19 @@ import type {
   Results as PGLiteQueryResults,
 } from "@electric-sql/pglite";
 import { PGlite } from "@electric-sql/pglite";
-import type { Connector } from "db0";
-import { BoundableStatement } from "./_internal/statement";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export type ConnectorOptions = PGliteOptions;
 
 type InternalQuery = (
   sql: string,
-  params?: unknown[],
-) => Promise<PGLiteQueryResults>;
+  params?: Primitive[],
+) => Promise<PGLiteQueryResults<unknown>>;
 
 export default function pgliteConnector<TOptions extends ConnectorOptions>(
   opts?: TOptions,
-) {
+): Connector<PGlite & PGliteInterfaceExtensions<TOptions["extensions"]>> {
   type PGLiteInstance = PGlite &
     PGliteInterfaceExtensions<TOptions["extensions"]>;
 
@@ -62,12 +62,12 @@ class StatementWrapper extends BoundableStatement<void> {
     this.#query = query;
   }
 
-  async all(...params) {
+  async all(...params: Primitive[]) {
     const result = await this.#query(this.#sql, params);
     return result.rows;
   }
 
-  async run(...params) {
+  async run(...params: Primitive[]) {
     const result = await this.#query(this.#sql, params);
     return {
       success: true,
@@ -75,7 +75,7 @@ class StatementWrapper extends BoundableStatement<void> {
     };
   }
 
-  async get(...params) {
+  async get(...params: Primitive[]) {
     const result = await this.#query(this.#sql, params);
     return result.rows[0];
   }

@@ -2,8 +2,8 @@ import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import sqlite3 from "sqlite3";
 
-import type { Connector } from "db0";
-import { BoundableStatement } from "./_internal/statement";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export interface ConnectorOptions {
   cwd?: string;
@@ -36,7 +36,7 @@ export default function nodeSqlite3Connector(
 
   const query = (sql: string) =>
     new Promise((resolve, reject) => {
-      getDB().exec(sql, (err: Error) => {
+      getDB().exec(sql, (err: Error | null) => {
         if (err) {
           return reject(err);
         }
@@ -83,26 +83,28 @@ class StatementWrapper extends BoundableStatement<sqlite3.Statement> {
       }),
     );
   }
-  async all(...params) {
+  async all(...params: Primitive[]) {
     const rows = await new Promise<unknown[]>((resolve, reject) => {
       this.#onError = reject;
-      this._statement.all(...params, (err, rows) =>
+      this._statement.all(...params, (err: Error | null, rows: unknown[]) =>
         err ? reject(err) : resolve(rows),
       );
     });
     return rows;
   }
-  async run(...params) {
+  async run(...params: Primitive[]) {
     await new Promise<void>((resolve, reject) => {
       this.#onError = reject;
-      this._statement.run(...params, (err) => (err ? reject(err) : resolve()));
+      this._statement.run(...params, (err: Error | null) =>
+        err ? reject(err) : resolve(),
+      );
     });
     return { success: true };
   }
-  async get(...params) {
+  async get(...params: Primitive[]) {
     const row = await new Promise((resolve, reject) => {
       this.#onError = reject;
-      this._statement.get(...params, (err, row) =>
+      this._statement.get(...params, (err: Error | null, row: unknown) =>
         err ? reject(err) : resolve(row),
       );
     });
