@@ -10,18 +10,20 @@ export const users = sqliteTable("users", {
   name: text("full_name"),
 });
 
-async function main() {
-  const db = createDatabase(sqlite({}));
-  const drizzleDb = drizzle(db);
+const schema = { users };
 
-  await db.sql`create table if not exists users (
+async function main() {
+  const db0 = createDatabase(sqlite({}));
+  const db = drizzle(db0, { schema });
+
+  await db0.sql`create table if not exists users (
     id integer primary key autoincrement,
     full_name text
   )`;
 
-  await db.sql`insert into users (full_name) values ('John Doe')`;
+  await db0.sql`insert into users (full_name) values ('John Doe')`;
 
-  const res = await drizzleDb.select().from(users).all();
+  const res = await db.select().from(users).all();
   console.log({ res });
 }
 
