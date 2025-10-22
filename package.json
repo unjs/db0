@@ -61,6 +61,7 @@
     "jiti": "^2.6.1",
     "mlly": "^1.8.0",
     "mysql2": "^3.15.2",
+    "mariadb": "^3.4.5",
     "obuild": "^0.2.1",
     "pg": "^8.16.3",
     "prettier": "^3.6.2",
@@ -88,6 +89,9 @@
       "optional": true
     },
     "mysql2": {
+      "optional": true
+    },
+    "mariadb": {
       "optional": true
     },
     "@electric-sql/pglite": {
