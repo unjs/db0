@@ -60,6 +60,7 @@
     "eslint": "^10.0.3",
     "eslint-config-unjs": "^0.6.2",
     "jiti": "^2.6.1",
+    "mariadb": "^3.4.5",
     "mlly": "^1.8.1",
     "mysql2": "^3.20.0",
     "obuild": "^0.4.32",
@@ -90,6 +91,9 @@
       "optional": true
     },
     "mysql2": {
+      "optional": true
+    },
+    "mariadb": {
       "optional": true
     },
     "@electric-sql/pglite": {
