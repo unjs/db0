@@ -16,7 +16,7 @@ import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/plan
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 import type { ConnectorOptions as SQLite3Options } from "db0/connectors/sqlite3";
 
-export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
+export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mariadb" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
 
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
@@ -56,6 +56,7 @@ export const connectors: Record<ConnectorName, string> = Object.freeze({
   /** alias of libsql-node */
   "libsql": "db0/connectors/libsql/node",
   "libsql-web": "db0/connectors/libsql/web",
+  "mariadb": "db0/connectors/mariadb",
   "mysql2": "db0/connectors/mysql2",
   "node-sqlite": "db0/connectors/node-sqlite",
   /** alias of node-sqlite */
