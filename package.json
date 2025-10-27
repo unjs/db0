@@ -45,6 +45,7 @@
     "@cloudflare/workers-types": "^4.20251014.0",
     "@electric-sql/pglite": "^0.3.11",
     "@libsql/client": "^0.15.15",
+    "@neondatabase/serverless": "^1.0.2",
     "@planetscale/database": "^1.19.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "^1.3.1",
