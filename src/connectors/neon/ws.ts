@@ -1,15 +1,15 @@
 import {
-  Client as NeonClient,
+  neonConfig,
+  Pool as NeonPool,
   type QueryResult,
   type WebSocketConstructor,
 } from "@neondatabase/serverless";
 import type { Connector, Primitive } from "db0";
 
-import { BoundableStatement } from "./_internal/statement.ts";
+import { BoundableStatement } from "../_internal/statement.ts";
 
 export type ConnectorOptions = {
   connectionString: string;
-  pooler?: boolean;
   webSocketConstructor?: WebSocketConstructor;
 };
 
@@ -18,24 +18,28 @@ type InternalQuery = (
   params?: Primitive[],
 ) => Promise<QueryResult>;
 
-export default function postgresqlConnector(
-  connectionString?: ConnectorOptions,
-  webSocketConstructor?: WebSocketConstructor,
-): Connector<NeonClient> {
-  let _client: undefined | NeonClient | Promise<NeonClient>;
+/**
+ * @description Creates a new Neon pool connector.
+ * @param opts
+ * @returns
+ */
+export default function neonPoolConnector(
+  opts: ConnectorOptions,
+): Connector<NeonPool> {
+  let _client: undefined | NeonPool | Promise<NeonPool>;
   function getClient() {
     if (_client) {
       return _client;
     }
 
-    const client = new NeonClient(connectionString);
+    const client = new NeonPool({ connectionString: opts.connectionString });
     _client = client.connect().then(() => {
       /**
        * @description Allow to override the WebSocket constructor or provide one when platform does not support it.
        * @see https://github.com/neondatabase/serverless?tab=readme-ov-file#pool-and-client
        */
-      if (webSocketConstructor) {
-        client.neonConfig.webSocketConstructor = webSocketConstructor;
+      if (opts.webSocketConstructor) {
+        neonConfig.webSocketConstructor = opts.webSocketConstructor;
       }
 
       _client = client;
@@ -57,10 +61,6 @@ export default function postgresqlConnector(
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
-    dispose: async () => {
-      await (await _client)?.end?.();
-      _client = undefined;
-    },
   };
 }
 
