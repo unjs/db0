@@ -13,3 +13,9 @@ export type {
 } from "./types.ts";
 
 export type { ConnectorName, ConnectorOptions } from "./_connectors.ts";
+
+export {
+  withTracing,
+  type TraceContext,
+  type TracedOperation,
+} from "./tracing.ts";
