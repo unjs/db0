@@ -154,6 +154,7 @@ describe("tracing", () => {
 
       expect(listener.events.start?.data.query).toContain("INSERT INTO users");
       expect(listener.events.start?.data.method).toBe("exec");
+      expect(listener.events.start?.data.dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -174,6 +175,7 @@ describe("tracing", () => {
         "INSERT INTO non_existing_table",
       );
       expect(listener.events.error?.data.method).toBe("exec");
+      expect(listener.events.error?.data.dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -203,6 +205,7 @@ describe("tracing", () => {
       expect(selectCalls.length).toBeGreaterThan(0);
       expect(selectCalls[0][0].method).toBe("sql");
       expect(selectCalls[0][0].query).toContain("SELECT * FROM users");
+      expect(selectCalls[0][0].dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -228,6 +231,7 @@ describe("tracing", () => {
       expect(insertCalls[0][0].method).toBe("sql");
       expect(insertCalls[0][0].query).toContain("INSERT INTO users");
       expect(insertCalls[0][0].query).toContain("RETURNING");
+      expect(insertCalls[0][0].dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -247,6 +251,7 @@ describe("tracing", () => {
         "SELECT * FROM non_existing_table",
       );
       expect(listener.events.error?.data.method).toBe("sql");
+      expect(listener.events.error?.data.dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -275,6 +280,7 @@ describe("tracing", () => {
       expect(prepareCalls.length).toBeGreaterThan(0);
       expect(prepareCalls[0][0].query).toContain("SELECT * FROM users");
       expect(prepareCalls[0][0].method).toBe("prepare.all");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
 
@@ -297,6 +303,7 @@ describe("tracing", () => {
         "SELECT * FROM non_existing_table",
       );
       expect(prepareCalls[0][0].method).toBe("prepare.all");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -320,6 +327,7 @@ describe("tracing", () => {
       expect(prepareCalls.length).toBeGreaterThan(0);
       expect(prepareCalls[0][0].query).toContain("INSERT INTO users");
       expect(prepareCalls[0][0].method).toBe("prepare.run");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
 
@@ -344,6 +352,7 @@ describe("tracing", () => {
         "INSERT INTO non_existing_table",
       );
       expect(prepareCalls[0][0].method).toBe("prepare.run");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -370,6 +379,7 @@ describe("tracing", () => {
       expect(prepareCalls.length).toBeGreaterThan(0);
       expect(prepareCalls[0][0].query).toContain("SELECT * FROM users");
       expect(prepareCalls[0][0].method).toBe("prepare.get");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
 
@@ -392,6 +402,7 @@ describe("tracing", () => {
         "SELECT * FROM non_existing_table",
       );
       expect(prepareCalls[0][0].method).toBe("prepare.get");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       listener.cleanup();
     });
@@ -416,6 +427,7 @@ describe("tracing", () => {
       expect(query).toContain("WHERE");
       expect(query).toContain("name");
       expect(query).toContain("email");
+      expect(selectCalls[0][0].dialect).toBe("sqlite");
 
       listener.cleanup();
     });
