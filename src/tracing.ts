@@ -1,5 +1,5 @@
 import { type TracingChannel, tracingChannel } from "node:diagnostics_channel";
-import type { Connector, Database } from "./types.ts";
+import type { Connector, Database, SQLDialect } from "./types.ts";
 import { sqlTemplate } from "./template.ts";
 
 export type TracedOperation = "query";
@@ -7,6 +7,7 @@ export type TracedOperation = "query";
 export interface TraceContext {
   query: string;
   method: "exec" | "sql" | "prepare.all" | "prepare.run" | "prepare.get";
+  dialect: SQLDialect;
 }
 
 const channels: Record<TracedOperation, TracingChannel> = {
@@ -57,12 +58,17 @@ export function withTracing<TConnector extends Connector = Connector>(
   const tracedDb: MaybeTracedDatabase<TConnector> = { ...db, __traced: true };
 
   tracedDb.exec = (query) =>
-    tracePromise("query", () => db.exec(query), { query, method: "exec" });
+    tracePromise("query", () => db.exec(query), {
+      query,
+      method: "exec",
+      dialect: db.dialect,
+    });
 
   tracedDb.sql = (strings, ...values) =>
     tracePromise("query", () => db.sql(strings, ...values), {
       query: sqlTemplate(strings, ...values)[0],
       method: "sql",
+      dialect: db.dialect,
     });
 
   /**
@@ -71,23 +77,27 @@ export function withTracing<TConnector extends Connector = Connector>(
   tracedDb.prepare = (query) => {
     const statement = db.prepare(query);
     const tracedStatement = { ...statement };
+    const partialContext = {
+      query,
+      dialect: db.dialect,
+    };
 
     tracedStatement.all = (...params) =>
       tracePromise("query", () => statement.all(...params), {
-        query,
         method: "prepare.all",
+        ...partialContext,
       });
 
     tracedStatement.run = (...params) =>
       tracePromise("query", () => statement.run(...params), {
-        query,
         method: "prepare.run",
+        ...partialContext,
       });
 
     tracedStatement.get = (...params) =>
       tracePromise("query", () => statement.get(...params), {
-        query,
         method: "prepare.get",
+        ...partialContext,
       });
 
     return tracedStatement;
