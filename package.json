@@ -59,6 +59,7 @@
     "drizzle-orm": "^0.44.7",
     "eslint": "^9.38.0",
     "eslint-config-unjs": "^0.5.0",
+    "get-db": "^0.9.2",
     "jiti": "^2.6.1",
     "mlly": "^1.8.0",
     "mysql2": "^3.15.3",
@@ -109,8 +110,5 @@
       "@parcel/watcher",
       "es5-ext"
     ]
-  },
-  "dependencies": {
-    "get-db": "^0.9.2"
   }
 }
