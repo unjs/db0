@@ -1,23 +1,59 @@
+import type { Database } from "db0";
+import { DB0Session, type DB0SessionOptions } from "./_session.ts";
+
+import { DefaultLogger } from "drizzle-orm/logger";
+
 import {
   BaseSQLiteDatabase,
   SQLiteAsyncDialect,
 } from "drizzle-orm/sqlite-core";
-import type { Database } from "db0";
-import { DB0Session } from "./_session.ts";
+
+import {
+  type DrizzleConfig as DrizzleBaseConfig,
+  type RelationalSchemaConfig,
+  type TablesRelationalConfig,
+  createTableRelationsHelpers,
+  extractTablesRelationalConfig,
+} from "drizzle-orm";
 
 export type DrizzleDatabase<
   TSchema extends Record<string, unknown> = Record<string, never>,
 > = BaseSQLiteDatabase<"async", any, TSchema>;
 
+export type DrizzleConfig<
+  TSchema extends Record<string, unknown> = Record<string, never>,
+> = DrizzleBaseConfig<TSchema>;
+
 export function drizzle<
   TSchema extends Record<string, unknown> = Record<string, never>,
->(db: Database): DrizzleDatabase<TSchema> {
-  // TODO: Support schema
-  const schema = undefined;
+>(db: Database, config?: DrizzleConfig<TSchema>): DrizzleDatabase<TSchema> {
+  const dialect = new SQLiteAsyncDialect({ casing: config?.casing });
 
-  const dialect = new SQLiteAsyncDialect();
+  let logger: DB0SessionOptions["logger"];
+  if (config?.logger === true) {
+    logger = new DefaultLogger();
+  } else if (config?.logger !== false && config?.logger !== undefined) {
+    logger = config.logger;
+  }
 
-  const session = new DB0Session(db, dialect, schema);
+  // Transform user schema to RelationalSchemaConfig
+  // Reference: https://github.com/drizzle-team/drizzle-orm/blob/main/drizzle-orm/src/d1/driver.ts
+  let schema: RelationalSchemaConfig<TablesRelationalConfig> | undefined;
+  if (config?.schema) {
+    const tablesConfig = extractTablesRelationalConfig(
+      config.schema,
+      createTableRelationsHelpers,
+    );
+    schema = {
+      fullSchema: config.schema,
+      schema: tablesConfig.tables,
+      tableNamesMap: tablesConfig.tableNamesMap,
+    };
+  }
+
+  const session = new DB0Session(db, dialect, schema, {
+    logger,
+  });
 
   return new BaseSQLiteDatabase(
     "async",
