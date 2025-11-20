@@ -4,25 +4,9 @@ icon: radix-icons:vercel-logo
 
 # Vercel
 
-> Connect DB0 to Vercel Postgres
+> Vercel Postgres has migrated to Vercel Marketplace.
 
-:read-more{to="https://vercel.com/docs/storage/vercel-postgres"}
+Existing Vercel Postgres instances were migrated to [Neon](https://neon.com).
+For best integration with db0, use the [Neon Connector](/connectors/neon).
 
-::read-more{to="https://github.com/unjs/db0/issues/32"}
-A dedicated `vercel` connector is planned to be supported. Follow up via [unjs/db0#32](https://github.com/unjs/db0/issues/32).
-::
-
-## Usage
-
-Use [`postgres`](/connectors/postgresql) connector:
-
-```js
-import { createDatabase } from "db0";
-import postgres from "db0/connectors/postgres";
-
-const db = createDatabase(
-  postgres({
-    /* options */
-  }),
-);
-```
+:read-more{to="https://neon.com/docs/guides/vercel-postgres-transition-guide"}
