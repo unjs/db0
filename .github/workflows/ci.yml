@@ -12,8 +12,6 @@ jobs:
         with: { node-version: lts/*, cache: pnpm }
       - run: pnpm install
       - run: pnpm lint
-      - run: pnpm test:types
       - run: pnpm build
-      - run: pnpm vitest --coverage
-      # - uses: codecov/codecov-action@v3
-      #   with: { token: "${{ secrets.CODECOV_TOKEN }}" }
+      - run: pnpm test:types
+      - run: pnpm vitest
