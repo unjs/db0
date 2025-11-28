@@ -6,6 +6,7 @@ import {
   entityKind,
   NoopLogger,
   type AnyColumn,
+  type SelectedFieldsOrdered
 } from "drizzle-orm";
 
 import {
@@ -16,7 +17,6 @@ import {
 
 import type {
   PreparedQueryConfig,
-  SelectedFieldsOrdered,
   SQLiteExecuteMethod,
   SQLiteTransactionConfig,
 } from "drizzle-orm/sqlite-core";
@@ -51,7 +51,7 @@ export class DB0Session<
   // @ts-expect-error TODO
   prepareQuery(
     query: Query,
-    fields: SelectedFieldsOrdered | undefined,
+    fields: SelectedFieldsOrdered<AnyColumn> | undefined,
     executeMethod: SQLiteExecuteMethod,
     customResultMapper?: (rows: unknown[][]) => unknown,
   ): DB0PreparedQuery {
@@ -98,11 +98,12 @@ export class DB0PreparedQuery<
   execute: T["execute"];
 }> {
   fields?: SelectedFieldsOrdered<AnyColumn>;
+
   constructor(
     private stmt: Statement,
     query: Query,
     private logger: Logger,
-    fields: SelectedFieldsOrdered | undefined,
+    fields: SelectedFieldsOrdered<AnyColumn> | undefined,
     executeMethod: SQLiteExecuteMethod,
     customResultMapper?: (rows: unknown[][]) => unknown,
   ) {
@@ -117,7 +118,11 @@ export class DB0PreparedQuery<
   async all(): Promise<unknown[]> {
     const rows = await this.stmt.all(...(this.query.params as any[]));
 
-    return rows.map((row) => {
+    if (!this.fields) {
+      return rows
+    }
+
+    return rows.map(row => {
       const rowArray = this.fields.map(({ field }) => row[field.name]);
       return mapResultRow(this.fields, rowArray, undefined);
     });
@@ -125,6 +130,10 @@ export class DB0PreparedQuery<
 
   async get(): Promise<unknown> {
     const row = await this.stmt.get(...(this.query.params as any[]));
+
+    if (!this.fields) {
+      return row
+    }
 
     return mapResultRow(
       this.fields,
