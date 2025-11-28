@@ -5,6 +5,7 @@ import {
   type TablesRelationalConfig,
   entityKind,
   NoopLogger,
+  type AnyColumn,
 } from "drizzle-orm";
 
 import {
@@ -21,6 +22,7 @@ import type {
 } from "drizzle-orm/sqlite-core";
 
 import type { Database, Statement } from "db0";
+import { mapResultRow } from "./_utils.ts";
 
 // Used as reference: https://github.com/drizzle-team/drizzle-orm/blob/main/drizzle-orm/src/d1/session.ts
 
@@ -95,6 +97,7 @@ export class DB0PreparedQuery<
   values: T["values"];
   execute: T["execute"];
 }> {
+  fields?: SelectedFieldsOrdered<AnyColumn>;
   constructor(
     private stmt: Statement,
     query: Query,
@@ -104,18 +107,30 @@ export class DB0PreparedQuery<
     customResultMapper?: (rows: unknown[][]) => unknown,
   ) {
     super("async", executeMethod, query);
+    this.fields = fields;
   }
 
   run(): Promise<{ success: boolean }> {
     return this.stmt.run(...(this.query.params as any[]));
   }
 
-  all(): Promise<unknown[]> {
-    return this.stmt.all(...(this.query.params as any[]));
+  async all(): Promise<unknown[]> {
+    const rows = await this.stmt.all(...(this.query.params as any[]));
+
+    return rows.map((row) => {
+      const rowArray = this.fields.map(({ field }) => row[field.name]);
+      return mapResultRow(this.fields, rowArray, undefined);
+    });
   }
 
-  get(): Promise<unknown> {
-    return this.stmt.get(...(this.query.params as any[]));
+  async get(): Promise<unknown> {
+    const row = await this.stmt.get(...(this.query.params as any[]));
+
+    return mapResultRow(
+      this.fields,
+      this.fields.map(({ field }) => row[field.name]),
+      undefined,
+    );
   }
 
   values(): Promise<unknown[]> {
