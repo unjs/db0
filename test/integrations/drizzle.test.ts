@@ -61,6 +61,7 @@ describe("integrations: drizzle: with schema parameter", () => {
     id: dSqlite.numeric("id"),
     name: dSqlite.text("name"),
     email: dSqlite.text("email"),
+    joinDate: dSqlite.integer({ mode: "timestamp" }),
   });
 
   const schema = { users };
@@ -75,7 +76,8 @@ describe("integrations: drizzle: with schema parameter", () => {
     await db.sql`create table if not exists users_schema (
       id integer primary key autoincrement,
       name text,
-      email text
+      email text,
+      joinDate integer
     )`;
   });
 
@@ -85,6 +87,7 @@ describe("integrations: drizzle: with schema parameter", () => {
       .values({
         name: "Jane Doe",
         email: "jane@example.com",
+        joinDate: new Date("2025-01-30T12:00:00.000Z"),
       })
       .returning();
 
@@ -99,6 +102,18 @@ describe("integrations: drizzle: with schema parameter", () => {
     expect(res.length).toBe(1);
     expect(res[0].name).toBe("Jane Doe");
     expect(res[0].email).toBe("jane@example.com");
+  });
+
+  it(".all() converts integers to dates", async () => {
+    const res = await drizzleDb.select().from(users).all();
+
+    expect(res[0].joinDate).toStrictEqual(new Date("2025-01-30T12:00:00.000Z"));
+  });
+
+  it(".get() converts integers to dates", async () => {
+    const res = await drizzleDb.select().from(users).get();
+
+    expect(res!.joinDate).toStrictEqual(new Date("2025-01-30T12:00:00.000Z"));
   });
 
   afterAll(async () => {
