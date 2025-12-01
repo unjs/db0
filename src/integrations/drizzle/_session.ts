@@ -6,7 +6,7 @@ import {
   entityKind,
   NoopLogger,
   type AnyColumn,
-  type SelectedFieldsOrdered
+  type SelectedFieldsOrdered,
 } from "drizzle-orm";
 
 import {
@@ -119,10 +119,10 @@ export class DB0PreparedQuery<
     const rows = await this.stmt.all(...(this.query.params as any[]));
 
     if (!this.fields) {
-      return rows
+      return rows;
     }
 
-    return rows.map(row => {
+    return rows.map((row) => {
       const rowArray = this.fields.map(({ field }) => row[field.name]);
       return mapResultRow(this.fields, rowArray, undefined);
     });
@@ -132,7 +132,7 @@ export class DB0PreparedQuery<
     const row = await this.stmt.get(...(this.query.params as any[]));
 
     if (!this.fields) {
-      return row
+      return row;
     }
 
     return mapResultRow(
