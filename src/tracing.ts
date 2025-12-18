@@ -1,4 +1,10 @@
-import type { Connector, Database, SQLDialect } from "./types.ts";
+import type {
+  Connector,
+  Database,
+  Primitive,
+  SQLDialect,
+  Statement,
+} from "./types.ts";
 import { sqlTemplate } from "./template.ts";
 
 export type TracedOperation = "query";
@@ -61,37 +67,47 @@ export function withTracing<TConnector extends Connector = Connector>(
       dialect: db.dialect,
     });
 
+  class TracedStatement implements Statement {
+    #statement: Statement;
+    #query: string;
+
+    constructor(statement: Statement, query: string) {
+      this.#statement = statement;
+      this.#query = query;
+    }
+
+    private withTrace<T>(
+      fn: () => Promise<T>,
+      method: "prepare.all" | "prepare.run" | "prepare.get",
+    ) {
+      return tracePromise(() => fn(), {
+        method,
+        query: this.#query,
+        dialect: db.dialect,
+      });
+    }
+
+    bind(...args: Primitive[]) {
+      return this.#statement.bind(...args);
+    }
+
+    all(...args: Primitive[]) {
+      return this.withTrace(() => this.#statement.all(...args), "prepare.all");
+    }
+
+    run(...args: Primitive[]) {
+      return this.withTrace(() => this.#statement.run(...args), "prepare.run");
+    }
+
+    get(...args: Primitive[]) {
+      return this.withTrace(() => this.#statement.get(...args), "prepare.get");
+    }
+  }
+
   /**
    * Prepare needs a special treatment because it returns a statement instance that needs to be patched.
    */
-  tracedDb.prepare = (query) => {
-    const statement = db.prepare(query);
-    const tracedStatement = { ...statement };
-    const partialContext = {
-      query,
-      dialect: db.dialect,
-    };
-
-    tracedStatement.all = (...params) =>
-      tracePromise(() => statement.all(...params), {
-        method: "prepare.all",
-        ...partialContext,
-      });
-
-    tracedStatement.run = (...params) =>
-      tracePromise(() => statement.run(...params), {
-        method: "prepare.run",
-        ...partialContext,
-      });
-
-    tracedStatement.get = (...params) =>
-      tracePromise(() => statement.get(...params), {
-        method: "prepare.get",
-        ...partialContext,
-      });
-
-    return tracedStatement;
-  };
+  tracedDb.prepare = (query) => new TracedStatement(db.prepare(query), query);
 
   return tracedDb;
 }
