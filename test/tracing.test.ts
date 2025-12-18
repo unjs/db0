@@ -460,4 +460,150 @@ describe("tracing", () => {
       listener.cleanup();
     });
   });
+
+  describe("nested bind support", () => {
+    it("should support chained bind calls with all()", async () => {
+      const listener = createTracingListener("query");
+
+      await db.exec(
+        `INSERT INTO users (id, name, email) VALUES (1, 'John Doe', 'john@example.com')`,
+      );
+      await db.exec(
+        `INSERT INTO users (id, name, email) VALUES (2, 'Jane Doe', 'jane@example.com')`,
+      );
+
+      const stmt = db.prepare("SELECT * FROM users WHERE id > ?");
+      const boundStmt = stmt.bind(0);
+      const rows = await boundStmt.all();
+
+      expect(rows).toHaveLength(2);
+
+      // Find the prepare.all query event
+      const prepareCalls = listener.handlers.start.mock.calls.filter(
+        (call) => call[0].method === "prepare.all",
+      );
+      expect(prepareCalls.length).toBeGreaterThan(0);
+      expect(prepareCalls[0][0].query).toContain("SELECT * FROM users");
+      expect(prepareCalls[0][0].method).toBe("prepare.all");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
+
+      expect(listener.handlers.error).not.toHaveBeenCalled();
+
+      listener.cleanup();
+    });
+
+    it("should support chained bind calls with run()", async () => {
+      const listener = createTracingListener("query");
+
+      const stmt = db.prepare(
+        "INSERT INTO users (id, name, email) VALUES (?, ?, ?)",
+      );
+      const boundStmt = stmt.bind(10, "Alice Smith", "alice@example.com");
+      const result = await boundStmt.run();
+
+      expect(result).toBeDefined();
+
+      // Find the prepare.run query event
+      const prepareCalls = listener.handlers.start.mock.calls.filter(
+        (call) => call[0].method === "prepare.run",
+      );
+      expect(prepareCalls.length).toBeGreaterThan(0);
+      expect(prepareCalls[0][0].query).toContain("INSERT INTO users");
+      expect(prepareCalls[0][0].method).toBe("prepare.run");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
+
+      expect(listener.handlers.error).not.toHaveBeenCalled();
+
+      listener.cleanup();
+    });
+
+    it("should support chained bind calls with get()", async () => {
+      const listener = createTracingListener("query");
+
+      await db.exec(
+        `INSERT INTO users (id, name, email) VALUES (1, 'John Doe', 'john@example.com')`,
+      );
+
+      const stmt = db.prepare("SELECT * FROM users WHERE id = ?");
+      const boundStmt = stmt.bind(1);
+      const row = await boundStmt.get();
+
+      expect(row).toBeDefined();
+      expect((row as any).name).toBe("John Doe");
+
+      // Find the prepare.get query event
+      const prepareCalls = listener.handlers.start.mock.calls.filter(
+        (call) => call[0].method === "prepare.get",
+      );
+      expect(prepareCalls.length).toBeGreaterThan(0);
+      expect(prepareCalls[0][0].query).toContain("SELECT * FROM users");
+      expect(prepareCalls[0][0].method).toBe("prepare.get");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
+
+      expect(listener.handlers.error).not.toHaveBeenCalled();
+
+      listener.cleanup();
+    });
+
+    it("should support multiple nested bind calls", async () => {
+      const listener = createTracingListener("query");
+
+      await db.exec(
+        `INSERT INTO users (id, name, email) VALUES (1, 'John Doe', 'john@example.com')`,
+      );
+
+      const stmt = db.prepare(
+        "SELECT * FROM users WHERE id = ? AND name = ? AND email = ?",
+      );
+      const row = await stmt.bind(1, "John Doe", "john@example.com").get();
+
+      expect(row).toBeDefined();
+      expect((row as any).name).toBe("John Doe");
+      expect((row as any).email).toBe("john@example.com");
+
+      // Find the prepare.get query event
+      const prepareCalls = listener.handlers.start.mock.calls.filter(
+        (call) => call[0].method === "prepare.get",
+      );
+      expect(prepareCalls.length).toBeGreaterThan(0);
+      expect(prepareCalls[0][0].query).toContain("SELECT * FROM users");
+      expect(prepareCalls[0][0].method).toBe("prepare.get");
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
+
+      expect(listener.handlers.error).not.toHaveBeenCalled();
+
+      listener.cleanup();
+    });
+
+    it("should preserve query context through nested binds", async () => {
+      const listener = createTracingListener("query");
+
+      const query = "SELECT * FROM users WHERE id = ?";
+      const stmt = db.prepare(query);
+
+      await db.exec(
+        `INSERT INTO users (id, name, email) VALUES (1, 'John Doe', 'john@example.com')`,
+      );
+
+      // Bind in multiple steps - each rebind replaces the parameters
+      const step1 = stmt.bind(999); // This will be replaced
+      const step2 = step1.bind(1); // This is the final binding
+      const row = await step2.get();
+
+      expect(row).toBeDefined();
+      expect((row as any).name).toBe("John Doe");
+
+      // Find the prepare.get query event
+      const prepareCalls = listener.handlers.start.mock.calls.filter(
+        (call) => call[0].method === "prepare.get",
+      );
+      expect(prepareCalls.length).toBeGreaterThan(0);
+
+      // The original query should be preserved through all bind operations
+      expect(prepareCalls[0][0].query).toBe(query);
+      expect(prepareCalls[0][0].dialect).toBe("sqlite");
+
+      listener.cleanup();
+    });
+  });
 });

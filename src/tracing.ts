@@ -1,9 +1,9 @@
 import type {
   Connector,
   Database,
-  PreparedStatement,
   Primitive,
   SQLDialect,
+  Statement,
 } from "./types.ts";
 import { sqlTemplate } from "./template.ts";
 
@@ -67,11 +67,11 @@ export function withTracing<TConnector extends Connector = Connector>(
       dialect: db.dialect,
     });
 
-  class TracedStatement implements PreparedStatement {
-    #statement: PreparedStatement;
+  class TracedStatement implements Statement {
+    #statement: Statement;
     #query: string;
 
-    constructor(statement: PreparedStatement, query: string) {
+    constructor(statement: Statement, query: string) {
       this.#statement = statement;
       this.#query = query;
     }
@@ -91,16 +91,16 @@ export function withTracing<TConnector extends Connector = Connector>(
       return new TracedStatement(this.#statement.bind(...args), this.#query);
     }
 
-    all() {
-      return this.withTrace(() => this.#statement.all(), "prepare.all");
+    all(...args: Primitive[]) {
+      return this.withTrace(() => this.#statement.all(...args), "prepare.all");
     }
 
-    run() {
-      return this.withTrace(() => this.#statement.run(), "prepare.run");
+    run(...args: Primitive[]) {
+      return this.withTrace(() => this.#statement.run(...args), "prepare.run");
     }
 
-    get() {
-      return this.withTrace(() => this.#statement.get(), "prepare.get");
+    get(...args: Primitive[]) {
+      return this.withTrace(() => this.#statement.get(...args), "prepare.get");
     }
   }
 
