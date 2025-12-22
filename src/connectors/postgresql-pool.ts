@@ -1,4 +1,5 @@
 import pg from "pg";
+import { createDatabase } from "../database.ts";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 
@@ -9,18 +10,48 @@ type InternalQuery = (
   params?: Primitive[],
 ) => Promise<pg.QueryResult>;
 
-export default function postgresqlConnector(
+export default function postgresqlPoolConnector(
   opts: ConnectorOptions,
 ): Connector<pg.PoolClient> {
   let _pool: undefined | pg.Pool;
-  function getClient() {
+  const getPool = () => {
     if (!_pool) _pool = new pg.Pool(opts);
-		return _pool.connect();
-  }
+    return _pool;
+  };
+  const getClient = async () => {
+    let _client: pg.PoolClient | undefined;
+    let _clientPromise: Promise<pg.PoolClient> | undefined;
+    const _getClient = async () => {
+      if (!_client) {
+        if (!_clientPromise) {
+          _clientPromise = getPool().connect().then(client => {
+            _client = client;
+            _clientPromise = undefined;
+            return client;
+          });
+        }
+        return _clientPromise;
+      }
+      return _client;
+    };
+    const _query: InternalQuery = (sql, params) =>
+      _getClient().then((c) => c.query(normalizeParams(sql), params));
+    return createDatabase({
+      name: "postgresql-pool-client",
+      dialect: "postgresql",
+      getInstance: () => _getClient(),
+      exec: (sql) => _query(sql),
+      prepare: (sql) => new StatementWrapper(sql, _query),
+      dispose: async () => {
+        _client?.release?.();
+        _client = undefined;
+      },
+    });
+  };
 
   const query: InternalQuery = async (sql, params) => {
-    const client = await getClient();
-    return client.query(normalizeParams(sql), params);
+    const pool = getPool();
+    return pool.query(normalizeParams(sql), params);
   };
 
   return {

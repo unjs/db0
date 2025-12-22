@@ -1,4 +1,5 @@
 import mysql from "mysql2/promise";
+import { createDatabase } from "../database.ts";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 
@@ -9,29 +10,59 @@ type InternalQuery = (
   params?: unknown[],
 ) => Promise<mysql.QueryResult>;
 
-export default function mysqlConnector(
+export default function mysqlPoolConnector(
   opts: ConnectorOptions,
 ): Connector<mysql.PoolConnection> {
   let _pool: mysql.Pool | undefined;
-  const getConnection = async () => {
+  const getPool = () => {
     if (!_pool) {
       _pool = mysql.createPool({
         ...opts,
       });
     }
-    const _connection : mysql.PoolConnection = await _pool.getConnection();
-    return _connection;
+    return _pool;
+  };
+  const getConnection = async () => {
+    let _connection: mysql.PoolConnection | undefined;
+    let _connectionPromise: Promise<mysql.PoolConnection> | undefined;
+    const _getConnection = async () => {
+      if (!_connection) {
+        if (!_connectionPromise) {
+          _connectionPromise = getPool().getConnection().then(connection => {
+            _connection = connection;
+            _connectionPromise = undefined;
+            return connection;
+          });
+        }
+        return _connectionPromise;
+      }
+      return _connection;
+    };
+    const _query: InternalQuery = (sql, params) =>
+      _getConnection()
+        .then((c) => c.query(sql, params))
+        .then((res) => res[0]);
+    return createDatabase({
+      name: "mysql-pool-connection",
+      dialect: "mysql",
+      getInstance: () => _getConnection(),
+      exec: (sql) => _query(sql),
+      prepare: (sql) => new StatementWrapper(sql, _query),
+      dispose: async () => {
+        _connection?.release?.();
+        _connection = undefined;
+      },
+    });
   };
 
   const query: InternalQuery = async (sql, params) => {
-    const connection = await getConnection();
-		try {
-			const result = await connection.query(sql, params);
-			return result[0];
-		} finally {
-			connection.release();
-		}
-  }
+    const pool = getPool();
+    try {
+      const result = await pool.query(sql, params);
+      return result[0];
+    } finally {
+    }
+  };
 
   return {
     name: "mysql-pool",
