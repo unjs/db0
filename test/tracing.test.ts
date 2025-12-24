@@ -137,6 +137,57 @@ describe("tracing", () => {
     });
   });
 
+  describe("getter properties", () => {
+    it("should preserve dialect getter from original database", () => {
+      const plainDb = createDatabase(
+        connector({
+          name: ":memory:",
+        }),
+      );
+      const tracedDb = withTracing(plainDb);
+
+      expect(tracedDb.dialect).toBe("sqlite");
+      expect(tracedDb.dialect).toBe(plainDb.dialect);
+    });
+
+    it("should preserve disposed getter and reflect current state", async () => {
+      const plainDb = createDatabase(
+        connector({
+          name: ":memory:",
+        }),
+      );
+      const tracedDb = withTracing(plainDb);
+
+      // Initially not disposed
+      expect(tracedDb.disposed).toBe(false);
+      expect(tracedDb.disposed).toBe(plainDb.disposed);
+
+      // Dispose the database
+      await tracedDb.dispose();
+
+      // disposed should now be true (testing the getter reflects current state)
+      expect(tracedDb.disposed).toBe(true);
+      expect(tracedDb.disposed).toBe(plainDb.disposed);
+    });
+
+    it("should reflect disposed state when original db is disposed", async () => {
+      const plainDb = createDatabase(
+        connector({
+          name: ":memory:",
+        }),
+      );
+      const tracedDb = withTracing(plainDb);
+
+      expect(tracedDb.disposed).toBe(false);
+
+      // Dispose via the original database
+      await plainDb.dispose();
+
+      // tracedDb.disposed should reflect the change
+      expect(tracedDb.disposed).toBe(true);
+    });
+  });
+
   describe("exec", () => {
     it("should emit correct tracing events on success", async () => {
       const listener = createTracingListener("query");
@@ -168,7 +219,7 @@ describe("tracing", () => {
 
       expect(listener.handlers.start).toHaveBeenCalledTimes(1);
       // asyncStart might not be called if error is thrown synchronously
-      expect(listener.handlers.asyncStart).not.toHaveBeenCalledTimes(1);
+      expect(listener.handlers.asyncStart).not.toHaveBeenCalled();
       expect(listener.handlers.error).toHaveBeenCalledTimes(1);
       expect(listener.events.error?.error).toBeDefined();
       expect(listener.events.error?.data.query).toContain(

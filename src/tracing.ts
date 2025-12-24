@@ -51,7 +51,11 @@ export function withTracing<TConnector extends Connector = Connector>(
     return queryChannel.tracePromise(exec, data) as unknown as Promise<T>;
   }
 
-  const tracedDb: MaybeTracedDatabase<TConnector> = { ...db, __traced: true };
+  // Use Object.create to preserve getter properties like `dialect` and `disposed`
+  // The spread operator would evaluate getters at spread-time, making `disposed`
+  // always return the initial value rather than the current state.
+  const tracedDb = Object.create(db) as MaybeTracedDatabase<TConnector>;
+  tracedDb.__traced = true;
 
   tracedDb.exec = (query) =>
     tracePromise(() => db.exec(query), {
