@@ -1,15 +1,13 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve, sep } from "node:path";
 import { findTypeExports } from "mlly";
 import { camelCase, upperFirst } from "scule";
 
-const connectorsDir = fileURLToPath(
-  new URL("../src/connectors", import.meta.url),
-);
+const connectorsDir = resolve(import.meta.dirname, "../src/connectors");
 
-const connectorsMetaFile = fileURLToPath(
-  new URL("../src/_connectors.ts", import.meta.url),
+const connectorsMetaFile = resolve(
+  import.meta.dirname,
+  "../src/_connectors.ts",
 );
 
 const aliases = {
