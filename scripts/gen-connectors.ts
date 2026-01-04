@@ -38,7 +38,7 @@ async function getConnectorFiles(dir: string): Promise<string[]> {
 
 const connectorFiles = await getConnectorFiles(connectorsDir);
 const connectorEntries = connectorFiles.map((file) =>
-  file.replace(connectorsDir + "/", ""),
+  file.slice(connectorsDir.length + 1).replace(/\\/g, "/"),
 );
 
 const connectors: {
@@ -52,7 +52,7 @@ const connectors: {
 
 for (const entry of connectorEntries) {
   const pathName = entry.replace(/\.ts$/, "");
-  const name = pathName.replace(/\/|\\/g, "-");
+  const name = pathName.replace(/[/\\]/g, "-");
   const subpath = `db0/connectors/${pathName}`;
   const fullPath = join(connectorsDir, `${pathName}.ts`);
 
