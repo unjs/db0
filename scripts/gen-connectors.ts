@@ -1,5 +1,5 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
+import { join, resolve } from "pathe";
 import { findTypeExports } from "mlly";
 import { camelCase, upperFirst } from "scule";
 
@@ -36,7 +36,7 @@ async function getConnectorFiles(dir: string): Promise<string[]> {
 
 const connectorFiles = await getConnectorFiles(connectorsDir);
 const connectorEntries = connectorFiles.map((file) =>
-  file.slice(connectorsDir.length + 1).replace(/\\/g, "/"),
+  file.slice(connectorsDir.length + 1),
 );
 
 const connectors: {
