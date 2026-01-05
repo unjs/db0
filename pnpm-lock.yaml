@@ -72,6 +72,9 @@ importers:
       obuild:
         specifier: ^0.4.2
         version: 0.4.2(magicast@0.5.1)(typescript@5.9.3)
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
       pg:
         specifier: ^8.16.3
         version: 8.16.3
