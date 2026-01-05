@@ -1,3 +1,5 @@
+import type { ConnectorName } from "./_connectors.ts";
+
 /**
  * Represents primitive types that can be used in SQL operations.
  */
@@ -120,6 +122,7 @@ type DefaultSQLResult = {
 
 export interface Database<TConnector extends Connector = Connector>
   extends AsyncDisposable {
+  readonly connector: ConnectorName;
   readonly dialect: SQLDialect;
 
   /**
