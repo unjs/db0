@@ -92,6 +92,15 @@ export type Connector<TInstance = unknown> = {
   getInstance: () => TInstance | Promise<TInstance>;
 
   /**
+   * Acquires a separate connection from the database.
+   *
+   * Will block all other queries until disposed unless the library supports connection pooling.
+   */
+  acquireConnection: () => Promise<
+    Pick<Connector<TInstance>, "exec" | "prepare" | "dispose">
+  >;
+
+  /**
    * Executes an SQL query directly and returns the result.
    * @param {string} sql - The SQL string to execute.
    * @returns {ExecResult | Promise<ExecResult>} The result of the execution.
@@ -138,6 +147,15 @@ export interface Database<TConnector extends Connector = Connector>
    * @returns {Promise<TInstance>} A promise that resolves with the client instance.
    */
   getInstance: () => Promise<Awaited<ReturnType<TConnector["getInstance"]>>>;
+
+  /**
+   * Acquires a separate connection from the database.
+   *
+   * Will block all other queries until disposed unless the library supports connection pooling.
+   */
+  acquireConnection: () => Promise<
+    Omit<Database<TConnector>, "getInstance" | "acquireConnection">
+  >;
 
   /**
    * Executes a raw SQL string.
