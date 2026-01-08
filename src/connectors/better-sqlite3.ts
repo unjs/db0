@@ -35,6 +35,7 @@ export default function sqliteConnector(
   return {
     name: "sqlite",
     dialect: "sqlite",
+    supportsPooling: false,
     getInstance: () => getDB(),
     exec: (sql) => getDB().exec(sql),
     prepare: (sql) => new StatementWrapper(() => getDB().prepare(sql)),

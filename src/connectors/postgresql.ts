@@ -35,6 +35,7 @@ export default function postgresqlConnector(
   return {
     name: "postgresql",
     dialect: "postgresql",
+    supportsPooling: false,
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),

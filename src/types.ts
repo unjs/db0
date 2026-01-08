@@ -82,6 +82,11 @@ export type Connector<TInstance = unknown> = {
   dialect: SQLDialect;
 
   /**
+   * Whether the connector supports connection pooling.
+   */
+  supportsPooling: boolean;
+
+  /**
    * The client instance used internally.
    */
   getInstance: () => TInstance | Promise<TInstance>;
@@ -96,7 +101,7 @@ export type Connector<TInstance = unknown> = {
   /**
    * Prepares an SQL statement for execution.
    * @param {string} sql - The SQL string to prepare.
-   * @returns {statement} The prepared SQL statement.
+   * @returns {Statement} The prepared SQL statement.
    */
   prepare: (sql: string) => Statement;
 
