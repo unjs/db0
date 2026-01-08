@@ -3,7 +3,7 @@ import type { Connector, Database, SQLDialect } from "./types.ts";
 import type { Primitive } from "./types.ts";
 
 const SQL_SELECT_RE = /^select/i;
-const SQL_RETURNING_RE = /[\s]returning[\s]/i;
+const SQL_RETURNING_RE = /\sreturning\s/i;
 const DIALECTS_WITH_RET: Set<SQLDialect> = new Set(["postgresql", "sqlite"]);
 
 const DISPOSED_ERR =
