@@ -26,7 +26,7 @@ export default function postgresqlPoolConnector(
     return {
       dialect: "postgresql",
       exec: (sql) => client.query(normalizeParams(sql)),
-      prepare: (sql) => new StatementWrapper(sql, client.query),
+      prepare: (sql) => new StatementWrapper(sql, client.query.bind(client)),
       dispose: async () => client.release(),
       [Symbol.asyncDispose]: async () => client.release(),
     };

@@ -1,4 +1,4 @@
-import { beforeAll, expect, it } from "vitest";
+import { beforeAll, expect, describe, it } from "vitest";
 import {
   type Connector,
   type Database,
@@ -69,6 +69,47 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
   it("select", async () => {
     const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
     expect(rows).toMatchInlineSnapshot(userSnapshot);
+  });
+
+  describe("acquireConnection", () => {
+    it("should return a connection that can execute queries", async () => {
+      await db.acquireConnection(async (connection) => {
+        const { rows } = await connection.sql`SELECT * FROM users`;
+        expect(rows).toMatchInlineSnapshot(userSnapshot);
+      });
+    });
+
+    it.runIf(opts.connector.supportsPooling)(
+      "should not block other queries",
+      async () => {
+        const { promise, resolve } = Promise.withResolvers<void>();
+        void db.acquireConnection(async () => {
+          await promise;
+        });
+
+        await expect(db.sql`SELECT * FROM users`).resolves.not.toThrow();
+        resolve();
+      },
+    );
+
+    it.runIf(!opts.connector.supportsPooling)(
+      "should block other queries until the connection is released",
+      async () => {
+        const { promise, resolve } = Promise.withResolvers<void>();
+        void db.acquireConnection(async () => {
+          await promise;
+        });
+
+        let secondPromiseResolved = false;
+        const secondQueryPromise = db.sql`SELECT * FROM users`.then(() => {
+          secondPromiseResolved = true;
+        });
+        expect(secondPromiseResolved).toBe(false);
+        resolve();
+        await secondQueryPromise;
+        expect(secondPromiseResolved).toBe(true);
+      },
+    );
   });
 
   it("deferred prepare errors", async () => {
