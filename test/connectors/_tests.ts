@@ -1,10 +1,10 @@
 import { beforeAll, expect, it } from "vitest";
 import {
-  Connector,
-  Database,
+  type Connector,
+  type Database,
   createDatabase,
   type SQLDialect,
-} from "../../src";
+} from "../../src/index.ts";
 
 export function testConnector<TConnector extends Connector = Connector>(opts: {
   connector: TConnector;

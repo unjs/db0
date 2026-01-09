@@ -3,7 +3,7 @@ import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 import type { Connection } from "../types.ts";
 
-export type ConnectorOptions = pg.PoolConfig;
+export type ConnectorOptions = { url: string } | pg.PoolConfig;
 
 type InternalQuery = (
   sql: string,
@@ -15,7 +15,9 @@ export default function postgresqlPoolConnector(
 ): Connector<pg.Pool> {
   let _pool: undefined | pg.Pool;
   const getPool = () => {
-    _pool ??= new pg.Pool(opts);
+    _pool ??= new pg.Pool(
+      "url" in opts ? { connectionString: opts.url } : opts,
+    );
     return _pool;
   };
 
@@ -36,7 +38,7 @@ export default function postgresqlPoolConnector(
     supportsPooling: true,
     getInstance: () => getPool(),
     exec: (sql) => getPool().query(normalizeParams(sql)),
-    prepare: (sql) => new StatementWrapper(sql, getPool().query),
+    prepare: (sql) => new StatementWrapper(sql, getPool().query.bind(_pool)),
     acquireConnection,
     dispose: async () => {
       await _pool?.end?.();
@@ -52,12 +54,12 @@ function normalizeParams(sql: string) {
 }
 
 class StatementWrapper extends BoundableStatement<void> {
-  #query: InternalQuery;
-  #sql: string;
+  readonly #query: InternalQuery;
+  readonly #sql: string;
 
   constructor(sql: string, query: InternalQuery) {
     super();
-    this.#sql = sql;
+    this.#sql = normalizeParams(sql);
     this.#query = query;
   }
 
