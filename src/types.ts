@@ -96,9 +96,7 @@ export type Connector<TInstance = unknown> = {
    *
    * Will block all other queries until disposed unless the library supports connection pooling.
    */
-  acquireConnection: () => Promise<
-    Pick<Connector<TInstance>, "exec" | "prepare" | "dispose">
-  >;
+  acquireConnection: () => Promise<Omit<Connection, "sql">>;
 
   /**
    * Executes an SQL query directly and returns the result.
@@ -124,13 +122,23 @@ export type Connector<TInstance = unknown> = {
 /**
  * Represents default SQL results, including any error messages, row changes and rows returned.
  */
-type DefaultSQLResult = {
+export type DefaultSQLResult = {
   lastInsertRowid?: number;
   changes?: number;
   error?: string;
   rows?: { id?: string | number; [key: string]: unknown }[];
   success?: boolean;
 };
+
+export type Connection = Pick<
+  Database,
+  | "dialect"
+  | "exec"
+  | "prepare"
+  | "sql"
+  | "dispose"
+  | typeof Symbol.asyncDispose
+>;
 
 export interface Database<TConnector extends Connector = Connector>
   extends AsyncDisposable {
@@ -153,9 +161,9 @@ export interface Database<TConnector extends Connector = Connector>
    *
    * Will block all other queries until disposed unless the library supports connection pooling.
    */
-  acquireConnection: () => Promise<
-    Omit<Database<TConnector>, "getInstance" | "acquireConnection">
-  >;
+  acquireConnection: (
+    fn: (connection: Connection) => void | Promise<void>,
+  ) => Promise<void>;
 
   /**
    * Executes a raw SQL string.

@@ -1,5 +1,11 @@
 import { sqlTemplate } from "./template.ts";
-import type { Connector, Database, SQLDialect } from "./types.ts";
+import type {
+  Connection,
+  Connector,
+  Database,
+  DefaultSQLResult,
+  SQLDialect,
+} from "./types.ts";
 import type { Primitive } from "./types.ts";
 
 const SQL_SELECT_RE = /^select/i;
@@ -29,6 +35,30 @@ export function createDatabase<TConnector extends Connector = Connector>(
     }
   };
 
+  const createExecutor =
+    (connector: Omit<Connection, "sql" | typeof Symbol.asyncDispose>) =>
+    async <T = DefaultSQLResult>(
+      strings: TemplateStringsArray,
+      ...values: Primitive[]
+    ): Promise<T> => {
+      checkDisposed();
+      const [sql, params] = sqlTemplate(strings, ...values);
+      if (
+        SQL_SELECT_RE.test(sql) /* select */ ||
+        // prettier-ignore
+        (DIALECTS_WITH_RET.has(connector.dialect) && SQL_RETURNING_RE.test(sql)) /* returning */
+      ) {
+        const rows = await connector.prepare(sql).all(...params);
+        return {
+          rows,
+          success: true,
+        } as never;
+      } else {
+        const res = await connector.prepare(sql).run(...params);
+        return res as never;
+      }
+    };
+
   return <Database<TConnector>>{
     get dialect() {
       return connector.dialect;
@@ -43,6 +73,12 @@ export function createDatabase<TConnector extends Connector = Connector>(
       return connector.getInstance();
     },
 
+    async acquireConnection(fn) {
+      const connection = await connector.acquireConnection();
+      await fn({ ...connection, sql: createExecutor(connection) });
+      await connection.dispose?.();
+    },
+
     exec: (sql: string) => {
       checkDisposed();
       return Promise.resolve(connector.exec(sql));
@@ -53,24 +89,7 @@ export function createDatabase<TConnector extends Connector = Connector>(
       return connector.prepare(sql);
     },
 
-    sql: async (strings: TemplateStringsArray, ...values: Primitive[]) => {
-      checkDisposed();
-      const [sql, params] = sqlTemplate(strings, ...values);
-      if (
-        SQL_SELECT_RE.test(sql) /* select */ ||
-        // prettier-ignore
-        (DIALECTS_WITH_RET.has(connector.dialect) && SQL_RETURNING_RE.test(sql)) /* returning */
-      ) {
-        const rows = await connector.prepare(sql).all(...params);
-        return {
-          rows,
-          success: true,
-        };
-      } else {
-        const res = await connector.prepare(sql).run(...params);
-        return res;
-      }
-    },
+    sql: createExecutor(connector),
 
     dispose: () => {
       if (_disposed) {
