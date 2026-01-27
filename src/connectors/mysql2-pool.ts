@@ -1,73 +1,72 @@
 import mysql from "mysql2/promise";
 import { createDatabase } from "../database.ts";
-import type { Connector, Primitive } from "db0";
+import type { Connector, Database, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 
 export type ConnectorOptions = mysql.PoolOptions;
+type Pool = mysql.Pool & {
+  getClient?: () => Promise<Database<Connector<mysql.PoolConnection>>>;
+};
 
 type InternalQuery = (
   sql: string,
-  params?: unknown[],
+  params?: Primitive[],
 ) => Promise<mysql.QueryResult>;
 
-export default function mysqlPoolConnector(
+export default function postgresqlPoolConnector(
   opts: ConnectorOptions,
-): Connector<mysql.PoolConnection> {
-  let _pool: mysql.Pool | undefined;
+): Connector<Pool> {
+  let _pool: Pool | undefined;
   const getPool = () => {
-    if (!_pool) {
-      _pool = mysql.createPool({
-        ...opts,
-      });
-    }
+    if (!_pool) _pool = mysql.createPool(opts);
+    _pool.getClient = getClient;
     return _pool;
   };
-  const getConnection = async () => {
-    let _connection: mysql.PoolConnection | undefined;
-    let _connectionPromise: Promise<mysql.PoolConnection> | undefined;
-    const _getConnection = async () => {
-      if (!_connection) {
-        if (!_connectionPromise) {
-          _connectionPromise = getPool().getConnection().then(connection => {
-            _connection = connection;
-            _connectionPromise = undefined;
-            return connection;
-          });
+  const getClient = async () => {
+    let _client: mysql.PoolConnection | undefined;
+    let _clientPromise: Promise<mysql.PoolConnection> | undefined;
+    const _getClient = async () => {
+      if (!_client) {
+        if (!_clientPromise) {
+          _clientPromise = getPool()
+            .getConnection()
+            .then((client) => {
+              _client = client;
+              _clientPromise = undefined;
+              return client;
+            });
         }
-        return _connectionPromise;
+        return _clientPromise;
       }
-      return _connection;
+      return _client;
     };
     const _query: InternalQuery = (sql, params) =>
-      _getConnection()
+      _getClient()
         .then((c) => c.query(sql, params))
         .then((res) => res[0]);
     return createDatabase({
-      name: "mysql-pool-connection",
-      dialect: "mysql",
-      getInstance: () => _getConnection(),
+      name: "postgresql-pool-client",
+      dialect: "postgresql",
+      getInstance: () => _getClient(),
       exec: (sql) => _query(sql),
       prepare: (sql) => new StatementWrapper(sql, _query),
       dispose: async () => {
-        _connection?.release?.();
-        _connection = undefined;
+        _client?.release?.();
+        _client = undefined;
       },
     });
   };
 
-  const query: InternalQuery = async (sql, params) => {
-    const pool = getPool();
-    try {
-      const result = await pool.query(sql, params);
-      return result[0];
-    } finally {
-    }
-  };
+  const query: InternalQuery = (sql, params) =>
+    getClient()
+      .then((c) => c.getInstance())
+      .then((c) => c.query(sql, params))
+      .then((res) => res[0]);
 
   return {
-    name: "mysql-pool",
-    dialect: "mysql",
-    getInstance: () => getConnection(),
+    name: "postgresql-pool",
+    dialect: "postgresql",
+    getInstance: () => getPool(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {

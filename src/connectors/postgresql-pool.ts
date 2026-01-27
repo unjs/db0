@@ -1,9 +1,12 @@
 import pg from "pg";
 import { createDatabase } from "../database.ts";
-import type { Connector, Primitive } from "db0";
+import type { Connector, Database, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 
 export type ConnectorOptions = pg.PoolConfig;
+type Pool = pg.Pool & {
+  getClient?: () => Promise<Database<Connector<pg.PoolClient>>>;
+};
 
 type InternalQuery = (
   sql: string,
@@ -12,10 +15,11 @@ type InternalQuery = (
 
 export default function postgresqlPoolConnector(
   opts: ConnectorOptions,
-): Connector<pg.PoolClient> {
-  let _pool: undefined | pg.Pool;
+): Connector<Pool> {
+  let _pool: Pool | undefined;
   const getPool = () => {
     if (!_pool) _pool = new pg.Pool(opts);
+    _pool.getClient = getClient;
     return _pool;
   };
   const getClient = async () => {
@@ -24,11 +28,13 @@ export default function postgresqlPoolConnector(
     const _getClient = async () => {
       if (!_client) {
         if (!_clientPromise) {
-          _clientPromise = getPool().connect().then(client => {
-            _client = client;
-            _clientPromise = undefined;
-            return client;
-          });
+          _clientPromise = getPool()
+            .connect()
+            .then((client) => {
+              _client = client;
+              _clientPromise = undefined;
+              return client;
+            });
         }
         return _clientPromise;
       }
@@ -57,11 +63,11 @@ export default function postgresqlPoolConnector(
   return {
     name: "postgresql-pool",
     dialect: "postgresql",
-    getInstance: () => getClient(),
+    getInstance: () => getPool(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      await (await _pool)?.end?.();
+      await _pool?.end?.();
       _pool = undefined;
     },
   };
