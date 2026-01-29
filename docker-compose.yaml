@@ -2,7 +2,7 @@ services:
   pg:
     # https://hub.docker.com/_/postgres
     image: postgres:alpine
-    network_mode: "host"
+    ports: ["5432:5432"]
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
@@ -10,7 +10,7 @@ services:
   mysql:
     # https://hub.docker.com/_/mysql
     image: mysql
-    network_mode: "host"
+    ports: ["3306:3306"]
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: db0
