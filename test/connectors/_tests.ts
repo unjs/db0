@@ -2,6 +2,7 @@ import { beforeAll, expect, it } from "vitest";
 import {
   Connector,
   Database,
+  DatabaseCapabilities,
   createDatabase,
   type SQLDialect,
 } from "../../src";
@@ -9,6 +10,7 @@ import {
 export function testConnector<TConnector extends Connector = Connector>(opts: {
   connector: TConnector;
   dialect: SQLDialect;
+  capabilities?: Partial<DatabaseCapabilities>;
 }) {
   let db: Database<TConnector>;
   beforeAll(() => {
@@ -35,6 +37,22 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
 
   it("dialect matches", () => {
     expect(db.dialect).toBe(opts.dialect);
+  });
+
+  it("capabilities match", () => {
+    expect(db.capabilities).toBeDefined();
+    expect(typeof db.capabilities.supportsJSON).toBe("boolean");
+    expect(typeof db.capabilities.supportsBooleans).toBe("boolean");
+    expect(typeof db.capabilities.supportsArrays).toBe("boolean");
+    expect(typeof db.capabilities.supportsDates).toBe("boolean");
+    expect(typeof db.capabilities.supportsUUIDs).toBe("boolean");
+    expect(typeof db.capabilities.supportsTransactions).toBe("boolean");
+    expect(typeof db.capabilities.supportsBatch).toBe("boolean");
+    if (opts.capabilities) {
+      for (const [key, value] of Object.entries(opts.capabilities)) {
+        expect(db.capabilities[key as keyof DatabaseCapabilities]).toBe(value);
+      }
+    }
   });
 
   it("drop and create table", async () => {

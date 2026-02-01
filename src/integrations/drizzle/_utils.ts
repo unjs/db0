@@ -28,7 +28,10 @@ export function mapResultRow<TResult>(
       } else if (is(field, SQL)) {
         decoder = "decoder" in field && (field.decoder as any);
       } else {
-        decoder = "decoder" in field.sql && (field.sql.decoder as any);
+        decoder =
+          "sql" in field &&
+          "decoder" in field.sql &&
+          (field.sql.decoder as any);
       }
       let node = result;
       for (const [pathChunkIndex, pathChunk] of path.entries()) {

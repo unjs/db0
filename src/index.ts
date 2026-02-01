@@ -1,10 +1,12 @@
 export { createDatabase } from "./database.ts";
+export { dialectCapabilities, getCapabilities } from "./capabilities.ts";
 
 export { connectors } from "./_connectors.ts";
 
 export type {
   Connector,
   Database,
+  DatabaseCapabilities,
   ExecResult,
   Primitive,
   SQLDialect,

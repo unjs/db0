@@ -22,6 +22,10 @@
     "./connectors/libsql/*": {
       "types": "./dist/connectors/libsql/*.d.ts",
       "default": "./dist/connectors/libsql/*.mjs"
+    },
+    "./capabilities": {
+      "types": "./dist/capabilities.d.ts",
+      "default": "./dist/capabilities.mjs"
     }
   },
   "types": "./dist/index.d.mts",
@@ -29,8 +33,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm gen-connectors && obuild",
+    "build": "pnpm gen-connectors && pnpm gen-capabilities && obuild",
     "gen-connectors": "jiti scripts/gen-connectors.ts",
+    "gen-capabilities": "jiti scripts/gen-capabilities-docs.ts",
     "db0": "pnpm jiti src/cli",
     "dev": "vitest",
     "lint": "eslint . && prettier -c src test",

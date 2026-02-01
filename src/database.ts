@@ -1,3 +1,4 @@
+import { getCapabilities } from "./capabilities.ts";
 import { sqlTemplate } from "./template.ts";
 import type { Connector, Database, SQLDialect } from "./types.ts";
 import type { Primitive } from "./types.ts";
@@ -32,6 +33,10 @@ export function createDatabase<TConnector extends Connector = Connector>(
   return <Database<TConnector>>{
     get dialect() {
       return connector.dialect;
+    },
+
+    get capabilities() {
+      return getCapabilities(connector.dialect, connector.capabilityOverrides);
     },
 
     get disposed() {
