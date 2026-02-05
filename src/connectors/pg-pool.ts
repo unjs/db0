@@ -1,23 +1,21 @@
-import pg from "pg";
+import { Pool, type PoolConfig, type QueryResult } from "pg";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 import type { Connection } from "../types.ts";
 
-export type ConnectorOptions = { url: string } | pg.PoolConfig;
+export type ConnectorOptions = { url: string } | PoolConfig;
 
 type InternalQuery = (
   sql: string,
   params?: Primitive[],
-) => Promise<pg.QueryResult>;
+) => Promise<QueryResult>;
 
 export default function postgresqlPoolConnector(
   opts: ConnectorOptions,
-): Connector<pg.Pool> {
-  let _pool: undefined | pg.Pool;
+): Connector<Pool> {
+  let _pool: undefined | Pool;
   const getPool = () => {
-    _pool ??= new pg.Pool(
-      "url" in opts ? { connectionString: opts.url } : opts,
-    );
+    _pool ??= new Pool("url" in opts ? { connectionString: opts.url } : opts);
     return _pool;
   };
 
