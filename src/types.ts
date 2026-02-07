@@ -67,10 +67,37 @@ export type PreparedStatement = {
  */
 export type ExecResult = unknown;
 
+export type ConnectorConnection = AsyncDisposable & {
+  /**
+   * The SQL dialect used by the connector.
+   */
+  dialect: SQLDialect;
+
+  /**
+   * Executes a raw SQL string.
+   * @param {string} sql - The SQL string to execute.
+   * @returns {Promise<ExecResult>} A promise that resolves with the execution result.
+   */
+  exec: (sql: string) => Promise<ExecResult>;
+
+  /**
+   * Prepares an SQL statement from a raw SQL string.
+   * @param {string} sql - The SQL string to prepare.
+   * @returns {statement} The prepared SQL statement.
+   */
+  prepare: (sql: string) => Statement;
+
+  /**
+   * Closes the connection and cleans up resources.
+   * @returns {Promise<void>} A promise that resolves when the connection is closed.
+   */
+  dispose: () => Promise<void>;
+};
+
 /**
  * Defines a database connector for executing SQL queries and preparing statements.
  */
-export type Connector<TInstance = unknown> = {
+export type Connector<TInstance = unknown> = ConnectorConnection & {
   /**
    * The name of the connector.
    */
@@ -94,29 +121,9 @@ export type Connector<TInstance = unknown> = {
   /**
    * Acquires a separate connection from the database.
    *
-   * Will block all other queries until disposed unless the library supports connection pooling.
+   * Will block all other queries until disposed if the connector doesn't support connection pooling.
    */
-  acquireConnection: () => Promise<Omit<Connection, "sql">>;
-
-  /**
-   * Executes an SQL query directly and returns the result.
-   * @param {string} sql - The SQL string to execute.
-   * @returns {ExecResult | Promise<ExecResult>} The result of the execution.
-   */
-  exec: (sql: string) => ExecResult | Promise<ExecResult>;
-
-  /**
-   * Prepares an SQL statement for execution.
-   * @param {string} sql - The SQL string to prepare.
-   * @returns {Statement} The prepared SQL statement.
-   */
-  prepare: (sql: string) => Statement;
-
-  /**
-   * Closes the database connection and cleans up resources.
-   * @returns {void | Promise<void>} A promise that resolves when the connection is closed.
-   */
-  dispose?: () => void | Promise<void>;
+  acquireConnection: () => Promise<ConnectorConnection>;
 };
 
 /**
@@ -130,18 +137,26 @@ export type DefaultSQLResult = {
   success?: boolean;
 };
 
-export type Connection = Pick<
-  Database,
-  | "dialect"
-  | "exec"
-  | "prepare"
-  | "sql"
-  | "dispose"
-  | typeof Symbol.asyncDispose
->;
+/**
+ * A connection to a database.
+ * Pulled from connection pool if available on the connector, otherwise blocking.
+ */
+export type Connection = ConnectorConnection & {
+  /**
+   * Executes SQL queries using tagged template literals.
+   * @template T The expected type of query result.
+   * @param {TemplateStringsArray} strings - The segments of the SQL string.
+   * @param {...Primitive[]} values - The values to interpolate into the SQL string.
+   * @returns {Promise<T>} A promise that resolves with the typed result of the query.
+   */
+  sql: <T = DefaultSQLResult>(
+    strings: TemplateStringsArray,
+    ...values: Primitive[]
+  ) => Promise<T>;
+};
 
 export interface Database<TConnector extends Connector = Connector>
-  extends AsyncDisposable {
+  extends Connection {
   readonly dialect: SQLDialect;
 
   /**
@@ -164,42 +179,4 @@ export interface Database<TConnector extends Connector = Connector>
   acquireConnection: (
     fn: (connection: Connection) => void | Promise<void>,
   ) => Promise<void>;
-
-  /**
-   * Executes a raw SQL string.
-   * @param {string} sql - The SQL string to execute.
-   * @returns {Promise<ExecResult>} A promise that resolves with the execution result.
-   */
-  exec: (sql: string) => Promise<ExecResult>;
-
-  /**
-   * Prepares an SQL statement from a raw SQL string.
-   * @param {string} sql - The SQL string to prepare.
-   * @returns {statement} The prepared SQL statement.
-   */
-  prepare: (sql: string) => Statement;
-
-  /**
-   * Executes SQL queries using tagged template literals.
-   * @template T The expected type of query result.
-   * @param {TemplateStringsArray} strings - The segments of the SQL string.
-   * @param {...Primitive[]} values - The values to interpolate into the SQL string.
-   * @returns {Promise<T>} A promise that resolves with the typed result of the query.
-   */
-  sql: <T = DefaultSQLResult>(
-    strings: TemplateStringsArray,
-    ...values: Primitive[]
-  ) => Promise<T>;
-
-  /**
-   * Closes the database connection and cleans up resources.
-   * @returns {Promise<void>} A promise that resolves when the connection is closed.
-   */
-  dispose: () => Promise<void>;
-
-  /**
-   * AsyncDisposable implementation for using syntax support.
-   * @returns {Promise<void>} A promise that resolves when the connection is disposed.
-   */
-  [Symbol.asyncDispose]: () => Promise<void>;
 }

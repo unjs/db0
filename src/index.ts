@@ -3,6 +3,7 @@ export { createDatabase } from "./database.ts";
 export { connectors } from "./_connectors.ts";
 
 export type {
+  Connection,
   Connector,
   Database,
   ExecResult,

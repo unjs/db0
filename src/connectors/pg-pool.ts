@@ -2,7 +2,7 @@ import { Pool, type PoolConfig, type QueryResult } from "pg";
 import type { Connector, Primitive } from "db0";
 import { normalizeParams } from "./_internal/postgresql.ts";
 import { BoundableStatement } from "./_internal/statement.ts";
-import type { Connection } from "../types.ts";
+import type { ConnectorConnection } from "../types.ts";
 
 export type ConnectorOptions = { url: string } | PoolConfig;
 
@@ -20,7 +20,7 @@ export default function postgresqlPoolConnector(
     return _pool;
   };
 
-  const acquireConnection = async (): Promise<Omit<Connection, "sql">> => {
+  const acquireConnection = async (): Promise<ConnectorConnection> => {
     const client = await getPool().connect();
     return {
       dialect: "postgresql",
@@ -31,6 +31,11 @@ export default function postgresqlPoolConnector(
     };
   };
 
+  const dispose = async () => {
+    await _pool?.end?.();
+    _pool = undefined;
+  };
+
   return {
     name: "pg-pool",
     dialect: "postgresql",
@@ -39,10 +44,8 @@ export default function postgresqlPoolConnector(
     exec: (sql) => getPool().query(normalizeParams(sql)),
     prepare: (sql) => new StatementWrapper(sql, getPool().query.bind(_pool)),
     acquireConnection,
-    dispose: async () => {
-      await _pool?.end?.();
-      _pool = undefined;
-    },
+    dispose,
+    [Symbol.asyncDispose]: dispose,
   };
 }
 

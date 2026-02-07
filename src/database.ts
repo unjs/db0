@@ -1,6 +1,6 @@
 import { sqlTemplate } from "./template.ts";
 import type {
-  Connection,
+  ConnectorConnection,
   Connector,
   Database,
   DefaultSQLResult,
@@ -36,7 +36,7 @@ export function createDatabase<TConnector extends Connector = Connector>(
   };
 
   const createExecutor =
-    (connector: Omit<Connection, "sql" | typeof Symbol.asyncDispose>) =>
+    (connector: ConnectorConnection) =>
     async <T = DefaultSQLResult>(
       strings: TemplateStringsArray,
       ...values: Primitive[]
