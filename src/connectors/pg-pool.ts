@@ -1,5 +1,6 @@
 import { Pool, type PoolConfig, type QueryResult } from "pg";
 import type { Connector, Primitive } from "db0";
+import { normalizeParams } from "./_internal/postgresql.ts";
 import { BoundableStatement } from "./_internal/statement.ts";
 import type { Connection } from "../types.ts";
 
@@ -43,12 +44,6 @@ export default function postgresqlPoolConnector(
       _pool = undefined;
     },
   };
-}
-
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
-function normalizeParams(sql: string) {
-  let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
 }
 
 class StatementWrapper extends BoundableStatement<void> {
