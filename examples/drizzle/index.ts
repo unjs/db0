@@ -1,7 +1,7 @@
 import { sqliteTable, text, numeric } from "drizzle-orm/sqlite-core";
 
 import { createDatabase } from "../../src";
-import { drizzle } from "../../src/integrations/drizzle"
+import { drizzle } from "../../src/integrations/drizzle";
 
 import sqlite from "../../src/connectors/better-sqlite3";
 
