@@ -1,9 +1,11 @@
 import { type ClientConfig, Client, type QueryResult } from "pg";
+import * as mutex from "ciorent/mutex";
 
 import type { Connector, Primitive } from "db0";
 
 import { normalizeParams } from "./_internal/postgresql.ts";
 import { BoundableStatement } from "./_internal/statement.ts";
+import type { ConnectorConnection } from "../types.ts";
 
 export type ConnectorOptions = { url: string } | ClientConfig;
 
@@ -28,9 +30,28 @@ export default function postgresqlConnector(
     return _client;
   }
 
-  const query: InternalQuery = async (sql, params) => {
+  const connectionMutex = mutex.init();
+  const acquireConnection = async (): Promise<ConnectorConnection> => {
+    const releaseMutex = await mutex.acquire(connectionMutex);
+
     const client = await getClient();
-    return client.query(normalizeParams(sql), params);
+    return {
+      dialect: "postgresql",
+      exec: (sql) => client.query(normalizeParams(sql)),
+      prepare: (sql) => new StatementWrapper(sql, client.query.bind(client)),
+      dispose: async () => releaseMutex(),
+      [Symbol.asyncDispose]: async () => releaseMutex(),
+    };
+  };
+
+  const buildQueryFn =
+    (getClient: () => Client | Promise<Client>): InternalQuery =>
+    async (...params) =>
+      (await getClient()).query(...params);
+
+  const dispose = async () => {
+    (await _client)?.end?.();
+    _client = undefined;
   };
 
   return {
@@ -38,22 +59,21 @@ export default function postgresqlConnector(
     dialect: "postgresql",
     supportsPooling: false,
     getInstance: () => getClient(),
-    exec: (sql) => query(sql),
-    prepare: (sql) => new StatementWrapper(sql, query),
-    dispose: async () => {
-      await (await _client)?.end?.();
-      _client = undefined;
-    },
+    exec: buildQueryFn(getClient),
+    prepare: (sql) => new StatementWrapper(sql, buildQueryFn(getClient)),
+    acquireConnection,
+    dispose,
+    [Symbol.asyncDispose]: dispose,
   };
 }
 
 class StatementWrapper extends BoundableStatement<void> {
-  #query: InternalQuery;
-  #sql: string;
+  readonly #query: InternalQuery;
+  readonly #sql: string;
 
   constructor(sql: string, query: InternalQuery) {
     super();
-    this.#sql = sql;
+    this.#sql = normalizeParams(sql);
     this.#query = query;
   }
 

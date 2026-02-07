@@ -53,6 +53,7 @@
     "automd": "^0.4.2",
     "better-sqlite3": "^12.4.1",
     "changelogen": "^0.6.2",
+    "ciorent": "^1.0.10",
     "db0": "link:.",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",

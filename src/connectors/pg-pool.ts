@@ -15,6 +15,12 @@ export default function postgresqlPoolConnector(
   opts: ConnectorOptions,
 ): Connector<Pool> {
   let _pool: undefined | Pool;
+  /*
+    TODO: decide what behavior to use here, the non-pooling connector connects before
+          proceeding with calling functions, while `pg` wants you to run queries
+          and let the library handle creating connections via the pool when it needs to.
+          should the non-pooling connector do the same? should it just be removed altogether?
+   */
   const getPool = () => {
     _pool ??= new Pool("url" in opts ? { connectionString: opts.url } : opts);
     return _pool;
