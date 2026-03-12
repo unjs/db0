@@ -6,10 +6,7 @@ import type {
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 
-export interface ConnectorOptions extends HTTPTransactionOptions<
-  undefined,
-  undefined
-> {
+export interface ConnectorOptions extends HTTPTransactionOptions<false, false> {
   /**
    * The URL of the Neon Serverless Postgres instance.
    *
@@ -22,8 +19,8 @@ type InternalQuery = (sql: string, params?: Primitive[]) => Promise<unknown[]>;
 
 export default function neonConnector(
   opts: ConnectorOptions,
-): Connector<NeonQueryFunction<undefined, undefined>> {
-  let _connection: NeonQueryFunction<undefined, undefined>;
+): Connector<NeonQueryFunction<false, false>> {
+  let _connection: NeonQueryFunction<false, false>;
 
   function getConnection() {
     if (_connection) {
@@ -36,7 +33,7 @@ export default function neonConnector(
 
   const query: InternalQuery = async (sql, params) => {
     const connection = getConnection();
-    return connection(normalizeParams(sql), params);
+    return connection.query(normalizeParams(sql), params);
   };
 
   return {

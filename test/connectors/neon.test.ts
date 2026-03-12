@@ -5,9 +5,13 @@ vi.mock("@neondatabase/serverless", async () => {
   const { PGlite } = await import("@electric-sql/pglite");
   const pglite = await PGlite.create();
   return {
-    neon: () => async (sql: string, params?: unknown[]) => {
-      const result = await pglite.query(sql, params);
-      return result.rows;
+    neon: () => {
+      const queryFn = async (sql: string, params?: unknown[]) => {
+        const result = await pglite.query(sql, params);
+        return result.rows;
+      };
+      queryFn.query = queryFn;
+      return queryFn;
     },
   };
 });
