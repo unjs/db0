@@ -1,10 +1,15 @@
 import { neon } from "@neondatabase/serverless";
-import type { NeonQueryFunction, HTTPTransactionOptions } from "@neondatabase/serverless";
+import type {
+  NeonQueryFunction,
+  HTTPTransactionOptions,
+} from "@neondatabase/serverless";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 
-export interface ConnectorOptions
-  extends HTTPTransactionOptions<undefined, undefined> {
+export interface ConnectorOptions extends HTTPTransactionOptions<
+  undefined,
+  undefined
+> {
   /**
    * The URL of the Neon Serverless Postgres instance.
    *
@@ -13,10 +18,7 @@ export interface ConnectorOptions
   url: string;
 }
 
-type InternalQuery = (
-  sql: string,
-  params?: Primitive[],
-) => Promise<unknown[]>;
+type InternalQuery = (sql: string, params?: Primitive[]) => Promise<unknown[]>;
 
 export default function neonConnector(
   opts: ConnectorOptions,
