@@ -1,55 +1,64 @@
 import type { Client, InStatement } from "@libsql/client";
-import type { Connector, Statement } from "../../types";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "../_internal/statement.ts";
 
 export type ConnectorOptions = {
   getClient: () => Client;
   name?: string;
 };
 
-export default function libSqlCoreConnector(opts: ConnectorOptions) {
-  function query(sql: InStatement) {
-    const client = opts.getClient();
-    return client.execute(sql);
-  }
+type InternalQuery = (sql: InStatement) => Promise<any>;
 
-  return <Connector<Client>>{
+export default function libSqlCoreConnector(
+  opts: ConnectorOptions,
+): Connector<Client> {
+  const query: InternalQuery = (sql) => opts.getClient().execute(sql);
+
+  return {
     name: opts.name || "libsql-core",
     dialect: "libsql",
     getInstance: async () => opts.getClient(),
-    exec(sql: string) {
-      return query(sql);
-    },
-    prepare(sql: string) {
-      const stmt = <Statement>{
-        _sql: sql,
-        _params: [],
-        bind(...params) {
-          if (params.length > 0) {
-            this._params = params;
-          }
-          return stmt;
-        },
-        all(...params) {
-          return query({ sql: this._sql, args: params || this._params }).then(
-            (r) => r.rows,
-          );
-        },
-        run(...params) {
-          return query({ sql: this._sql, args: params || this._params }).then(
-            (r) => ({
-              result: r,
-              rows: r.rows,
-            }),
-          );
-        },
-        get(...params) {
-          // TODO: Append limit?
-          return query({ sql: this._sql, args: params || this._params }).then(
-            (r) => r.rows[0],
-          );
-        },
-      };
-      return stmt;
+    exec: (sql) => query(sql),
+    prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: () => {
+      opts.getClient()?.close?.();
     },
   };
+}
+
+class StatementWrapper extends BoundableStatement<void> {
+  #query: InternalQuery;
+  #sql: string;
+
+  constructor(sql: string, query: InternalQuery) {
+    super();
+    this.#sql = sql;
+    this.#query = query;
+  }
+
+  async all(...params: Primitive[]) {
+    const res = await this.#query({
+      sql: this.#sql,
+      args: params as Exclude<Primitive, undefined>[],
+    });
+    return res.rows;
+  }
+
+  async run(...params: Primitive[]) {
+    const res = await this.#query({
+      sql: this.#sql,
+      args: params as Exclude<Primitive, undefined>[],
+    });
+    return {
+      ...res,
+    };
+  }
+
+  async get(...params: Primitive[]) {
+    const res = await this.#query({
+      sql: this.#sql,
+      args: params as Exclude<Primitive, undefined>[],
+    });
+    return res.rows[0];
+  }
 }

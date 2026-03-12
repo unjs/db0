@@ -10,6 +10,9 @@ __*
 .data
 .tmp
 .env
+.wrangler
 
 /connectors
 /integrations
+
+tsconfig.tsbuildinfo

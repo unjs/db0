@@ -1,8 +1,9 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import Database from "better-sqlite3";
-
-import type { Connector, Statement } from "../types";
+import type { Connector, Primitive } from "db0";
+import type { Statement as RawStatement } from "better-sqlite3";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export interface ConnectorOptions {
   cwd?: string;
@@ -10,7 +11,9 @@ export interface ConnectorOptions {
   name?: string;
 }
 
-export default function sqliteConnector(opts: ConnectorOptions) {
+export default function sqliteConnector(
+  opts: ConnectorOptions,
+): Connector<Database.Database> {
   let _db: Database.Database;
   const getDB = () => {
     if (_db) {
@@ -29,34 +32,30 @@ export default function sqliteConnector(opts: ConnectorOptions) {
     return _db;
   };
 
-  return <Connector<Database.Database>>{
+  return {
     name: "sqlite",
     dialect: "sqlite",
     getInstance: () => getDB(),
-    exec(sql: string) {
-      return getDB().exec(sql);
-    },
-    prepare(sql: string) {
-      const _stmt = getDB().prepare(sql);
-      const stmt = <Statement>{
-        bind(...params) {
-          if (params.length > 0) {
-            _stmt.bind(...params);
-          }
-          return stmt;
-        },
-        all(...params) {
-          return Promise.resolve(_stmt.all(...params));
-        },
-        run(...params) {
-          const res = _stmt.run(...params);
-          return Promise.resolve({ success: res.changes > 0 });
-        },
-        get(...params) {
-          return Promise.resolve(_stmt.get(...params));
-        },
-      };
-      return stmt;
+    exec: (sql) => getDB().exec(sql),
+    prepare: (sql) => new StatementWrapper(() => getDB().prepare(sql)),
+    dispose: () => {
+      _db?.close?.();
+      _db = undefined as any;
     },
   };
+}
+
+class StatementWrapper extends BoundableStatement<() => RawStatement> {
+  async all(...params: Primitive[]) {
+    return this._statement().all(...params);
+  }
+
+  async run(...params: Primitive[]) {
+    const res = this._statement().run(...params);
+    return { success: res.changes > 0, ...res };
+  }
+
+  async get(...params: Primitive[]) {
+    return this._statement().get(...params);
+  }
 }

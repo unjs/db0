@@ -1,35 +1,13 @@
-import { defineBuildConfig } from "unbuild";
+import { defineBuildConfig } from "obuild/config";
 
 export default defineBuildConfig({
-  declaration: true,
-  rollup: {
-    emitCJS: true,
-  },
   entries: [
-    "src/index",
+    { type: "bundle", input: "src/index.ts" },
+    { type: "transform", input: "src/connectors/", outDir: "dist/connectors" },
     {
-      input: "src/connectors/",
-      outDir: "connectors",
-      format: "esm",
-    },
-    {
-      input: "src/connectors/",
-      outDir: "connectors",
-      format: "cjs",
-      ext: "cjs",
-      declaration: false,
-    },
-    {
+      type: "transform",
       input: "src/integrations/",
-      outDir: "integrations",
-      format: "esm",
-    },
-    {
-      input: "src/integrations/",
-      outDir: "integrations",
-      format: "cjs",
-      ext: "cjs",
-      declaration: false,
+      outDir: "dist/integrations",
     },
   ],
 });

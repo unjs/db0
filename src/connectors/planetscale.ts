@@ -1,10 +1,19 @@
-import { Client, type Config } from "@planetscale/database";
+import { Client, type ExecutedQuery, type Config } from "@planetscale/database";
 
-import type { Connector, Statement } from "../types";
+import type { Connector, Primitive } from "db0";
 
-export type ConnectorOptions = Config
+import { BoundableStatement } from "./_internal/statement.ts";
 
-export default function planetscaleConnector(opts: ConnectorOptions) {
+export type ConnectorOptions = Config;
+
+type InternalQuery = (
+  sql: string,
+  params?: unknown[],
+) => Promise<ExecutedQuery>;
+
+export default function planetscaleConnector(
+  opts: ConnectorOptions,
+): Connector<Client> {
   let _client: undefined | Client;
   function getClient() {
     if (_client) {
@@ -17,44 +26,46 @@ export default function planetscaleConnector(opts: ConnectorOptions) {
 
   // Discussion on how @planetscale/database client works:
   // https://github.com/drizzle-team/drizzle-orm/issues/1743#issuecomment-1879479647
-  function query(sql: string, params?: unknown[]) {
-    const client = getClient();
-    return client.execute(sql, params);
-  }
+  const query: InternalQuery = (sql, params) =>
+    getClient().execute(sql, params);
 
-  return <Connector<Client>>{
+  return {
     name: "planetscale",
     dialect: "mysql",
     getInstance: () => getClient(),
-    exec(sql: string) {
-      return query(sql);
-    },
-    prepare(sql: string) {
-      const stmt = <Statement>{
-        _sql: sql,
-        _params: [],
-        bind(...params) {
-          if (params.length > 0) {
-            this._params = params;
-          }
-          return stmt;
-        },
-        all(...params) {
-          return query(this._sql, params || this._params).then((r) => r.rows);
-        },
-        run(...params) {
-          return query(this._sql, params || this._params).then((r) => ({
-            result: r,
-            rows: r.rows,
-          }));
-        },
-        get(...params) {
-          return query(this._sql, params || this._params).then(
-            (r) => r.rows[0],
-          );
-        },
-      };
-      return stmt;
+    exec: (sql) => query(sql),
+    prepare: (sql) => new StatementWrapper(sql, query),
+    dispose: () => {
+      _client = undefined;
     },
   };
+}
+
+class StatementWrapper extends BoundableStatement<void> {
+  #query: InternalQuery;
+  #sql: string;
+
+  constructor(sql: string, query: InternalQuery) {
+    super();
+    this.#sql = sql;
+    this.#query = query;
+  }
+
+  async all(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
+    return res.rows;
+  }
+
+  async run(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
+    return {
+      success: true,
+      ...res,
+    };
+  }
+
+  async get(...params: Primitive[]) {
+    const res = await this.#query(this.#sql, params);
+    return res.rows[0];
+  }
 }

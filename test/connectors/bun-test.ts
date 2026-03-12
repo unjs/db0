@@ -14,5 +14,7 @@ test("connectors: bun", async () => {
   await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '')`;
 
   const { rows } = await db.sql`SELECT * FROM users WHERE id = ${userId}`;
-  expect(rows).toMatchObject([{ id: userId, firstName: "John", lastName: "Doe", email: "" }]);
-})
+  expect(rows).toMatchObject([
+    { id: userId, firstName: "John", lastName: "Doe", email: "" },
+  ]);
+});

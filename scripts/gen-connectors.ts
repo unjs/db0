@@ -13,7 +13,7 @@ const connectorsMetaFile = fileURLToPath(
 );
 
 const aliases = {
-  "better-sqlite3": ["sqlite"],
+  "node-sqlite": ["sqlite"],
   "bun-sqlite": ["bun"],
   "libsql-node": ["libsql"],
 } as const;
@@ -23,6 +23,9 @@ async function getConnectorFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
+    if (entry.name.startsWith("_")) {
+      continue;
+    }
     if (entry.isDirectory()) {
       files.push(...(await getConnectorFiles(join(dir, entry.name))));
     } else if (entry.isFile()) {
@@ -88,22 +91,22 @@ ${connectors
   )
   .join("\n")}
 
-export type BuiltinConnectorName = ${connectors.flatMap((d) => d.names.map((name) => `"${name}"`)).join(" | ")};
+export type ConnectorName = ${connectors.flatMap((d) => d.names.map((name) => `"${name}"`)).join(" | ")};
 
-export type BuiltinConnectorOptions = {
+export type ConnectorOptions = {
   ${connectors
     .filter((d) => d.optionsTExport)
     .flatMap((d) =>
       d.names.map(
         (name, i) =>
-          `${i === 0 ? "" : `/** @deprecated Alias of ${d.name} */\n  `}"${name}": ${d.optionsTName};`,
+          `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": ${d.optionsTName};`,
       ),
     )
     .join("\n  ")}
 };
 
-export const builtinConnectors = Object.freeze({
-  ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** @deprecated Alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
+export const connectors: Record<ConnectorName, string> = Object.freeze({
+  ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
 } as const);
 `;
 

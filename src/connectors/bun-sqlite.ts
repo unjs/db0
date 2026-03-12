@@ -1,8 +1,8 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
-import { Database } from "bun:sqlite";
-
-import type { Connector, Statement } from "../types";
+import { Database, Statement as RawStatement } from "bun:sqlite";
+import type { Connector, Primitive } from "db0";
+import { BoundableStatement } from "./_internal/statement.ts";
 
 export interface ConnectorOptions {
   cwd?: string;
@@ -10,13 +10,15 @@ export interface ConnectorOptions {
   name?: string;
 }
 
-export default function bunSqliteConnector(opts: ConnectorOptions) {
+export default function bunSqliteConnector(
+  opts: ConnectorOptions,
+): Connector<Database> {
   let _db: Database;
   const getDB = () => {
     if (_db) {
       return _db;
     }
-    if (!opts.name || opts.name === ":memory:") {
+    if (opts.name === ":memory:") {
       _db = new Database(":memory:");
     } else {
       const filePath = resolve(
@@ -29,35 +31,30 @@ export default function bunSqliteConnector(opts: ConnectorOptions) {
     return _db;
   };
 
-  return <Connector<Database>>{
+  return {
     name: "sqlite",
     dialect: "sqlite",
     getInstance: () => getDB(),
-    exec(sql: string) {
-      return getDB().exec(sql);
-    },
-    prepare(sql: string) {
-      const _stmt = getDB().prepare(sql);
-      const stmt = <Statement>{
-        _params: [],
-        bind(...params) {
-          if (params.length > 0) {
-            this._params = params;
-          }
-          return stmt;
-        },
-        all(...params) {
-          return Promise.resolve(_stmt.all(...params));
-        },
-        run(...params) {
-          const res = _stmt.run(...params);
-          return Promise.resolve({ success: true });
-        },
-        get(...params) {
-          return Promise.resolve(_stmt.get(...params));
-        },
-      };
-      return stmt;
+    exec: (sql) => getDB().exec(sql),
+    prepare: (sql) => new StatementWrapper(getDB().prepare(sql)),
+    dispose: () => {
+      _db?.close?.();
+      _db = undefined as any;
     },
   };
+}
+
+class StatementWrapper extends BoundableStatement<RawStatement> {
+  all(...params: Primitive[]) {
+    return Promise.resolve(this._statement.all(...params));
+  }
+
+  run(...params: Primitive[]) {
+    const res = this._statement.run(...params);
+    return Promise.resolve({ success: true, ...res });
+  }
+
+  get(...params: Primitive[]) {
+    return Promise.resolve(this._statement.get(...params));
+  }
 }

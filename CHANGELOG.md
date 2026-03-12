@@ -1,6 +1,208 @@
 # Changelog
 
 
+## v0.3.4
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.3...v0.3.4)
+
+### 📦 Build
+
+- Migrate to obuild ([8586320](https://github.com/unjs/db0/commit/8586320))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
+## v0.3.3
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.2...v0.3.3)
+
+### 🚀 Enhancements
+
+- Support `dispose` and `using createDatabase()` ([#178](https://github.com/unjs/db0/pull/178))
+- Cloudflare hyperdrive ([#164](https://github.com/unjs/db0/pull/164))
+
+### 💅 Refactors
+
+- Strict types ([#179](https://github.com/unjs/db0/pull/179))
+
+### 📖 Documentation
+
+- Improve drizzle integration example with drizzle-kit usage ([#170](https://github.com/unjs/db0/pull/170))
+
+### 🏡 Chore
+
+- Update undocs ([d912de1](https://github.com/unjs/db0/commit/d912de1))
+- Update docs ([d4a3cd5](https://github.com/unjs/db0/commit/d4a3cd5))
+- Update undocs ([5d398ef](https://github.com/unjs/db0/commit/5d398ef))
+- Update deps ([29ca18b](https://github.com/unjs/db0/commit/29ca18b))
+- Update deps ([83f1425](https://github.com/unjs/db0/commit/83f1425))
+- Lint ([9784e4d](https://github.com/unjs/db0/commit/9784e4d))
+- Gitignore tsconfig.tsbuildinfo ([c68b294](https://github.com/unjs/db0/commit/c68b294))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Fayaz Ahmed <fayazara@gmail.com>
+- Rihan Arfan ([@RihanArfan](https://github.com/RihanArfan))
+
+## v0.3.2
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.1...v0.3.2)
+
+### 🩹 Fixes
+
+- **sqlite:** Defer prepare errors ([#162](https://github.com/unjs/db0/pull/162))
+
+### 📖 Documentation
+
+- Fix link to node-sqlite3 ([#159](https://github.com/unjs/db0/pull/159))
+
+### 🏡 Chore
+
+- Apply automated updates ([91b9863](https://github.com/unjs/db0/commit/91b9863))
+- Update deps ([ad995db](https://github.com/unjs/db0/commit/ad995db))
+
+### ✅ Tests
+
+- Only include src for coverage report ([#161](https://github.com/unjs/db0/pull/161))
+
+### ❤️ Contributors
+
+- Farnabaz <farnabaz@gmail.com>
+- Kanon ([@ysknsid25](https://github.com/ysknsid25))
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Tsotne Nazarashvili <cotne.95@gmail.com>
+
+## v0.3.1
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.0...v0.3.1)
+
+### 💅 Refactors
+
+- Alias `sqlite` to `node-sqlite` ([55df331](https://github.com/unjs/db0/commit/55df331))
+
+### 📦 Build
+
+- Remove deprecated for aliases ([0011d57](https://github.com/unjs/db0/commit/0011d57))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
+## v0.3.0
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.4...v0.3.0)
+
+### 🚀 Enhancements
+
+- ⚠️  Prepared statements ([#157](https://github.com/unjs/db0/pull/157))
+- `node-sqlite` driver with native `node:sqlite` ([#155](https://github.com/unjs/db0/pull/155))
+
+### 🩹 Fixes
+
+- **cloudflare-d1:** Correctly return results array ([#156](https://github.com/unjs/db0/pull/156))
+- Fix type exports ([0d5a151](https://github.com/unjs/db0/commit/0d5a151))
+- Correct `.getInstance()` type ([6a7dc5a](https://github.com/unjs/db0/commit/6a7dc5a))
+
+### 💅 Refactors
+
+- ⚠️  Rename `node-sqlite3` to `sqlite3` ([eb8c06d](https://github.com/unjs/db0/commit/eb8c06d))
+
+### 📖 Documentation
+
+- Add `node-sqlite` ([4da62b4](https://github.com/unjs/db0/commit/4da62b4))
+
+### 📦 Build
+
+- ⚠️  Esm-only dist ([7d7bdec](https://github.com/unjs/db0/commit/7d7bdec))
+
+### 🏡 Chore
+
+- Update deps ([a442671](https://github.com/unjs/db0/commit/a442671))
+- Update deps ([77bee33](https://github.com/unjs/db0/commit/77bee33))
+- Fix db0 link ([18b2bbc](https://github.com/unjs/db0/commit/18b2bbc))
+
+#### ⚠️ Breaking Changes
+
+- ⚠️  Prepared statements ([#157](https://github.com/unjs/db0/pull/157))
+- ⚠️  Rename `node-sqlite3` to `sqlite3` ([eb8c06d](https://github.com/unjs/db0/commit/eb8c06d))
+- ⚠️  Esm-only dist ([7d7bdec](https://github.com/unjs/db0/commit/7d7bdec))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
+## v0.2.4
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.3...v0.2.4)
+
+### 🩹 Fixes
+
+- **bun-sqlite:** Remove in-memory fallback when name is not provided ([#153](https://github.com/unjs/db0/pull/153))
+
+### 🏡 Chore
+
+- Update deps ([cd49cad](https://github.com/unjs/db0/commit/cd49cad))
+- Update ci ([b7a6ec9](https://github.com/unjs/db0/commit/b7a6ec9))
+- Remove extra `@types/sqlite3` dev dependency ([a4df52b](https://github.com/unjs/db0/commit/a4df52b))
+- Add pnpm stuff ([5c2d3cd](https://github.com/unjs/db0/commit/5c2d3cd))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Artem Melnyk ([@MellKam](http://github.com/MellKam))
+
+## v0.2.3
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.2...v0.2.3)
+
+### 📦 Build
+
+- Export `connectors` and connector ([d411f91](https://github.com/unjs/db0/commit/d411f91))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+
+## v0.2.2
+
+[compare changes](https://github.com/unjs/db0/compare/v0.2.1...v0.2.2)
+
+### 🚀 Enhancements
+
+- Export database instances ([#132](https://github.com/unjs/db0/pull/132))
+- Add `node-sqlite3` connector ([#147](https://github.com/unjs/db0/pull/147))
+- Support `RETURNING` clause ([#139](https://github.com/unjs/db0/pull/139))
+- **pglite:** Use async init ([#130](https://github.com/unjs/db0/pull/130))
+
+### 🩹 Fixes
+
+- Add missing `mysql` to `connectors` map ([#127](https://github.com/unjs/db0/pull/127))
+- Always add `{ success: true }` to select results ([#118](https://github.com/unjs/db0/pull/118))
+
+### 📦 Build
+
+- Generate drivers meta ([#136](https://github.com/unjs/db0/pull/136))
+- Field export condition for `libsql` + `web` ([97630f3](https://github.com/unjs/db0/commit/97630f3))
+
+### 🏡 Chore
+
+- Fix typos ([#122](https://github.com/unjs/db0/pull/122))
+- Update deps ([00e7454](https://github.com/unjs/db0/commit/00e7454))
+- Update deps ([37d2d3c](https://github.com/unjs/db0/commit/37d2d3c))
+- Update deps ([d0b5ca8](https://github.com/unjs/db0/commit/d0b5ca8))
+
+### ❤️ Contributors
+
+- Sandro Circi ([@sandros94](http://github.com/sandros94))
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Jonathan Ginn ([@ginnwork](http://github.com/ginnwork))
+- Aman Desai ([@amandesai01](http://github.com/amandesai01))
+- Farnabaz <farnabaz@gmail.com>
+- Hotdogc1017 ([@hotdogc1017](http://github.com/hotdogc1017))
+- Nick-w-nick ([@nick-w-nick](http://github.com/nick-w-nick))
+
 ## v0.2.1
 
 [compare changes](https://github.com/unjs/db0/compare/v0.2.0...v0.2.1)

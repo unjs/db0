@@ -7,11 +7,11 @@ export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
 
 export type Statement = {
   /**
-   * Binds parameters to the statement and returns itself for concatenation.
+   * Binds parameters to the statement.
    * @param {...Primitive[]} params - Parameters to bind to the SQL statement.
-   * @returns {Statement} The instance of the statement for further cascading.
+   * @returns {PreparedStatement} The instance of the statement with bound parameters.
    */
-  bind(...params: Primitive[]): Statement;
+  bind(...params: Primitive[]): PreparedStatement;
 
   /**
    * Executes the statement and returns all resulting rows as an array.
@@ -35,6 +35,33 @@ export type Statement = {
   get(...params: Primitive[]): Promise<unknown>;
 };
 
+export type PreparedStatement = {
+  /**
+   * Binds parameters to the statement.
+   * @param {...Primitive[]} params - Parameters to bind to the SQL statement.
+   * @returns {PreparedStatement} The instance of the statement with bound parameters.
+   */
+  bind(...params: Primitive[]): PreparedStatement;
+
+  /**
+   * Executes the statement and returns all resulting rows as an array.
+   * @returns {Promise<unknown[]>} A promise that resolves to an array of rows.
+   */
+  all(): Promise<unknown[]>;
+
+  /**
+   * Executes the statement as an action (e.g. insert, update, delete).
+   * @returns {Promise<{ success: boolean }>} A promise that resolves to the success state of the action.
+   */
+  run(): Promise<{ success: boolean }>;
+
+  /**
+   * Executes the statement and returns a single row.
+   * @returns {Promise<unknown>} A promise that resolves to the first row in the result set.
+   */
+  get(): Promise<unknown>;
+};
+
 /**
  * Represents the result of a database execution.
  */
@@ -43,7 +70,7 @@ export type ExecResult = unknown;
 /**
  * Defines a database connector for executing SQL queries and preparing statements.
  */
-export type Connector<TInstance = any> = {
+export type Connector<TInstance = unknown> = {
   /**
    * The name of the connector.
    */
@@ -72,6 +99,12 @@ export type Connector<TInstance = any> = {
    * @returns {statement} The prepared SQL statement.
    */
   prepare: (sql: string) => Statement;
+
+  /**
+   * Closes the database connection and cleans up resources.
+   * @returns {void | Promise<void>} A promise that resolves when the connection is closed.
+   */
+  dispose?: () => void | Promise<void>;
 };
 
 /**
@@ -85,14 +118,22 @@ type DefaultSQLResult = {
   success?: boolean;
 };
 
-export interface Database<TConnector extends Connector = Connector> {
+export interface Database<
+  TConnector extends Connector = Connector,
+> extends AsyncDisposable {
   readonly dialect: SQLDialect;
+
+  /**
+   * Indicates whether the database instance has been disposed/closed.
+   * @returns {boolean} True if the database has been disposed, false otherwise.
+   */
+  readonly disposed: boolean;
 
   /**
    * The client instance used internally.
    * @returns {Promise<TInstance>} A promise that resolves with the client instance.
    */
-  getInstance: () => Promise<TConnector["getInstance"]>;
+  getInstance: () => Promise<Awaited<ReturnType<TConnector["getInstance"]>>>;
 
   /**
    * Executes a raw SQL string.
@@ -119,4 +160,16 @@ export interface Database<TConnector extends Connector = Connector> {
     strings: TemplateStringsArray,
     ...values: Primitive[]
   ) => Promise<T>;
+
+  /**
+   * Closes the database connection and cleans up resources.
+   * @returns {Promise<void>} A promise that resolves when the connection is closed.
+   */
+  dispose: () => Promise<void>;
+
+  /**
+   * AsyncDisposable implementation for using syntax support.
+   * @returns {Promise<void>} A promise that resolves when the connection is disposed.
+   */
+  [Symbol.asyncDispose]: () => Promise<void>;
 }

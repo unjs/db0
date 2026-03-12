@@ -3,23 +3,34 @@ import pg from "pg";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
+import { getHyperdrive } from "./_internal/cloudflare.ts";
 
-export type ConnectorOptions = { url: string } | pg.ClientConfig;
+type OmitPgConfig = Omit<
+  pg.ClientConfig,
+  "user" | "database" | "password" | "port" | "host" | "connectionString"
+>;
+export type ConnectorOptions = {
+  bindingName: string;
+} & OmitPgConfig;
 
 type InternalQuery = (
   sql: string,
   params?: Primitive[],
 ) => Promise<pg.QueryResult>;
 
-export default function postgresqlConnector(
+export default function cloudflareHyperdrivePostgresqlConnector(
   opts: ConnectorOptions,
 ): Connector<pg.Client> {
   let _client: undefined | pg.Client | Promise<pg.Client>;
-  function getClient() {
+  async function getClient() {
     if (_client) {
       return _client;
     }
-    const client = new pg.Client("url" in opts ? opts.url : opts);
+    const hyperdrive = await getHyperdrive(opts.bindingName);
+    const client = new pg.Client({
+      ...opts,
+      connectionString: hyperdrive.connectionString,
+    });
     _client = client.connect().then(() => {
       _client = client;
       return _client;
@@ -33,7 +44,7 @@ export default function postgresqlConnector(
   };
 
   return {
-    name: "postgresql",
+    name: "cloudflare-hyperdrive-postgresql",
     dialect: "postgresql",
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
