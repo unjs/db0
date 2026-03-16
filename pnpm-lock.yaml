@@ -75,6 +75,9 @@ importers:
       obuild:
         specifier: ^0.4.32
         version: 0.4.32(@typescript/native-preview@7.0.0-dev.20260316.1)(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1)(magicast@0.5.2)(picomatch@4.0.3)(rollup@4.56.0)(typescript@5.9.3)
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
       pg:
         specifier: ^8.20.0
         version: 8.20.0
