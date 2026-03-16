@@ -21,6 +21,9 @@ importers:
       '@libsql/client':
         specifier: ^0.17.0
         version: 0.17.0(encoding@0.1.13)
+      '@neondatabase/serverless':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@planetscale/database':
         specifier: ^1.19.0
         version: 1.19.0
@@ -4277,7 +4280,6 @@ snapshots:
     dependencies:
       '@types/node': 22.19.15
       '@types/pg': 8.18.0
-    optional: true
 
   '@npmcli/agent@4.0.0':
     dependencies:
@@ -4545,7 +4547,6 @@ snapshots:
   '@types/node@22.19.15':
     dependencies:
       undici-types: 6.21.0
-    optional: true
 
   '@types/node@25.5.0':
     dependencies:
@@ -6799,8 +6800,7 @@ snapshots:
 
   ufo@1.6.3: {}
 
-  undici-types@6.21.0:
-    optional: true
+  undici-types@6.21.0: {}
 
   undici-types@7.18.2: {}
 

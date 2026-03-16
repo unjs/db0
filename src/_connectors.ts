@@ -10,13 +10,14 @@ import type { ConnectorOptions as LibSQLHttpOptions } from "db0/connectors/libsq
 import type { ConnectorOptions as LibSQLNodeOptions } from "db0/connectors/libsql/node";
 import type { ConnectorOptions as LibSQLWebOptions } from "db0/connectors/libsql/web";
 import type { ConnectorOptions as MySQL2Options } from "db0/connectors/mysql2";
+import type { ConnectorOptions as NeonOptions } from "db0/connectors/neon";
 import type { ConnectorOptions as NodeSQLiteOptions } from "db0/connectors/node-sqlite";
 import type { ConnectorOptions as PgliteOptions } from "db0/connectors/pglite";
 import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/planetscale";
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 import type { ConnectorOptions as SQLite3Options } from "db0/connectors/sqlite3";
 
-export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
+export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "neon" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
 
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
@@ -33,6 +34,7 @@ export type ConnectorOptions = {
   "libsql": LibSQLNodeOptions;
   "libsql-web": LibSQLWebOptions;
   "mysql2": MySQL2Options;
+  "neon": NeonOptions;
   "node-sqlite": NodeSQLiteOptions;
   /** alias of node-sqlite */
   "sqlite": NodeSQLiteOptions;
@@ -57,6 +59,7 @@ export const connectors: Record<ConnectorName, string> = Object.freeze({
   "libsql": "db0/connectors/libsql/node",
   "libsql-web": "db0/connectors/libsql/web",
   "mysql2": "db0/connectors/mysql2",
+  "neon": "db0/connectors/neon",
   "node-sqlite": "db0/connectors/node-sqlite",
   /** alias of node-sqlite */
   "sqlite": "db0/connectors/node-sqlite",
