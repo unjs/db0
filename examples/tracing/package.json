@@ -1,0 +1,11 @@
+{
+  "name": "db0-with-tracing",
+  "private": true,
+  "scripts": {
+    "start": "jiti ./index.ts"
+  },
+  "devDependencies": {
+    "jiti": "^1.21.0",
+    "db0": "latest"
+  }
+}
