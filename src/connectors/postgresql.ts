@@ -45,10 +45,121 @@ export default function postgresqlConnector(
   };
 }
 
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
+/**
+ * Replace `?` placeholders with PostgreSQL `$N` positional parameters,
+ * while preserving literal `?` inside quoted strings and comments.
+ *
+ * Handles:
+ * - Single-quoted strings (including escaped `''`)
+ * - Dollar-quoted strings (`$$...$$` and `$tag$...$tag$`)
+ * - Double-quoted identifiers
+ * - Line comments (`--`)
+ * - Block comments (`/* */`)
+ */
 function normalizeParams(sql: string) {
+  const result: string[] = [];
   let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
+  let paramIdx = 0;
+  const n = sql.length;
+
+  while (i < n) {
+    // Single-quoted string
+    if (sql[i] === "'") {
+      let j = i + 1;
+      while (j < n) {
+        if (sql[j] === "'") {
+          if (j + 1 < n && sql[j + 1] === "'") {
+            j += 2; // escaped quote ''
+            continue;
+          }
+          j++;
+          break;
+        }
+        j++;
+      }
+      result.push(sql.slice(i, j));
+      i = j;
+      continue;
+    }
+
+    // Dollar-quoted string (PostgreSQL): $tag$...$tag$ or $$...$$
+    if (
+      sql[i] === "$" &&
+      i + 1 < n &&
+      (sql[i + 1] === "$" || /[a-zA-Z_]/.test(sql[i + 1]))
+    ) {
+      let j = i + 1;
+      if (sql[j] !== "$") {
+        while (j < n && /[a-zA-Z0-9_]/.test(sql[j])) j++;
+        if (j >= n || sql[j] !== "$") {
+          result.push(sql[i]);
+          i++;
+          continue;
+        }
+      }
+      const tag = sql.slice(i, j + 1);
+      const end = sql.indexOf(tag, j + 1);
+      if (end === -1) {
+        result.push(sql.slice(i));
+        break;
+      }
+      result.push(sql.slice(i, end + tag.length));
+      i = end + tag.length;
+      continue;
+    }
+
+    // Double-quoted identifier
+    if (sql[i] === '"') {
+      let j = i + 1;
+      while (j < n) {
+        if (sql[j] === '"') {
+          j++;
+          break;
+        }
+        j++;
+      }
+      result.push(sql.slice(i, j));
+      i = j;
+      continue;
+    }
+
+    // Line comment --
+    if (i + 1 < n && sql[i] === "-" && sql[i + 1] === "-") {
+      const j = sql.indexOf("\n", i);
+      if (j === -1) {
+        result.push(sql.slice(i));
+        break;
+      }
+      result.push(sql.slice(i, j));
+      i = j;
+      continue;
+    }
+
+    // Block comment /* */
+    if (i + 1 < n && sql[i] === "/" && sql[i + 1] === "*") {
+      const end = sql.indexOf("*/", i + 2);
+      if (end === -1) {
+        result.push(sql.slice(i));
+        break;
+      }
+      result.push(sql.slice(i, end + 2));
+      i = end + 2;
+      continue;
+    }
+
+    // Parameter placeholder ?
+    if (sql[i] === "?") {
+      paramIdx++;
+      result.push(`$${paramIdx}`);
+      i++;
+      continue;
+    }
+
+    result.push(sql[i]);
+    i++;
+  }
+
+  return result.join("");
 }
 
 class StatementWrapper extends BoundableStatement<void> {
