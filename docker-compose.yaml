@@ -16,3 +16,12 @@ services:
       MYSQL_DATABASE: db0
       MYSQL_USER: test
       MYSQL_PASSWORD: test
+  mariadb:
+    # https://hub.docker.com/_/mariadb
+    image: mariadb
+    ports: ["3307:3306"]
+    environment:
+      MARIADB_ROOT_PASSWORD: test
+      MARIADB_DATABASE: db0
+      MARIADB_USER: test
+      MARIADB_PASSWORD: test
