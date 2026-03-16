@@ -71,6 +71,9 @@ Related (to `cwd`) or absolute path to the sql file. By default it is stored in 
 
 ## `sqlite3`
 
+> [!CAUTION]
+> [`sqlite3` is no longer maintained](https://github.com/TryGhost/node-sqlite3#readme), use [`node:sqlite`](#node-sqlite) or [`better-sqlite3`](#better-sqlite3) instead.
+
 :read-more{to="https://github.com/TryGhost/node-sqlite3" title="sqlite3"}
 
 For this connector, you need to install [`sqlite3`](https://www.npmjs.com/package/sqlite3) dependency:
