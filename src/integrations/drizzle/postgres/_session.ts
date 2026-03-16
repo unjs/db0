@@ -120,9 +120,9 @@ export class DB0PgTransaction<
       const result = await transaction(tx);
       await tx.execute(sql.raw(`release savepoint ${savepointName}`));
       return result;
-    } catch (err) {
+    } catch (error_) {
       await tx.execute(sql.raw(`rollback to savepoint ${savepointName}`));
-      throw err;
+      throw error_;
     }
   }
 }

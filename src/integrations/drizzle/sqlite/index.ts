@@ -1,8 +1,5 @@
 import type { Database } from "db0";
-import {
-  DB0SQLiteSession,
-  type DB0SQLiteSessionOptions,
-} from "./_session.ts";
+import { DB0SQLiteSession, type DB0SQLiteSessionOptions } from "./_session.ts";
 
 import { DefaultLogger } from "drizzle-orm/logger";
 

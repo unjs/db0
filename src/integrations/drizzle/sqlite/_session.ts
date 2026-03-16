@@ -81,9 +81,9 @@ export class DB0SQLiteSession<
       const result = await transaction(tx);
       await this.run(sql`commit`);
       return result;
-    } catch (err) {
+    } catch (error_) {
       await this.run(sql`rollback`);
-      throw err;
+      throw error_;
     }
   }
 }
@@ -93,9 +93,7 @@ export class DB0SQLiteTransaction<
   TSchema extends TablesRelationalConfig,
 > extends SQLiteTransaction<"async", unknown, TFullSchema, TSchema> {
   override async transaction<T>(
-    transaction: (
-      tx: DB0SQLiteTransaction<TFullSchema, TSchema>,
-    ) => Promise<T>,
+    transaction: (tx: DB0SQLiteTransaction<TFullSchema, TSchema>) => Promise<T>,
   ): Promise<T> {
     const savepointName = `sp${this.nestedIndex}`;
     const tx = new DB0SQLiteTransaction<TFullSchema, TSchema>(
@@ -111,16 +109,12 @@ export class DB0SQLiteTransaction<
     try {
       const result = await transaction(tx);
       // @ts-expect-error -- accessing inherited property
-      await this.session.run(
-        sql.raw(`release savepoint ${savepointName}`),
-      );
+      await this.session.run(sql.raw(`release savepoint ${savepointName}`));
       return result;
-    } catch (err) {
+    } catch (error_) {
       // @ts-expect-error -- accessing inherited property
-      await this.session.run(
-        sql.raw(`rollback to savepoint ${savepointName}`),
-      );
-      throw err;
+      await this.session.run(sql.raw(`rollback to savepoint ${savepointName}`));
+      throw error_;
     }
   }
 }
@@ -141,9 +135,7 @@ export class DB0SQLitePreparedQuery<
     private logger: Logger,
     _fields: SelectedFieldsOrdered | undefined,
     executeMethod: SQLiteExecuteMethod,
-    /** @internal */ public customResultMapper?: (
-      rows: unknown[][],
-    ) => unknown,
+    /** @internal */ public customResultMapper?: (rows: unknown[][]) => unknown,
   ) {
     super("async", executeMethod, query);
   }
@@ -151,28 +143,19 @@ export class DB0SQLitePreparedQuery<
   async run(
     placeholderValues?: Record<string, unknown>,
   ): Promise<{ success: boolean }> {
-    const params = fillPlaceholders(
-      this.query.params,
-      placeholderValues ?? {},
-    );
+    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
     this.logger.logQuery(this.query.sql, params);
     return this.stmt.run(...(params as any[]));
   }
 
   async all(placeholderValues?: Record<string, unknown>): Promise<T["all"]> {
-    const params = fillPlaceholders(
-      this.query.params,
-      placeholderValues ?? {},
-    );
+    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
     this.logger.logQuery(this.query.sql, params);
     return this.stmt.all(...(params as any[]));
   }
 
   async get(placeholderValues?: Record<string, unknown>): Promise<T["get"]> {
-    const params = fillPlaceholders(
-      this.query.params,
-      placeholderValues ?? {},
-    );
+    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
     this.logger.logQuery(this.query.sql, params);
     return this.stmt.get(...(params as any[]));
   }
@@ -180,10 +163,7 @@ export class DB0SQLitePreparedQuery<
   async values<T extends any[] = unknown[]>(
     placeholderValues?: Record<string, unknown>,
   ): Promise<T[]> {
-    const params = fillPlaceholders(
-      this.query.params,
-      placeholderValues ?? {},
-    );
+    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
     this.logger.logQuery(this.query.sql, params);
     const rows = await this.stmt.all(...(params as any[]));
     // db0 Statement doesn't have a values() method, so convert object rows to arrays
