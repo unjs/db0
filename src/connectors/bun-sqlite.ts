@@ -1,5 +1,6 @@
 import { resolve, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
+// @ts-ignore
 import { Database, Statement as RawStatement } from "bun:sqlite";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
