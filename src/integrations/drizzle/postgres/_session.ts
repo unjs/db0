@@ -82,9 +82,10 @@ export class DB0PgSession<
       this,
       this.schema,
     );
-    await tx.execute(
-      sql`begin${config ? sql` ${tx.getTransactionConfigSQL(config)}` : undefined}`,
-    );
+    const configSql =
+      // @ts-expect-error -- accessing @internal method
+      config ? sql` ${tx.getTransactionConfigSQL(config)}` : undefined;
+    await tx.execute(sql`begin${configSql}`);
     try {
       const result = await transaction(tx);
       await tx.execute(sql`commit`);
@@ -110,7 +111,9 @@ export class DB0PgTransaction<
   ): Promise<T> {
     const savepointName = `sp${this.nestedIndex + 1}`;
     const tx = new DB0PgTransaction<TFullSchema, TSchema>(
+      // @ts-expect-error -- accessing inherited property
       this.dialect,
+      // @ts-expect-error -- accessing inherited property
       this.session,
       this.schema,
       this.nestedIndex + 1,
@@ -138,7 +141,7 @@ export class DB0PgPreparedQuery<
     private fields: SelectedFieldsOrdered | undefined,
     private customResultMapper?: (rows: unknown[][]) => T["execute"],
   ) {
-    super({ sql: queryString, params });
+    super({ sql: queryString, params }, undefined, undefined);
   }
 
   async execute(

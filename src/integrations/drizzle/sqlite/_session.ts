@@ -100,6 +100,7 @@ export class DB0SQLiteTransaction<
       "async",
       // @ts-expect-error -- accessing inherited property
       this.dialect,
+      // @ts-expect-error -- accessing inherited property
       this.session,
       this.schema,
       this.nestedIndex + 1,

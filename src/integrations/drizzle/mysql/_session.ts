@@ -45,9 +45,7 @@ export interface DB0MySqlQueryResultHKT extends MySqlQueryResultHKT {
 }
 
 export interface DB0MySqlPreparedQueryHKT extends MySqlPreparedQueryHKT {
-  type: DB0MySqlPreparedQuery<
-    Assume<this["config"], MySqlPreparedQueryConfig>
-  >;
+  type: DB0MySqlPreparedQuery<Assume<this["config"], MySqlPreparedQueryConfig>>;
 }
 
 export class DB0MySqlSession<
@@ -96,9 +94,7 @@ export class DB0MySqlSession<
   }
 
   override async transaction<T>(
-    transaction: (
-      tx: DB0MySqlTransaction<TFullSchema, TSchema>,
-    ) => Promise<T>,
+    transaction: (tx: DB0MySqlTransaction<TFullSchema, TSchema>) => Promise<T>,
     config?: MySqlTransactionConfig,
   ): Promise<T> {
     const tx = new DB0MySqlTransaction<TFullSchema, TSchema>(
@@ -141,17 +137,16 @@ export class DB0MySqlTransaction<
   TSchema
 > {
   override async transaction<T>(
-    transaction: (
-      tx: DB0MySqlTransaction<TFullSchema, TSchema>,
-    ) => Promise<T>,
+    transaction: (tx: DB0MySqlTransaction<TFullSchema, TSchema>) => Promise<T>,
   ): Promise<T> {
     const savepointName = `sp${this.nestedIndex + 1}`;
     const tx = new DB0MySqlTransaction<TFullSchema, TSchema>(
+      // @ts-expect-error -- accessing inherited property
       this.dialect,
+      // @ts-expect-error -- accessing inherited property
       this.session,
       this.schema,
       this.nestedIndex + 1,
-      // @ts-expect-error -- accessing inherited property
       this.mode,
     );
     await tx.execute(sql.raw(`savepoint ${savepointName}`));
@@ -159,9 +154,9 @@ export class DB0MySqlTransaction<
       const result = await transaction(tx);
       await tx.execute(sql.raw(`release savepoint ${savepointName}`));
       return result;
-    } catch (err) {
+    } catch (error_) {
       await tx.execute(sql.raw(`rollback to savepoint ${savepointName}`));
-      throw err;
+      throw error_;
     }
   }
 }
@@ -202,6 +197,7 @@ export class DB0MySqlPreparedQuery<
     return rows as T["execute"];
   }
 
+  // eslint-disable-next-line require-yield
   async *iterator(): AsyncGenerator<T["iterator"]> {
     throw new Error("Streaming is not supported by the db0 MySQL driver");
   }

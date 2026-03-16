@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { type Connector, Database, createDatabase } from "../../../src";
-import { type DrizzleDatabase, drizzle } from "../../../src/integrations/drizzle";
+import {
+  type DrizzleDatabase,
+  drizzle,
+} from "../../../src/integrations/drizzle";
 
 import * as dSqlite from "drizzle-orm/sqlite-core";
 
