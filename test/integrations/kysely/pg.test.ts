@@ -28,8 +28,7 @@ const connectors: {
   },
   {
     name: "postgresql",
-    connector: () =>
-      pgConnector({ url: process.env.POSTGRESQL_URL as string }),
+    connector: () => pgConnector({ url: process.env.POSTGRESQL_URL as string }),
     runIf: !!process.env.POSTGRESQL_URL,
   },
 ];
