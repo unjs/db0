@@ -97,3 +97,8 @@ The integration automatically selects the correct Kysely dialect based on the db
 | `mysql`        | MySQL          |
 
 This means you can switch connectors without changing your Kysely code.
+
+## Limitations
+
+- **`numAffectedRows`**: For mutations without a `RETURNING` clause, the affected row count is not available (`undefined`). Use `RETURNING` if you need to know how many rows were affected.
+- **Streaming queries**: Not supported by the db0 integration.
