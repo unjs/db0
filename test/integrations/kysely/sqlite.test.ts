@@ -68,15 +68,9 @@ for (const { name, connector } of connectors) {
     });
 
     it("delete", async () => {
-      await ky
-        .insertInto("users")
-        .values({ name: "To Delete" })
-        .execute();
+      await ky.insertInto("users").values({ name: "To Delete" }).execute();
 
-      await ky
-        .deleteFrom("users")
-        .where("name", "=", "To Delete")
-        .execute();
+      await ky.deleteFrom("users").where("name", "=", "To Delete").execute();
 
       const res = await ky.selectFrom("users").selectAll().execute();
       expect(res.every((r) => r.name !== "To Delete")).toBe(true);
@@ -84,10 +78,7 @@ for (const { name, connector } of connectors) {
 
     it("transaction", async () => {
       await ky.transaction().execute(async (trx) => {
-        await trx
-          .insertInto("users")
-          .values({ name: "TX User" })
-          .execute();
+        await trx.insertInto("users").values({ name: "TX User" }).execute();
       });
 
       const res = await ky.selectFrom("users").selectAll().execute();
@@ -95,9 +86,8 @@ for (const { name, connector } of connectors) {
     });
 
     it("transaction rollback", async () => {
-      const countBefore = (
-        await ky.selectFrom("users").selectAll().execute()
-      ).length;
+      const countBefore = (await ky.selectFrom("users").selectAll().execute())
+        .length;
 
       await expect(
         ky.transaction().execute(async (trx) => {
@@ -109,9 +99,8 @@ for (const { name, connector } of connectors) {
         }),
       ).rejects.toThrow("rollback");
 
-      const countAfter = (
-        await ky.selectFrom("users").selectAll().execute()
-      ).length;
+      const countAfter = (await ky.selectFrom("users").selectAll().execute())
+        .length;
       expect(countAfter).toBe(countBefore);
     });
 

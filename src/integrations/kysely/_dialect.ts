@@ -1,11 +1,8 @@
-import type {
-  DatabaseConnection,
-  QueryResult,
-} from "kysely";
+import type { DatabaseConnection, QueryResult } from "kysely";
 
 import type { CompiledQuery } from "kysely";
 
-import type { Database } from "db0";
+import type { Database, Primitive } from "db0";
 
 export class DB0Connection implements DatabaseConnection {
   constructor(private db: Database) {}
@@ -21,9 +18,7 @@ export class DB0Connection implements DatabaseConnection {
       compiledQuery.query.kind === "MergeQueryNode"
     ) {
       // For mutations that may return rows (RETURNING clause)
-      const rows = (await stmt.all(
-        ...(parameters as unknown[]),
-      )) as R[];
+      const rows = (await stmt.all(...(parameters as Primitive[]))) as R[];
       return {
         rows,
         // db0 doesn't expose numAffectedRows/insertId,
@@ -32,10 +27,11 @@ export class DB0Connection implements DatabaseConnection {
       };
     }
 
-    const rows = (await stmt.all(...(parameters as unknown[]))) as R[];
+    const rows = (await stmt.all(...(parameters as Primitive[]))) as R[];
     return { rows };
   }
 
+  // eslint-disable-next-line require-yield
   async *streamQuery<R>(
     _compiledQuery: CompiledQuery,
     _chunkSize?: number,
