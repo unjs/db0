@@ -60,6 +60,7 @@
     "eslint": "^10.0.3",
     "eslint-config-unjs": "^0.6.2",
     "jiti": "^2.6.1",
+    "kysely": "^0.28.14",
     "mlly": "^1.8.1",
     "mysql2": "^3.20.0",
     "obuild": "^0.4.32",
@@ -76,6 +77,7 @@
     "@libsql/client": "*",
     "better-sqlite3": "*",
     "drizzle-orm": "*",
+    "kysely": "*",
     "mysql2": "*",
     "sqlite3": "*"
   },
@@ -87,6 +89,9 @@
       "optional": true
     },
     "drizzle-orm": {
+      "optional": true
+    },
+    "kysely": {
       "optional": true
     },
     "mysql2": {

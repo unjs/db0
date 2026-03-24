@@ -18,7 +18,8 @@ src/
 │   ├── libsql/           # LibSQL variants (core, node, http, web)
 │   └── *.ts              # better-sqlite3, bun-sqlite, mysql2, postgresql, etc.
 └── integrations/
-    └── drizzle/           # Drizzle ORM adapter (sqlite, postgres, mysql dialects)
+    ├── drizzle/           # Drizzle ORM adapter (sqlite, postgres, mysql dialects)
+    └── kysely/            # Kysely query builder adapter (auto-detects dialect)
 ```
 
 ## Core API
@@ -51,7 +52,7 @@ Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/conne
 ## Key Patterns
 
 - **Zero runtime deps** — all backend drivers are optional peer dependencies
-- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`
+- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
 - **`BoundableStatement`** base class — shared bind/execute logic in `_internal/statement.ts`
 - **AsyncDisposable** — `await using db = createDatabase(...)` is supported
