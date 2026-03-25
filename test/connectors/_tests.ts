@@ -40,7 +40,8 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
   it("drop and create table", async () => {
     await db.sql`DROP TABLE IF EXISTS users`;
     switch (opts.dialect) {
-      case "mysql": {
+      case "mysql":
+      case "mariadb": {
         await db.sql`CREATE TABLE users (\`id\` VARCHAR(4) PRIMARY KEY, \`firstName\` TEXT, \`lastName\` TEXT, \`email\` TEXT)`;
         break;
       }
@@ -53,7 +54,8 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
 
   it("insert", async () => {
     switch (opts.dialect) {
-      case "mysql": {
+      case "mysql":
+      case "mariadb": {
         await db.sql`INSERT INTO users VALUES (${userId}, 'John', 'Doe', '')`;
         break;
       }

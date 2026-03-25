@@ -3,7 +3,12 @@
  */
 export type Primitive = string | number | boolean | undefined | null;
 
-export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
+export type SQLDialect =
+  | "mysql"
+  | "postgresql"
+  | "sqlite"
+  | "libsql"
+  | "mariadb";
 
 export type Statement = {
   /**
