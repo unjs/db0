@@ -3,10 +3,13 @@ import {
   type RelationalSchemaConfig,
   type Query,
   type TablesRelationalConfig,
+  type SQL,
   NoopLogger,
   fillPlaceholders,
   sql,
 } from "drizzle-orm";
+
+import { rowToArray, mapRow } from "../_utils.ts";
 
 import {
   MySqlDialect,
@@ -24,8 +27,6 @@ import type {
   SelectedFieldsOrdered,
   Mode,
 } from "drizzle-orm/mysql-core";
-
-import type { SQL } from "drizzle-orm";
 
 import type { Database } from "db0";
 
@@ -178,23 +179,23 @@ export class DB0MySqlPreparedQuery<
   async execute(
     placeholderValues: Record<string, unknown> | undefined = {},
   ): Promise<T["execute"]> {
-    const params = fillPlaceholders(this.params, placeholderValues);
+    const params: any[] = fillPlaceholders(this.params, placeholderValues);
     this.logger.logQuery(this.queryString, params);
 
     const stmt = this.db.prepare(this.queryString);
 
     if (!this.fields && !this.customResultMapper) {
-      return stmt.all(...(params as any[]));
+      return stmt.all(...params);
     }
 
-    const rows = await stmt.all(...(params as any[]));
+    const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
     if (this.customResultMapper) {
-      return this.customResultMapper(rows as unknown[][]);
+      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      return this.customResultMapper(arr);
     }
 
-    // db0 returns object rows, return as-is when fields are present
-    return rows as T["execute"];
+    return rows.map((row) => mapRow(this.fields!, row)) as T["execute"];
   }
 
   // eslint-disable-next-line require-yield

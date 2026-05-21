@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
 
 import { type Connector, Database, createDatabase } from "../../../src";
 import {
@@ -163,5 +164,102 @@ describe("integrations: drizzle: with schema parameter", () => {
 
   afterAll(async () => {
     await db.sql`DROP TABLE IF EXISTS users_schema`;
+  });
+});
+
+describe("integrations: drizzle: column name remapping (SQLite)", () => {
+  const events = dSqlite.sqliteTable("events_cc", {
+    id: dSqlite.integer("id").primaryKey({ autoIncrement: true }),
+    fooBar: dSqlite.integer("foo_bar"),
+    createdAt: dSqlite.text("created_at"),
+    userFullName: dSqlite.text("user_full_name"),
+  });
+
+  let drizzleDb: DrizzleDatabase;
+  let db: Database;
+
+  beforeAll(async () => {
+    db = createDatabase(betterSqlite3({ name: ":memory:" }));
+    drizzleDb = drizzle(db);
+    await db.sql`DROP TABLE IF EXISTS events_cc`;
+    await db.sql`CREATE TABLE events_cc (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      foo_bar INTEGER,
+      created_at TEXT,
+      user_full_name TEXT
+    )`;
+    await drizzleDb
+      .insert(events)
+      .values({ fooBar: 1, createdAt: "2024-01-01", userFullName: "John Doe" });
+    await drizzleDb.insert(events).values({
+      fooBar: 2,
+      createdAt: "2024-06-15",
+      userFullName: "Jane Smith",
+    });
+  });
+
+  it("select returns camelCase keys, not snake_case", async () => {
+    const res = await drizzleDb.select().from(events).all();
+    expect(res.length).toBe(2);
+    expect(res[0]).toHaveProperty("fooBar");
+    expect(res[0]).toHaveProperty("createdAt");
+    expect(res[0]).toHaveProperty("userFullName");
+    expect(res[0]).not.toHaveProperty("foo_bar");
+    expect(res[0]).not.toHaveProperty("created_at");
+    expect(res[0]).not.toHaveProperty("user_full_name");
+    expect(res[0].fooBar).toBe(1);
+  });
+
+  it("where eq() on remapped column works and returns camelCase keys", async () => {
+    const res = await drizzleDb
+      .select()
+      .from(events)
+      .where(eq(events.fooBar, 1))
+      .all();
+    expect(res.length).toBe(1);
+    expect(res[0]).toHaveProperty("fooBar");
+    expect(res[0]).not.toHaveProperty("foo_bar");
+    expect(res[0].fooBar).toBe(1);
+    expect(res[0].userFullName).toBe("John Doe");
+  });
+
+  it("get() returns camelCase keys", async () => {
+    const res = await drizzleDb
+      .select()
+      .from(events)
+      .where(eq(events.fooBar, 2))
+      .get();
+    expect(res).toBeDefined();
+    expect(res).toHaveProperty("fooBar");
+    expect(res).not.toHaveProperty("foo_bar");
+    expect(res!.fooBar).toBe(2);
+    expect(res!.userFullName).toBe("Jane Smith");
+  });
+
+  it("all remapped columns use camelCase keys", async () => {
+    const res = await drizzleDb.select().from(events).all();
+    for (const row of res) {
+      expect(Object.keys(row)).toEqual(
+        expect.arrayContaining(["id", "fooBar", "createdAt", "userFullName"]),
+      );
+      expect(Object.keys(row)).not.toEqual(
+        expect.arrayContaining(["foo_bar", "created_at", "user_full_name"]),
+      );
+    }
+  });
+
+  it("insert().returning() returns camelCase keys", async () => {
+    const res = await drizzleDb
+      .insert(events)
+      .values({ fooBar: 42, createdAt: "2025-01-01", userFullName: "Test" })
+      .returning();
+    expect(res.length).toBe(1);
+    expect(res[0]).toHaveProperty("fooBar");
+    expect(res[0]).not.toHaveProperty("foo_bar");
+    expect(res[0].fooBar).toBe(42);
+  });
+
+  afterAll(async () => {
+    await db.sql`DROP TABLE IF EXISTS events_cc`;
   });
 });

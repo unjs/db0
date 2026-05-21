@@ -8,6 +8,8 @@ import {
   sql,
 } from "drizzle-orm";
 
+import { rowToArray, mapRow } from "../_utils.ts";
+
 import {
   SQLiteAsyncDialect,
   SQLiteSession,
@@ -50,7 +52,7 @@ export class DB0SQLiteSession<
     query: Query,
     fields: SelectedFieldsOrdered | undefined,
     executeMethod: SQLiteExecuteMethod,
-    _isResponseInArrayMode: boolean,
+    isResponseInArrayMode: boolean,
     customResultMapper?: (rows: unknown[][]) => unknown,
   ): DB0SQLitePreparedQuery {
     const stmt = this.db.prepare(query.sql);
@@ -60,6 +62,7 @@ export class DB0SQLiteSession<
       this.logger,
       fields,
       executeMethod,
+      isResponseInArrayMode,
       customResultMapper,
     );
   }
@@ -130,15 +133,21 @@ export class DB0SQLitePreparedQuery<
   values: T["values"];
   execute: T["execute"];
 }> {
+  private fields: SelectedFieldsOrdered | undefined;
+  private isResponseInArrayMode_: boolean;
+
   constructor(
     private stmt: Statement,
     query: Query,
     private logger: Logger,
-    _fields: SelectedFieldsOrdered | undefined,
+    fields: SelectedFieldsOrdered | undefined,
     executeMethod: SQLiteExecuteMethod,
+    isResponseInArrayMode: boolean,
     /** @internal */ public customResultMapper?: (rows: unknown[][]) => unknown,
   ) {
     super("async", executeMethod, query);
+    this.fields = fields;
+    this.isResponseInArrayMode_ = isResponseInArrayMode;
   }
 
   async run(
@@ -150,32 +159,57 @@ export class DB0SQLitePreparedQuery<
   }
 
   async all(placeholderValues?: Record<string, unknown>): Promise<T["all"]> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
+    const placeholders = placeholderValues ?? {};
+    const params: any[] = fillPlaceholders(this.query.params, placeholders);
     this.logger.logQuery(this.query.sql, params);
-    return this.stmt.all(...(params as any[]));
+
+    if (!this.fields && !this.customResultMapper) {
+      return this.stmt.all(...params) as T["all"];
+    }
+
+    const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
+
+    if (this.customResultMapper) {
+      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      return this.customResultMapper(arr) as T["all"];
+    }
+
+    return rows.map((row) => mapRow(this.fields!, row)) as T["all"];
   }
 
   async get(placeholderValues?: Record<string, unknown>): Promise<T["get"]> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
+    const placeholders = placeholderValues ?? {};
+    const params: any[] = fillPlaceholders(this.query.params, placeholders);
     this.logger.logQuery(this.query.sql, params);
-    return this.stmt.get(...(params as any[]));
+
+    if (!this.fields && !this.customResultMapper) {
+      return this.stmt.get(...params) as T["get"];
+    }
+
+    const row = (await this.stmt.get(...params)) as Record<string, unknown>;
+    if (!row) return undefined as T["get"];
+
+    if (this.customResultMapper) {
+      const arr = rowToArray(this.fields!, row);
+      return this.customResultMapper([arr]) as T["get"];
+    }
+
+    return mapRow(this.fields!, row) as T["get"];
   }
 
   async values<T extends any[] = unknown[]>(
     placeholderValues?: Record<string, unknown>,
   ): Promise<T[]> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
+    const placeholders = placeholderValues ?? {};
+    const params: any[] = fillPlaceholders(this.query.params, placeholders);
     this.logger.logQuery(this.query.sql, params);
-    const rows = await this.stmt.all(...(params as any[]));
-    // db0 Statement doesn't have a values() method, so convert object rows to arrays
-    return (rows as Record<string, unknown>[]).map(
-      (row) => Object.values(row) as T,
-    );
+
+    const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
+    return rows.map((row) => rowToArray(this.fields!, row) as T);
   }
 
   /** @internal */
   isResponseInArrayMode(): boolean {
-    // db0 always returns object rows, never array rows
-    return false;
+    return this.isResponseInArrayMode_;
   }
 }

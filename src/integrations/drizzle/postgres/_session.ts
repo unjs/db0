@@ -7,6 +7,8 @@ import {
   sql,
 } from "drizzle-orm";
 
+import { rowToArray, mapRow } from "../_utils.ts";
+
 import {
   PgDialect,
   PgPreparedQuery,
@@ -147,34 +149,46 @@ export class DB0PgPreparedQuery<
   async execute(
     placeholderValues: Record<string, unknown> | undefined = {},
   ): Promise<T["execute"]> {
-    const params = fillPlaceholders(this.params, placeholderValues);
+    const params: any[] = fillPlaceholders(this.params, placeholderValues);
     this.logger.logQuery(this.queryString, params);
 
     const stmt = this.db.prepare(this.queryString);
 
     if (!this.fields && !this.customResultMapper) {
-      return stmt.all(...(params as any[]));
+      return stmt.all(...params);
     }
 
-    const rows = await stmt.all(...(params as any[]));
+    const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
     if (this.customResultMapper) {
-      return this.customResultMapper(rows as unknown[][]);
+      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      return this.customResultMapper(arr);
     }
 
-    // db0 returns object rows, return as-is when fields are present
-    return rows as T["execute"];
+    return rows.map((row) => mapRow(this.fields!, row)) as T["execute"];
   }
 
   async all(): Promise<T["all"]> {
+    const params = this.params as any[];
+    this.logger.logQuery(this.queryString, params);
     const stmt = this.db.prepare(this.queryString);
-    this.logger.logQuery(this.queryString, this.params);
-    return stmt.all(...(this.params as any[])) as Promise<T["all"]>;
+
+    if (!this.fields && !this.customResultMapper) {
+      return stmt.all(...params) as Promise<T["all"]>;
+    }
+
+    const rows = (await stmt.all(...params)) as Record<string, unknown>[];
+
+    if (this.customResultMapper) {
+      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      return this.customResultMapper(arr) as T["all"];
+    }
+
+    return rows.map((row) => mapRow(this.fields!, row)) as T["all"];
   }
 
   /** @internal */
   isResponseInArrayMode(): boolean {
-    // db0 always returns object rows, never array rows
-    return false;
+    return true;
   }
 }
