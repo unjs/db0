@@ -104,7 +104,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@11.10.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "better-sqlite3",
