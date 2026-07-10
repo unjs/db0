@@ -1,7 +1,7 @@
 services:
   pg:
     # https://hub.docker.com/_/postgres
-    image: postgres:alpine
+    image: postgres:alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
     ports: ["5432:5432"]
     environment:
       POSTGRES_USER: test
@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: db0
   mysql:
     # https://hub.docker.com/_/mysql
-    image: mysql
+    image: mysql@sha256:ae269281abffe401d65f04cb54d45a069a495b8174b9c0a815e502fed7fa0370
     ports: ["3306:3306"]
     environment:
       MYSQL_ROOT_PASSWORD: test
