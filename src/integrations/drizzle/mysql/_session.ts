@@ -191,7 +191,7 @@ export class DB0MySqlPreparedQuery<
     const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
     if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      const arr = rows.map((row) => rowToArray(this.fields, row));
       return this.customResultMapper(arr);
     }
 

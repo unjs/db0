@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
+import { eq, relations, sql } from "drizzle-orm";
 
 import { Database, createDatabase } from "../../../src";
 import {
@@ -150,6 +150,83 @@ describe.runIf(process.env.MYSQL_URL)(
 
     afterAll(async () => {
       await db.sql`DROP TABLE IF EXISTS events_cc`;
+      await db.dispose();
+    });
+  },
+);
+
+describe.runIf(process.env.MYSQL_URL)(
+  "integrations: drizzle: relational queries & raw SQL (MySQL)",
+  () => {
+    const authors = dMySql.mysqlTable("authors", {
+      id: dMySql.int("id").primaryKey().autoincrement(),
+      name: dMySql.text("name"),
+    });
+    const books = dMySql.mysqlTable("books", {
+      id: dMySql.int("id").primaryKey().autoincrement(),
+      authorId: dMySql.int("author_id"),
+      title: dMySql.text("title"),
+    });
+    const authorsRelations = relations(authors, ({ many }) => ({
+      books: many(books),
+    }));
+    const booksRelations = relations(books, ({ one }) => ({
+      author: one(authors, {
+        fields: [books.authorId],
+        references: [authors.id],
+      }),
+    }));
+    const schema = { authors, books, authorsRelations, booksRelations };
+
+    let drizzleDb: DrizzleMySqlDatabase<typeof schema>;
+    let db: Database;
+
+    beforeAll(async () => {
+      db = createDatabase(
+        mysql2Connector({ uri: process.env.MYSQL_URL as string }),
+      );
+      drizzleDb = drizzleMySql(db, { schema, mode: "default" });
+      await db.sql`DROP TABLE IF EXISTS books`;
+      await db.sql`DROP TABLE IF EXISTS authors`;
+      await db.sql`CREATE TABLE authors (id INT PRIMARY KEY AUTO_INCREMENT, name TEXT)`;
+      await db.sql`CREATE TABLE books (id INT PRIMARY KEY AUTO_INCREMENT, author_id INT, title TEXT)`;
+      await drizzleDb.insert(authors).values({ name: "Ada" });
+      await drizzleDb.insert(books).values({ authorId: 1, title: "First" });
+      await drizzleDb.insert(books).values({ authorId: 1, title: "Second" });
+    });
+
+    it("relational findMany with nested relation", async () => {
+      const res = await drizzleDb.query.authors.findMany({
+        with: { books: true },
+      });
+      expect(res).toHaveLength(1);
+      expect(res[0].name).toBe("Ada");
+      expect(res[0].books.map((b) => b.title)).toEqual(["First", "Second"]);
+    });
+
+    it("relational findFirst with nested relation", async () => {
+      const res = await drizzleDb.query.books.findFirst({
+        with: { author: true },
+      });
+      expect(res?.title).toBe("First");
+      expect(res?.author?.name).toBe("Ada");
+    });
+
+    it("bare sql aggregate select", async () => {
+      const res = await drizzleDb
+        .select({ total: sql<number>`count(*)` })
+        .from(books);
+      expect(Number(res[0].total)).toBe(2);
+    });
+
+    it("$count() (values path)", async () => {
+      const total = await drizzleDb.$count(books);
+      expect(Number(total)).toBe(2);
+    });
+
+    afterAll(async () => {
+      await db.sql`DROP TABLE IF EXISTS books`;
+      await db.sql`DROP TABLE IF EXISTS authors`;
       await db.dispose();
     });
   },

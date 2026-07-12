@@ -170,7 +170,7 @@ export class DB0SQLitePreparedQuery<
     const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
 
     if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      const arr = rows.map((row) => rowToArray(this.fields, row));
       return this.customResultMapper(arr) as T["all"];
     }
 
@@ -190,7 +190,7 @@ export class DB0SQLitePreparedQuery<
     if (!row) return undefined as T["get"];
 
     if (this.customResultMapper) {
-      const arr = rowToArray(this.fields!, row);
+      const arr = rowToArray(this.fields, row);
       return this.customResultMapper([arr]) as T["get"];
     }
 
@@ -205,7 +205,7 @@ export class DB0SQLitePreparedQuery<
     this.logger.logQuery(this.query.sql, params);
 
     const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
-    return rows.map((row) => rowToArray(this.fields!, row) as T);
+    return rows.map((row) => rowToArray(this.fields, row) as T);
   }
 
   /** @internal */

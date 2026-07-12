@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
+import { eq, relations, sql } from "drizzle-orm";
 
 import { type Connector, Database, createDatabase } from "../../../src";
 import {
@@ -261,5 +261,76 @@ describe("integrations: drizzle: column name remapping (SQLite)", () => {
 
   afterAll(async () => {
     await db.sql`DROP TABLE IF EXISTS events_cc`;
+  });
+});
+
+describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
+  const authors = dSqlite.sqliteTable("authors", {
+    id: dSqlite.integer("id").primaryKey({ autoIncrement: true }),
+    name: dSqlite.text("name"),
+  });
+  const books = dSqlite.sqliteTable("books", {
+    id: dSqlite.integer("id").primaryKey({ autoIncrement: true }),
+    authorId: dSqlite.integer("author_id"),
+    title: dSqlite.text("title"),
+  });
+  const authorsRelations = relations(authors, ({ many }) => ({
+    books: many(books),
+  }));
+  const booksRelations = relations(books, ({ one }) => ({
+    author: one(authors, {
+      fields: [books.authorId],
+      references: [authors.id],
+    }),
+  }));
+  const schema = { authors, books, authorsRelations, booksRelations };
+
+  let drizzleDb: DrizzleDatabase<typeof schema>;
+  let db: Database;
+
+  beforeAll(async () => {
+    db = createDatabase(betterSqlite3({ name: ":memory:" }));
+    drizzleDb = drizzle(db, { schema });
+    await db.sql`DROP TABLE IF EXISTS books`;
+    await db.sql`DROP TABLE IF EXISTS authors`;
+    await db.sql`CREATE TABLE authors (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`;
+    await db.sql`CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, author_id INTEGER, title TEXT)`;
+    await drizzleDb.insert(authors).values({ name: "Ada" });
+    await drizzleDb.insert(books).values({ authorId: 1, title: "First" });
+    await drizzleDb.insert(books).values({ authorId: 1, title: "Second" });
+  });
+
+  it("relational findMany with nested relation", async () => {
+    const res = await drizzleDb.query.authors.findMany({
+      with: { books: true },
+    });
+    expect(res).toHaveLength(1);
+    expect(res[0].name).toBe("Ada");
+    expect(res[0].books.map((b) => b.title)).toEqual(["First", "Second"]);
+  });
+
+  it("relational findFirst with nested relation", async () => {
+    const res = await drizzleDb.query.books.findFirst({
+      with: { author: true },
+    });
+    expect(res?.title).toBe("First");
+    expect(res?.author?.name).toBe("Ada");
+  });
+
+  it("bare sql aggregate select", async () => {
+    const res = await drizzleDb
+      .select({ total: sql<number>`count(*)` })
+      .from(books);
+    expect(Number(res[0].total)).toBe(2);
+  });
+
+  it("$count() (values path)", async () => {
+    const total = await drizzleDb.$count(books);
+    expect(Number(total)).toBe(2);
+  });
+
+  afterAll(async () => {
+    await db.sql`DROP TABLE IF EXISTS books`;
+    await db.sql`DROP TABLE IF EXISTS authors`;
   });
 });

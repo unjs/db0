@@ -161,7 +161,7 @@ export class DB0PgPreparedQuery<
     const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
     if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      const arr = rows.map((row) => rowToArray(this.fields, row));
       return this.customResultMapper(arr);
     }
 
@@ -180,7 +180,7 @@ export class DB0PgPreparedQuery<
     const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
     if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields!, row));
+      const arr = rows.map((row) => rowToArray(this.fields, row));
       return this.customResultMapper(arr) as T["all"];
     }
 
