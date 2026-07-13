@@ -10,13 +10,9 @@ icon: cbi:neon
 
 ## Why Neon Connector?
 
-The fundamental difference is that Postgres Connector uses the [node-postgres](https://node-postgres.com/) driver, which uses a TCP connection, while Neon uses [neondatabase/serverless](https://neon.com/docs/serverless/serverless-driver) and uses a HTTP/Web-Sockets connector. While the drivers have feature parity, the connection type creates some runtime differences.
+The fundamental difference is that Postgres Connector uses the [node-postgres](https://node-postgres.com/) driver, which needs a raw TCP connection, while Neon uses [neondatabase/serverless](https://neon.com/docs/serverless/serverless-driver), whose `Client` speaks postgres over WebSockets. The drivers have feature parity, but the connection type creates some runtime differences.
 
-The HTTP/WS connection is usually preferred over TCP for serverless environments because:
-
-- Historically, some runtimes did not work well with TCP connections.
-- Reduced latency as a consequence of fewer required network trips per query.
-- Reduce number of SCRAM authentication calls.
+A WebSocket connection is usually preferred over TCP for serverless environments because many of those runtimes cannot open raw TCP sockets at all.
 
 ## Usage
 
@@ -49,4 +45,4 @@ Options are passed through to the underlying [`Client`](https://neon.com/docs/se
 
 - **Type:** `string`
 - Connection string to your Neon database.
-- If neither is provided, creating the client throws.
+- Optional if the database is identified another way, such as a `host` in the `ClientConfig`. If neither is present, the first query throws (the client connects lazily).

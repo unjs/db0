@@ -10,9 +10,15 @@ icon: cbi:neon
 
 ## Instant Postgres Provisioning
 
-This connector behaves exactly like the [Neon connector](/connectors/neon), except that it does not require a connection string. When instantiated without one **outside of production**, it provisions a claimable Postgres database via [`neon-new`](https://www.npmjs.com/package/neon-new) and connects to it. It can also seed schema and data from a `.sql` file.
+This connector behaves exactly like the [Neon connector](/connectors/neon), except that it does not require a connection string. On first use, it resolves one in this order:
+
+1. The `url` / `connectionString` option, if given.
+2. The `DATABASE_URL` environment variable (see [`dotEnvKey`](#dotenvfile-dotenvkey)), if set.
+3. Otherwise, it provisions a claimable Postgres database via [`neon-new`](https://www.npmjs.com/package/neon-new), optionally seeding it from a `.sql` file.
 
 This is intended as a development-time affordance. When `NODE_ENV` is `production`, nothing is provisioned and a missing connection string throws — use the [Neon connector](/connectors/neon) there.
+
+`neon-new` is imported lazily, only when a database actually has to be provisioned, so it stays out of your production bundle.
 
 ## Usage
 
@@ -52,7 +58,7 @@ INSERT INTO xmen (name) VALUES
 ON CONFLICT DO NOTHING;
 ```
 
-The generated connection string is written to your `.env` file, so subsequent runs reuse the same database.
+The generated connection string is appended to your `.env` file. As long as that file is loaded into `process.env` (with `dotenv`, or natively via `node --env-file`), later runs pick it up and reuse the same database instead of provisioning a new one.
 
 ## Options
 
@@ -73,7 +79,19 @@ Accepts every [Neon connector option](/connectors/neon#options), plus the [`neon
 ### `dotEnvFile` / `dotEnvKey`
 
 - **Type:** `string` _(optional)_
-- File the generated connection string is written to, and the variable name it is written under.
+- **Default:** `".env"` and `"DATABASE_URL"`
+- File the generated connection string is written to, and the variable name it is written under. `dotEnvKey` is also the environment variable read to reuse an existing database.
+
+### `envPrefix`
+
+- **Type:** `string` _(optional)_
+- **Default:** `"PUBLIC_"`
+- Prefix used for the public environment variables written alongside the connection string.
+
+### `settings`
+
+- **Type:** `{ logicalReplication?: boolean }` _(optional)_
+- Extra settings for the provisioned database.
 
 ### `referrer`
 

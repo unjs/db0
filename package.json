@@ -76,14 +76,22 @@
   "peerDependencies": {
     "@electric-sql/pglite": "*",
     "@libsql/client": "*",
+    "@neondatabase/serverless": "*",
     "better-sqlite3": "*",
     "drizzle-orm": "*",
     "kysely": "*",
     "mysql2": "*",
+    "neon-new": "*",
     "sqlite3": "*"
   },
   "peerDependenciesMeta": {
     "@libsql/client": {
+      "optional": true
+    },
+    "@neondatabase/serverless": {
+      "optional": true
+    },
+    "neon-new": {
       "optional": true
     },
     "better-sqlite3": {
