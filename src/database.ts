@@ -30,6 +30,10 @@ export function createDatabase<TConnector extends Connector = Connector>(
   };
 
   return <Database<TConnector>>{
+    get connector() {
+      return connector.name;
+    },
+
     get dialect() {
       return connector.dialect;
     },
