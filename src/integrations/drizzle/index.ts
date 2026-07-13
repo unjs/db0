@@ -1,30 +1,6 @@
-import {
-  BaseSQLiteDatabase,
-  SQLiteAsyncDialect,
-} from "drizzle-orm/sqlite-core";
-import type { Database } from "db0";
-import { DB0Session } from "./_session.ts";
+// Re-export SQLite drizzle integration as the default (backwards compatible)
+export { drizzle } from "./sqlite/index.ts";
+export type { DrizzleSQLiteDatabase as DrizzleDatabase } from "./sqlite/index.ts";
 
-export type DrizzleDatabase<
-  TSchema extends Record<string, unknown> = Record<string, never>,
-> = BaseSQLiteDatabase<"async", any, TSchema>;
-
-export function drizzle<
-  TSchema extends Record<string, unknown> = Record<string, never>,
->(db: Database): DrizzleDatabase<TSchema> {
-  // TODO: Support schema
-  const schema = undefined;
-
-  const dialect = new SQLiteAsyncDialect();
-
-  const session = new DB0Session(db, dialect, schema);
-
-  return new BaseSQLiteDatabase(
-    "async",
-    dialect,
-    // @ts-expect-error TODO
-
-    session,
-    schema,
-  ) as DrizzleDatabase<TSchema>;
-}
+// Re-export config type from drizzle-orm
+export type { DrizzleConfig as DrizzleBaseConfig } from "drizzle-orm";

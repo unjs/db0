@@ -1,9 +1,8 @@
-import type {
-  D1Database,
-  D1PreparedStatement as RawStatement,
-} from "@cloudflare/workers-types";
+/// <reference types="@cloudflare/workers-types" />
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
+
+type RawStatement = D1PreparedStatement;
 
 export interface ConnectorOptions {
   bindingName?: string;

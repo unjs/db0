@@ -4,7 +4,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
-    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,8 +16,12 @@
     "noImplicitOverride": true,
     "noEmit": true,
     "paths": {
-      "db0/connectors/*": ["./src/connectors/*"]
+      "db0/connectors/*": [
+        "./src/connectors/*"
+      ]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
