@@ -10,10 +10,12 @@ import type { ConnectorOptions as LibSQLHttpOptions } from "db0/connectors/libsq
 import type { ConnectorOptions as LibSQLNodeOptions } from "db0/connectors/libsql/node";
 import type { ConnectorOptions as LibSQLWebOptions } from "db0/connectors/libsql/web";
 import type { ConnectorOptions as MySQL2Options } from "db0/connectors/mysql2";
+import type { ConnectorOptions as MySQL2PoolOptions } from "db0/connectors/mysql2-pool";
 import type { ConnectorOptions as NodeSQLiteOptions } from "db0/connectors/node-sqlite";
 import type { ConnectorOptions as PgliteOptions } from "db0/connectors/pglite";
 import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/planetscale";
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
+import type { ConnectorOptions as PostgrePoolSQLOptions } from "db0/connectors/postgresql-pool";
 import type { ConnectorOptions as SQLite3Options } from "db0/connectors/sqlite3";
 
 export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
@@ -33,12 +35,14 @@ export type ConnectorOptions = {
   "libsql": LibSQLNodeOptions;
   "libsql-web": LibSQLWebOptions;
   "mysql2": MySQL2Options;
+  "mysql2-pool": MySQL2PoolOptions;
   "node-sqlite": NodeSQLiteOptions;
   /** alias of node-sqlite */
   "sqlite": NodeSQLiteOptions;
   "pglite": PgliteOptions;
   "planetscale": PlanetscaleOptions;
   "postgresql": PostgreSQLOptions;
+  "postgresql-pool": PostgrePoolSQLOptions;
   "sqlite3": SQLite3Options;
 };
 
@@ -57,11 +61,13 @@ export const connectors: Record<ConnectorName, string> = Object.freeze({
   "libsql": "db0/connectors/libsql/node",
   "libsql-web": "db0/connectors/libsql/web",
   "mysql2": "db0/connectors/mysql2",
+  "mysql2-pool": "db0/connectors/mysql2-pool",
   "node-sqlite": "db0/connectors/node-sqlite",
   /** alias of node-sqlite */
   "sqlite": "db0/connectors/node-sqlite",
   "pglite": "db0/connectors/pglite",
   "planetscale": "db0/connectors/planetscale",
   "postgresql": "db0/connectors/postgresql",
+  "postgresql-pool": "db0/connectors/postgresql-pool",
   "sqlite3": "db0/connectors/sqlite3",
 } as const);
