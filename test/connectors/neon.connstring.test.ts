@@ -3,7 +3,7 @@ import { describe, test, expect, vi } from "vitest";
 vi.mock("get-db/sdk", () => {
   return {
     instantNeon: vi.fn().mockResolvedValue({
-      poolerUrl: "postgres://mocked-host/db",
+      databaseUrl: "postgres://mocked-host/db",
     }),
   };
 });

@@ -26,9 +26,11 @@ export default function neonConnector(
       process.env.NODE_ENV !== "production" &&
       !(opts || {}).neverGenerateConnectionString
     ) {
-      const { poolerUrl } = await instantNeon({ referrer: "db0/neon-driver" });
+      const { databaseUrl } = await instantNeon({
+        referrer: "db0/neon-driver",
+      });
 
-      return poolerUrl;
+      return databaseUrl;
     }
 
     throw new Error(
