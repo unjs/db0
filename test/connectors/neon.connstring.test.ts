@@ -1,8 +1,8 @@
 import { describe, test, expect, vi } from "vitest";
 
-vi.mock("get-db/sdk", () => {
+vi.mock("neon-new", () => {
   return {
-    instantNeon: vi.fn().mockResolvedValue({
+    instantPostgres: vi.fn().mockResolvedValue({
       databaseUrl: "postgres://mocked-host/db",
     }),
   };
@@ -34,12 +34,12 @@ vi.mock("@neondatabase/serverless", () => {
 
 import neonConnector from "../../src/connectors/neon";
 import { createDatabase } from "../../src";
-import * as getDbSdk from "get-db/sdk";
+import * as neonNew from "neon-new";
 
 describe("[Neon Connector] Connection string generation", () => {
-  test("should call `get-db` when connection string is not provided out of production environment", async () => {
+  test("should call `neon-new` when connection string is not provided out of production environment", async () => {
     const db = createDatabase(neonConnector());
     await db.getInstance();
-    expect(vi.mocked(getDbSdk.instantNeon)).toHaveBeenCalledOnce();
+    expect(vi.mocked(neonNew.instantPostgres)).toHaveBeenCalledOnce();
   });
 });

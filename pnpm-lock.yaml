@@ -63,9 +63,6 @@ importers:
       eslint-config-unjs:
         specifier: ^0.6.2
         version: 0.6.2(eslint@10.7.0(jiti@2.7.0))(typescript@7.0.2)
-      get-db:
-        specifier: ^0.14.0
-        version: 0.14.0
       jiti:
         specifier: ^2.7.0
         version: 2.7.0
@@ -78,6 +75,9 @@ importers:
       mysql2:
         specifier: ^3.22.6
         version: 3.22.6(@types/node@26.1.1)
+      neon-new:
+        specifier: ^0.15.0
+        version: 0.15.0
       obuild:
         specifier: ^0.4.38
         version: 0.4.38(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(jiti@2.7.0)(magicast@0.5.3)(typescript@7.0.2)
@@ -964,10 +964,6 @@ packages:
   '@neon-rs/load@0.0.4':
     resolution: {integrity: sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw==}
 
-  '@neondatabase/serverless@1.0.2':
-    resolution: {integrity: sha512-I5sbpSIAHiB+b6UttofhrN/UJXII+4tZPAq1qugzwCwLIL8EZLV7F/JyHUrEIiGgQpEXzpnjlJ+zwcEhheGvCw==}
-    engines: {node: '>=19.0.0'}
-
   '@neondatabase/serverless@1.1.0':
     resolution: {integrity: sha512-r3ZZhRjEcfEdKIZnoB1RusNgvHuaBRqfCzV4Gi+5A9yUX0S4HTws/ASWqt13wL4y4I+0rqsWGdA2w7EQXHi3+Q==}
     engines: {node: '>=19.0.0'}
@@ -1216,9 +1212,6 @@ packages:
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
-
-  '@types/node@22.18.12':
-    resolution: {integrity: sha512-BICHQ67iqxQGFSzfCFTT7MRQ5XcBjG5aeKh5Ok38UBbPe5fxTyE+aHFxwVrGyr8GNlqFMLKD1D3P2K/1ks8tog==}
 
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
@@ -2309,12 +2302,6 @@ packages:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  get-db@0.14.0:
-    resolution: {integrity: sha512-sxDk4vLPgpv99iAdKDnb5Zu+lWyI7y+ElrG8MdO9uqH5Jfrqu8ybXu8OvR02DL1cW84xzwVxdgPfoOur4CSqmg==}
-    engines: {node: '>=22'}
-    deprecated: This package has been renamed to 'neon-new'. Please update your dependencies.
-    hasBin: true
-
   get-east-asian-width@1.6.0:
     resolution: {integrity: sha512-QRbvDIbx6YklUe6RxeTeleMR0yv3cYH6PsPZHcnVn7xv7zO1BHN8r0XETu8n6Ye3Q+ahtSarc3WgtNWmehIBfA==}
     engines: {node: '>=18'}
@@ -2829,9 +2816,9 @@ packages:
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
-  neon-new@0.14.0:
-    resolution: {integrity: sha512-RoX0PKLCeW32QrdxIVixnDBDxYHIaV72/cc7shF0LvQp/5QElbhsvApsi1iLLl3uAWrz4JwArHWbC1+iV/c7zw==}
-    engines: {node: '>=22'}
+  neon-new@0.15.0:
+    resolution: {integrity: sha512-/h4JPj2199ll5BYML6AuzTFXK8UpBghnCzGtbGIvEbyUdxVZt7fMorwz+7ge3dtU3/TXRRrOYiUTXbv2ibOA1g==}
+    engines: {node: '>=20.19.0'}
     hasBin: true
 
   next-tick@1.1.0:
@@ -3250,9 +3237,6 @@ packages:
 
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
-
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
@@ -4055,11 +4039,6 @@ snapshots:
 
   '@neon-rs/load@0.0.4': {}
 
-  '@neondatabase/serverless@1.0.2':
-    dependencies:
-      '@types/node': 22.18.12
-      '@types/pg': 8.20.0
-
   '@neondatabase/serverless@1.1.0': {}
 
   '@oxc-project/types@0.139.0': {}
@@ -4230,10 +4209,6 @@ snapshots:
       '@types/unist': 3.0.3
 
   '@types/ms@2.1.0': {}
-
-  '@types/node@22.18.12':
-    dependencies:
-      undici-types: 6.21.0
 
   '@types/node@26.1.1':
     dependencies:
@@ -5226,10 +5201,6 @@ snapshots:
 
   get-caller-file@2.0.5: {}
 
-  get-db@0.14.0:
-    dependencies:
-      neon-new: 0.14.0
-
   get-east-asian-width@1.6.0: {}
 
   get-tsconfig@4.14.0:
@@ -5882,10 +5853,10 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  neon-new@0.14.0:
+  neon-new@0.15.0:
     dependencies:
       '@clack/prompts': 0.10.1
-      '@neondatabase/serverless': 1.0.2
+      '@neondatabase/serverless': 1.1.0
       dotenv: 16.6.1
       gradient-string: 3.0.0
       open: 10.2.0
@@ -6382,8 +6353,6 @@ snapshots:
       '@typescript/typescript-win32-x64': 7.0.2
 
   ufo@1.6.4: {}
-
-  undici-types@6.21.0: {}
 
   undici-types@8.3.0: {}
 

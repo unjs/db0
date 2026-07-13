@@ -2,10 +2,10 @@ import * as pg from "@neondatabase/serverless";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
-import { instantNeon, type InstantNeonParams } from "get-db/sdk";
+import { instantPostgres, type InstantPostgresParams } from "neon-new";
 
 export type ConnectorOptions = ({ url?: string } | pg.ClientConfig) &
-  InstantNeonParams & { neverGenerateConnectionString?: boolean };
+  InstantPostgresParams & { neverGenerateConnectionString?: boolean };
 
 type InternalQuery = (
   sql: string,
@@ -26,7 +26,7 @@ export default function neonConnector(
       process.env.NODE_ENV !== "production" &&
       !(opts || {}).neverGenerateConnectionString
     ) {
-      const { databaseUrl } = await instantNeon({
+      const { databaseUrl } = await instantPostgres({
         referrer: "db0/neon-driver",
       });
 

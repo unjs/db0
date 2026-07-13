@@ -26,9 +26,9 @@ If the connector's client is instantiated without a connection string **in devel
 
 ## Usage
 
-Install Neon Servleress Driver for the postgres connection and Instagres' `get-db` package to auto-generate the connection string in development.
+Install Neon Serverless Driver for the postgres connection and Neon's `neon-new` package to auto-generate the connection string in development.
 
-:pm-install{name="@neondatabse/serverless get-db"}
+:pm-install{name="@neondatabase/serverless neon-new"}
 
 With those dependencies installed, you can immediately start building:
 
