@@ -1,5 +1,6 @@
 import { createDatabase } from "../../src";
-import { TraceContext, withTracing } from "../../src/tracing";
+import { withTracing } from "../../src/tracing";
+import type { TraceContext } from "../../src/tracing";
 import { tracingChannel } from "node:diagnostics_channel";
 
 import sqlite from "../../src/connectors/better-sqlite3";

@@ -1,3 +1,4 @@
+import type { ConnectorName } from "./_connectors.ts";
 import type {
   Connector,
   Database,
@@ -9,9 +10,12 @@ import { sqlTemplate } from "./template.ts";
 
 export type TracedOperation = "query";
 
+const QUERY_OPERATION: TracedOperation = "query";
+
 export interface TraceContext {
   query: string;
   method: "exec" | "sql" | "prepare.all" | "prepare.run" | "prepare.get";
+  connector: ConnectorName;
   dialect: SQLDialect;
 }
 
@@ -37,18 +41,17 @@ export function withTracing<TConnector extends Connector = Connector>(
     return db;
   }
 
-  const queryChannel = tracingChannel(`db0.query`);
+  const queryChannel = tracingChannel<TraceContext>(`db0.${QUERY_OPERATION}`);
 
-  async function tracePromise<T>(
+  // The context is built lazily to avoid any work when nobody is subscribed.
+  function tracePromise<T>(
     exec: () => Promise<T>,
-    data: TraceContext,
+    context: () => TraceContext,
   ): Promise<T> {
-    // TODO: Remove this cast once the @types/node types are updated.
-    // The @types/node types incorrectly mark tracePromise as returning void,
-    // but according to the JSDoc and actual implementation, it returns the promise.
-    // This is fixed in later versions of Node.js.
-    // See: https://nodejs.org/api/diagnostics_channel.html#channelstracepromisefn-context-thisarg-args
-    return queryChannel.tracePromise(exec, data) as unknown as Promise<T>;
+    if (!queryChannel.hasSubscribers) {
+      return exec();
+    }
+    return queryChannel.tracePromise(exec, context());
   }
 
   // Use Object.create to preserve getter properties like `dialect` and `disposed`
@@ -57,19 +60,29 @@ export function withTracing<TConnector extends Connector = Connector>(
   const tracedDb = Object.create(db) as MaybeTracedDatabase<TConnector>;
   tracedDb.__traced = true;
 
+  // `exec` is wrapped in an async function so connectors throwing synchronously
+  // emit the same event sequence as connectors rejecting asynchronously.
   tracedDb.exec = (query) =>
-    tracePromise(() => db.exec(query), {
-      query,
-      method: "exec",
-      dialect: db.dialect,
-    });
+    tracePromise(
+      async () => db.exec(query),
+      () => ({
+        query,
+        method: "exec",
+        connector: db.connector,
+        dialect: db.dialect,
+      }),
+    );
 
   tracedDb.sql = (strings, ...values) =>
-    tracePromise(() => db.sql(strings, ...values), {
-      query: sqlTemplate(strings, ...values)[0],
-      method: "sql",
-      dialect: db.dialect,
-    });
+    tracePromise(
+      async () => db.sql(strings, ...values),
+      () => ({
+        query: sqlTemplate(strings, ...values)[0],
+        method: "sql",
+        connector: db.connector,
+        dialect: db.dialect,
+      }),
+    );
 
   class TracedStatement implements Statement {
     #statement: Statement;
@@ -80,15 +93,16 @@ export function withTracing<TConnector extends Connector = Connector>(
       this.#query = query;
     }
 
-    private withTrace<T>(
+    #withTrace<T>(
       fn: () => Promise<T>,
       method: "prepare.all" | "prepare.run" | "prepare.get",
     ) {
-      return tracePromise(() => fn(), {
-        method,
+      return tracePromise(fn, () => ({
         query: this.#query,
+        method,
+        connector: db.connector,
         dialect: db.dialect,
-      });
+      }));
     }
 
     bind(...args: Primitive[]) {
@@ -96,15 +110,24 @@ export function withTracing<TConnector extends Connector = Connector>(
     }
 
     all(...args: Primitive[]) {
-      return this.withTrace(() => this.#statement.all(...args), "prepare.all");
+      return this.#withTrace(
+        async () => this.#statement.all(...args),
+        "prepare.all",
+      );
     }
 
     run(...args: Primitive[]) {
-      return this.withTrace(() => this.#statement.run(...args), "prepare.run");
+      return this.#withTrace(
+        async () => this.#statement.run(...args),
+        "prepare.run",
+      );
     }
 
     get(...args: Primitive[]) {
-      return this.withTrace(() => this.#statement.get(...args), "prepare.get");
+      return this.#withTrace(
+        async () => this.#statement.get(...args),
+        "prepare.get",
+      );
     }
   }
 

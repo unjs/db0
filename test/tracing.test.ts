@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import { tracingChannel } from "node:diagnostics_channel";
 import { createDatabase } from "../src/database.ts";
 import { withTracing } from "../src/tracing.ts";
@@ -92,6 +92,10 @@ describe("tracing", () => {
     );
   });
 
+  afterEach(async () => {
+    await db.dispose();
+  });
+
   describe("opt-in behavior", () => {
     it("should not emit tracing events without withTracing wrapper", async () => {
       const plainDb = createDatabase(
@@ -134,6 +138,24 @@ describe("tracing", () => {
       expect(listener.handlers.asyncEnd).toHaveBeenCalledTimes(1);
 
       listener.cleanup();
+      await tracedOnce.dispose();
+    });
+
+    it("should behave like an untraced database when nobody is subscribed", async () => {
+      // No listener is created here, so the tracing fast path is used
+      await db.exec(
+        `INSERT INTO users (id, name, email) VALUES (1, 'John Doe', 'john@example.com')`,
+      );
+
+      const result = await db.sql`SELECT * FROM users WHERE id = ${1}`;
+      expect(result.rows).toHaveLength(1);
+
+      const row = await db.prepare("SELECT * FROM users WHERE id = ?").get(1);
+      expect((row as any).name).toBe("John Doe");
+
+      await expect(
+        db.exec(`SELECT * FROM non_existing_table`),
+      ).rejects.toThrow();
     });
   });
 
@@ -205,6 +227,7 @@ describe("tracing", () => {
 
       expect(listener.events.start?.data.query).toContain("INSERT INTO users");
       expect(listener.events.start?.data.method).toBe("exec");
+      expect(listener.events.start?.data.connector).toBe("sqlite");
       expect(listener.events.start?.data.dialect).toBe("sqlite");
 
       listener.cleanup();
@@ -218,14 +241,17 @@ describe("tracing", () => {
       ).rejects.toThrow();
 
       expect(listener.handlers.start).toHaveBeenCalledTimes(1);
-      // asyncStart might not be called if error is thrown synchronously
-      expect(listener.handlers.asyncStart).not.toHaveBeenCalled();
+      // Connectors throwing synchronously emit the same events as async ones
+      expect(listener.handlers.asyncStart).toHaveBeenCalledTimes(1);
+      expect(listener.handlers.asyncEnd).toHaveBeenCalledTimes(1);
+      expect(listener.events.asyncEnd?.error).toBeDefined();
       expect(listener.handlers.error).toHaveBeenCalledTimes(1);
       expect(listener.events.error?.error).toBeDefined();
       expect(listener.events.error?.data.query).toContain(
         "INSERT INTO non_existing_table",
       );
       expect(listener.events.error?.data.method).toBe("exec");
+      expect(listener.events.error?.data.connector).toBe("sqlite");
       expect(listener.events.error?.data.dialect).toBe("sqlite");
 
       listener.cleanup();
