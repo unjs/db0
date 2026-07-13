@@ -19,9 +19,11 @@ export interface TraceContext {
   dialect: SQLDialect;
 }
 
+const TRACED: unique symbol = Symbol.for("db0.traced");
+
 type MaybeTracedDatabase<TConnector extends Connector = Connector> =
   Database<TConnector> & {
-    __traced?: boolean;
+    [TRACED]?: boolean;
   };
 
 /**
@@ -31,7 +33,7 @@ export function withTracing<TConnector extends Connector = Connector>(
   db: MaybeTracedDatabase<TConnector>,
 ): Database<TConnector> {
   // Avoids double patching
-  if (db.__traced) {
+  if (db[TRACED]) {
     return db;
   }
 
@@ -44,7 +46,9 @@ export function withTracing<TConnector extends Connector = Connector>(
   const queryChannel = tracingChannel<TraceContext>(`db0.${QUERY_OPERATION}`);
 
   // The context is built lazily to avoid any work when nobody is subscribed.
-  function tracePromise<T>(
+  // This is an async function so that subscribing never turns a rejection
+  // (e.g. an invalid `sql` template) into a synchronous throw.
+  async function tracePromise<T>(
     exec: () => Promise<T>,
     context: () => TraceContext,
   ): Promise<T> {
@@ -54,11 +58,15 @@ export function withTracing<TConnector extends Connector = Connector>(
     return queryChannel.tracePromise(exec, context());
   }
 
-  // Use Object.create to preserve getter properties like `dialect` and `disposed`
-  // The spread operator would evaluate getters at spread-time, making `disposed`
-  // always return the initial value rather than the current state.
-  const tracedDb = Object.create(db) as MaybeTracedDatabase<TConnector>;
-  tracedDb.__traced = true;
+  // Copy the property descriptors instead of spreading, so that getters like
+  // `dialect` and `disposed` stay getters. Spreading would evaluate them once,
+  // making `disposed` report the state at wrap-time forever after.
+  const tracedDb = Object.defineProperties(
+    {} as MaybeTracedDatabase<TConnector>,
+    Object.getOwnPropertyDescriptors(db),
+  );
+  // Non-enumerable, so spreading or serializing a traced database does not leak it.
+  Object.defineProperty(tracedDb, TRACED, { value: true });
 
   // `exec` is wrapped in an async function so connectors throwing synchronously
   // emit the same event sequence as connectors rejecting asynchronously.

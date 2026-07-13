@@ -1,4 +1,12 @@
-import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  afterEach,
+  beforeEach,
+  onTestFinished,
+  vi,
+} from "vitest";
 import { tracingChannel } from "node:diagnostics_channel";
 import { createDatabase } from "../src/database.ts";
 import { withTracing } from "../src/tracing.ts";
@@ -54,6 +62,18 @@ function createTracingListener(operationName: TracedOperation) {
     error: errorHandler,
   });
 
+  // Diagnostics channels are process-global, so a leaked subscriber would
+  // affect every following test.
+  onTestFinished(() => {
+    channel.unsubscribe({
+      start: startHandler,
+      end: endHandler,
+      asyncStart: asyncStartHandler,
+      asyncEnd: asyncEndHandler,
+      error: errorHandler,
+    });
+  });
+
   return {
     events,
     handlers: {
@@ -62,15 +82,6 @@ function createTracingListener(operationName: TracedOperation) {
       asyncStart: asyncStartHandler,
       asyncEnd: asyncEndHandler,
       error: errorHandler,
-    },
-    cleanup: () => {
-      channel.unsubscribe({
-        start: startHandler,
-        end: endHandler,
-        asyncStart: asyncStartHandler,
-        asyncEnd: asyncEndHandler,
-        error: errorHandler,
-      });
     },
   };
 }
@@ -114,8 +125,6 @@ describe("tracing", () => {
       expect(listener.handlers.asyncStart).not.toHaveBeenCalled();
       expect(listener.handlers.asyncEnd).not.toHaveBeenCalled();
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should prevent double tracing when wrapped multiple times", async () => {
@@ -136,8 +145,6 @@ describe("tracing", () => {
       expect(listener.handlers.end).toHaveBeenCalledTimes(1);
       expect(listener.handlers.asyncStart).toHaveBeenCalledTimes(1);
       expect(listener.handlers.asyncEnd).toHaveBeenCalledTimes(1);
-
-      listener.cleanup();
       await tracedOnce.dispose();
     });
 
@@ -156,6 +163,74 @@ describe("tracing", () => {
       await expect(
         db.exec(`SELECT * FROM non_existing_table`),
       ).rejects.toThrow();
+    });
+
+    it("should reject, never throw synchronously, on an invalid sql template", () => {
+      createTracingListener("query");
+
+      // Subscribing must not turn a rejection into a synchronous throw
+      expect(() => (db.sql as any)("SELECT 1").catch(() => {})).not.toThrow();
+    });
+
+    it("should not leak internal properties of the traced instance", () => {
+      const plainDb = createDatabase(connector({ name: ":memory:" }));
+      const tracedDb = withTracing(plainDb);
+
+      expect(JSON.stringify(tracedDb)).toBe(JSON.stringify(plainDb));
+    });
+  });
+
+  describe("trace context", () => {
+    it("should not include bound parameters", async () => {
+      const listener = createTracingListener("query");
+
+      const secret = "super-secret@example.com";
+      await db.sql`SELECT * FROM users WHERE email = ${secret}`;
+      await db.prepare("SELECT * FROM users WHERE email = ?").all(secret);
+
+      const traced = listener.handlers.start.mock.calls.map(
+        (call) => call[0].query,
+      );
+      expect(traced.length).toBeGreaterThanOrEqual(2);
+      for (const query of traced) {
+        expect(query).not.toContain(secret);
+      }
+    });
+
+    it("should emit events in order on success", async () => {
+      const order: string[] = [];
+      const listener = createTracingListener("query");
+      for (const [name, handler] of Object.entries(listener.handlers)) {
+        handler.mockImplementation(() => {
+          order.push(name);
+        });
+      }
+
+      await db.sql`SELECT * FROM users`;
+
+      expect(order).toEqual(["start", "end", "asyncStart", "asyncEnd"]);
+    });
+
+    it("should emit events in order on failure", async () => {
+      const order: string[] = [];
+      const listener = createTracingListener("query");
+      for (const [name, handler] of Object.entries(listener.handlers)) {
+        handler.mockImplementation(() => {
+          order.push(name);
+        });
+      }
+
+      await expect(
+        db.exec(`SELECT * FROM non_existing_table`),
+      ).rejects.toThrow();
+
+      expect(order).toEqual([
+        "start",
+        "end",
+        "error",
+        "asyncStart",
+        "asyncEnd",
+      ]);
     });
   });
 
@@ -229,8 +304,6 @@ describe("tracing", () => {
       expect(listener.events.start?.data.method).toBe("exec");
       expect(listener.events.start?.data.connector).toBe("sqlite");
       expect(listener.events.start?.data.dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
 
     it("should emit error event on failure", async () => {
@@ -253,8 +326,6 @@ describe("tracing", () => {
       expect(listener.events.error?.data.method).toBe("exec");
       expect(listener.events.error?.data.connector).toBe("sqlite");
       expect(listener.events.error?.data.dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 
@@ -283,8 +354,6 @@ describe("tracing", () => {
       expect(selectCalls[0][0].method).toBe("sql");
       expect(selectCalls[0][0].query).toContain("SELECT * FROM users");
       expect(selectCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
 
     it("should emit correct tracing events on INSERT with RETURNING", async () => {
@@ -309,8 +378,6 @@ describe("tracing", () => {
       expect(insertCalls[0][0].query).toContain("INSERT INTO users");
       expect(insertCalls[0][0].query).toContain("RETURNING");
       expect(insertCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
 
     it("should emit error event on failure", async () => {
@@ -329,8 +396,6 @@ describe("tracing", () => {
       );
       expect(listener.events.error?.data.method).toBe("sql");
       expect(listener.events.error?.data.dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 
@@ -360,8 +425,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should emit error event on failure", async () => {
@@ -381,8 +444,6 @@ describe("tracing", () => {
       );
       expect(prepareCalls[0][0].method).toBe("prepare.all");
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 
@@ -407,8 +468,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should emit error event on failure", async () => {
@@ -430,8 +489,6 @@ describe("tracing", () => {
       );
       expect(prepareCalls[0][0].method).toBe("prepare.run");
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 
@@ -459,8 +516,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should emit error event on failure", async () => {
@@ -480,8 +535,6 @@ describe("tracing", () => {
       );
       expect(prepareCalls[0][0].method).toBe("prepare.get");
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 
@@ -505,8 +558,6 @@ describe("tracing", () => {
       expect(query).toContain("name");
       expect(query).toContain("email");
       expect(selectCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 
@@ -533,8 +584,6 @@ describe("tracing", () => {
       expect(methods).toContain("exec");
       expect(methods).toContain("sql");
       expect(methods).toContain("prepare.all");
-
-      listener.cleanup();
     });
   });
 
@@ -565,8 +614,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should support chained bind calls with run()", async () => {
@@ -590,8 +637,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should support chained bind calls with get()", async () => {
@@ -618,8 +663,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should support multiple nested bind calls", async () => {
@@ -648,8 +691,6 @@ describe("tracing", () => {
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
 
       expect(listener.handlers.error).not.toHaveBeenCalled();
-
-      listener.cleanup();
     });
 
     it("should preserve query context through nested binds", async () => {
@@ -679,8 +720,6 @@ describe("tracing", () => {
       // The original query should be preserved through all bind operations
       expect(prepareCalls[0][0].query).toBe(query);
       expect(prepareCalls[0][0].dialect).toBe("sqlite");
-
-      listener.cleanup();
     });
   });
 });
