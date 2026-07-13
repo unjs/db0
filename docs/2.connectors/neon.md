@@ -18,19 +18,13 @@ The HTTP/WS connection is usually preferred over TCP for serverless environments
 - Reduced latency as a consequence of fewer required network trips per query.
 - Reduce number of SCRAM authentication calls.
 
-Additionally to the runtime differences, Neon connector also allows to automatically seed and instantiate a fresh Postgres instance if initialized without a connection string.
-
-## Instant Postgres Provisioning
-
-If the connector's client is instantiated without a connection string **in development**, the Neon connector will automatically generate a connection string. It will also seed schema and data if provided with a `.sql` file.
-
 ## Usage
 
-Install Neon Serverless Driver for the postgres connection and Neon's `neon-new` package to auto-generate the connection string in development.
+Install the Neon Serverless Driver for the postgres connection.
 
-:pm-install{name="@neondatabase/serverless neon-new"}
+:pm-install{name="@neondatabase/serverless"}
 
-With those dependencies installed, you can immediately start building:
+This connector always connects to an existing database, so a connection string is required.
 
 ```ts
 import { createDatabase } from "db0";
@@ -38,42 +32,21 @@ import neon from "db0/connectors/neon";
 
 const db = createDatabase(
   neon({
-    bindingName: "DB",
-    seed: "init.sql",
+    url: process.env.DATABASE_URL,
   }),
 );
 ```
 
-```sql [init.sql]
-CREATE TABLE IF NOT EXISTS xmen (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL
-);
-
-INSERT INTO xmen (name) VALUES
-  ('Wolverine'),
-  ('Cyclops'),
-  ('Storm'),
-  ('Jean Grey'),
-  ('Beast'),
-  ('Professor X'),
-  ('Gambit'),
-  ('Rogue'),
-  ('Nightcrawler')
-ON CONFLICT DO NOTHING;
-```
+::tip
+Want a database provisioned for you in development, without bringing your own connection string? Use the [Neon Instant connector](/connectors/neon-instant).
+::
 
 ## Options
 
-### `connectionString` or `url`
+Options are passed through to the underlying [`Client`](https://neon.com/docs/serverless/serverless-driver), so any `ClientConfig` field is accepted in addition to the following.
 
-- **Type:** `string` _(optional)_
-- Manually provide a connection string to your Neon database.
-- If not provided, it will use the value from the environment variable or automatically provision a database (in development).
+### `url` or `connectionString`
 
-### `seed`
-
-- **Type:** `string` _(optional)_
-- **Default:** `undefined`
-- Path to a `.sql` file for seeding the database schema and initial data.
-- If set to `false`, seeding will be disabled.
+- **Type:** `string`
+- Connection string to your Neon database.
+- If neither is provided, creating the client throws.

@@ -1,11 +1,11 @@
 import { describe } from "vitest";
-import neonConnector from "../../src/connectors/neon";
+import neonInstantConnector from "../../src/connectors/neon-instant";
 import { testConnector } from "./_tests";
 
-describe.runIf(process.env.NEON_URL)("connectors: Neon", () => {
+describe.runIf(process.env.NEON_URL)("connectors: Neon Instant", () => {
   testConnector({
     dialect: "postgresql",
-    connector: neonConnector({
+    connector: neonInstantConnector({
       connectionString: process.env.NEON_URL!,
     }),
   });
