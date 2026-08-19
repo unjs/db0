@@ -6,6 +6,7 @@ import type {
 import { PGlite } from "@electric-sql/pglite";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
+import { normalizeParams } from "./_internal/postgresql.ts";
 
 export type ConnectorOptions = PGliteOptions;
 
@@ -44,12 +45,6 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(
       _client = undefined;
     },
   };
-}
-
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
-function normalizeParams(sql: string) {
-  let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
 }
 
 class StatementWrapper extends BoundableStatement<void> {

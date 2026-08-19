@@ -3,6 +3,7 @@ import pg from "pg";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
+import { normalizeParams } from "./_internal/postgresql.ts";
 
 export type ConnectorOptions = { url: string } | pg.ClientConfig;
 
@@ -43,12 +44,6 @@ export default function postgresqlConnector(
       _client = undefined;
     },
   };
-}
-
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
-function normalizeParams(sql: string) {
-  let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
 }
 
 class StatementWrapper extends BoundableStatement<void> {
