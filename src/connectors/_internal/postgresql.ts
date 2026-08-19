@@ -47,7 +47,11 @@ export function normalizeParams(sql: string): string {
       }
       // $tag$ ... $tag$ dollar-quoted string
       case "$": {
-        const end = skipDollarQuoted(sql, index);
+        // A `$` directly attached to an identifier is part of that identifier
+        // (`foo$tag$` is one identifier), so it cannot open a dollar-quote.
+        const end = isIdentifierChar(sql[index - 1])
+          ? -1
+          : skipDollarQuoted(sql, index);
         if (end === -1) {
           break;
         }
@@ -71,11 +75,12 @@ export function normalizeParams(sql: string): string {
 
 /** Index right after the closing quote (or end of input for an unterminated literal). */
 function skipQuoted(sql: string, start: number, quote: string): number {
+  // `standard_conforming_strings` is on by default, so a backslash is literal in
+  // a regular '...' string. Only E'...' strings give it its escaping meaning.
+  const escapes = quote === "'" && isEscapeStringPrefix(sql, start);
   let index = start + 1;
   while (index < sql.length) {
-    if (sql[index] === "\\" && quote === "'") {
-      // Escape sequences only apply to E'...' strings, but standard_conforming_strings
-      // is on by default, so a backslash is literal. Advancing by one is enough either way.
+    if (escapes && sql[index] === "\\") {
       index++;
     } else if (sql[index] === quote) {
       // A doubled quote is an escaped quote, not the end of the literal.
@@ -88,6 +93,20 @@ function skipQuoted(sql: string, start: number, quote: string): number {
     index++;
   }
   return sql.length;
+}
+
+const IDENTIFIER_CHAR_RE = /[\w$\u0080-\uFFFF]/;
+
+function isIdentifierChar(char: string | undefined): boolean {
+  return char !== undefined && IDENTIFIER_CHAR_RE.test(char);
+}
+
+/** Whether the quote at `start` opens an `E'...'` escape string literal. */
+function isEscapeStringPrefix(sql: string, start: number): boolean {
+  const prefix = sql[start - 1];
+  return (
+    (prefix === "E" || prefix === "e") && !isIdentifierChar(sql[start - 2])
+  );
 }
 
 /** Index right after the closing `*​/` of a (possibly nested) block comment. */
