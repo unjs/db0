@@ -3,6 +3,10 @@
 //
 // Only placeholders in actual SQL code must be rewritten. A `?` inside a string
 // literal, a quoted identifier or a comment is data and has to be left as-is.
+//
+// The jsonb operators `?|` and `?&` are recognised and left alone. A bare `?` is
+// always a placeholder, so the `jsonb ? text` operator has to be spelled
+// `jsonb_exists(jsonb, text)` instead.
 export function normalizeParams(sql: string): string {
   if (!sql.includes("?")) {
     return sql;
@@ -60,6 +64,12 @@ export function normalizeParams(sql: string): string {
         continue;
       }
       case "?": {
+        // `?|` and `?&` are jsonb operators, never placeholders.
+        if (sql[index + 1] === "|" || sql[index + 1] === "&") {
+          result += sql.slice(index, index + 2);
+          index += 2;
+          continue;
+        }
         result += `$${++paramIndex}`;
         index++;
         continue;

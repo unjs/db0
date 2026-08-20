@@ -70,6 +70,19 @@ describe("connectors: postgresql normalizeParams", () => {
     );
   });
 
+  it("keeps the `?|` and `?&` jsonb operators", () => {
+    expect(
+      normalizeParams("SELECT * FROM t WHERE payload ?| ARRAY['a', 'b']"),
+    ).toBe("SELECT * FROM t WHERE payload ?| ARRAY['a', 'b']");
+    expect(
+      normalizeParams(
+        "SELECT * FROM t WHERE payload ?& ARRAY['a'] AND id = ? AND payload ?| ?",
+      ),
+    ).toBe(
+      "SELECT * FROM t WHERE payload ?& ARRAY['a'] AND id = $1 AND payload ?| $2",
+    );
+  });
+
   it("does not hang or drop input on unterminated literals", () => {
     expect(normalizeParams("SELECT 'unterminated ?")).toBe(
       "SELECT 'unterminated ?",
