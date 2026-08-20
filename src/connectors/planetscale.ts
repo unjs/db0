@@ -52,6 +52,10 @@ export default function planetscaleConnector(
   return {
     name: "planetscale",
     dialect: "mysql",
+    // `Client.execute()` opens a new `Connection` (and a new session) per query,
+    // so `BEGIN`/`COMMIT` issued as separate statements never share a session.
+    // Transactions require `Client.transaction()`.
+    capabilityOverrides: { supportsTransactions: false },
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),

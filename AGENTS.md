@@ -35,13 +35,13 @@ Each connector lazily initializes its underlying client (via `lazyInstance()`) a
 
 ## Build & Dev
 
-| Command | Purpose |
-|---------|---------|
-| `pnpm build` | Generate connector registry + bundled build via `obuild` (index, every connector, and every integration are separate bundle entries with shared chunks; `build.config.ts` also validates `package.json` exports stay in sync) |
-| `pnpm dev` | Vitest watch mode |
-| `pnpm test` | Lint + typecheck (`tsgo`) + vitest with coverage + bun tests |
-| `pnpm vitest run <path>` | Run a specific test |
-| `pnpm lint` / `pnpm fmt` | ESLint + Prettier |
+| Command                  | Purpose                                                                                                                                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm build`             | Generate connector registry + bundled build via `obuild` (index, every connector, and every integration are separate bundle entries with shared chunks; `build.config.ts` also validates `package.json` exports stay in sync) |
+| `pnpm dev`               | Vitest watch mode                                                                                                                                                                                                             |
+| `pnpm test`              | Lint + typecheck (`tsgo`) + vitest with coverage + bun tests                                                                                                                                                                  |
+| `pnpm vitest run <path>` | Run a specific test                                                                                                                                                                                                           |
+| `pnpm lint` / `pnpm fmt` | ESLint + Prettier                                                                                                                                                                                                             |
 
 Package manager: **pnpm**. Build tool: **obuild**. Typecheck: **tsgo**.
 
@@ -51,11 +51,14 @@ Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/conne
 
 `test/connector-dependencies.test.ts` asserts the generated `connectorDependencies` map matches the `importLib()` calls in each connector source, so declared metadata cannot drift.
 
+`test/connector-capabilities.test.ts` does the same for capabilities: it builds each connector and asserts the docs table in `scripts/_capabilities-data.ts` matches the connector's real `dialect` + `capabilityOverrides`.
+
 ## Key Patterns
 
 - **Zero deps** — no runtime deps and no peer deps; backend drivers are imported lazily via dynamic `import()` (see `_internal/utils.ts` `importLib()`), with a `lib` option escape hatch on every connector that needs one
 - **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`
 - **All bare imports stay external** — only relative/internal code is bundled, so backend drivers are never inlined
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
+- **Capabilities** — `db.capabilities` is a frozen snapshot from `src/capabilities.ts`, derived from the connector's `dialect` and refined by its optional `capabilityOverrides`. Note that `supportsTransactions` tracks the driver's _session model_, not the engine: connectors that open a new session per query (D1, PlanetScale, libsql over HTTP) set it to `false`
 - **`BoundableStatement`** base class — shared bind/execute logic in `_internal/statement.ts`
 - **AsyncDisposable** — `await using db = createDatabase(...)` is supported

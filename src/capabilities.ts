@@ -43,5 +43,3 @@ export function getCapabilities(
     ? Object.freeze({ ...dialectCapabilities[dialect], ...overrides })
     : dialectCapabilities[dialect];
 }
-
-export type { DatabaseCapabilities } from "./types.ts";
