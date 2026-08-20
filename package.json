@@ -29,12 +29,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm gen-connectors && obuild",
+    "build": "pnpm gen-connectors && pnpm gen-capabilities && obuild",
     "gen-connectors": "jiti scripts/gen-connectors.ts",
+    "gen-capabilities": "jiti scripts/gen-capabilities-docs.ts && automd --dir docs --input 1.guide/2.capabilities.md",
     "db0": "pnpm jiti src/cli",
     "dev": "vitest",
-    "lint": "prettier -c src test",
-    "fmt": "prettier -w src test",
+    "lint": "prettier -c src test scripts",
+    "fmt": "prettier -w src test scripts",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
     "test": "pnpm lint && pnpm test:types && vitest run --coverage && pnpm test:bun",

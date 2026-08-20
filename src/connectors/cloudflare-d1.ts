@@ -27,6 +27,10 @@ export default function cloudflareD1Connector(
   return {
     name: "cloudflare-d1",
     dialect: "sqlite",
+    // D1 has no explicit transactions (`BEGIN`/`COMMIT` are rejected);
+    // only implicit ones via `D1Database.batch()`.
+    // https://developers.cloudflare.com/d1/worker-api/d1-database/#batch
+    capabilityOverrides: { transactions: false },
     getInstance: () => getDB(),
     exec: (sql) => getDB().exec(sql),
     prepare: (sql) => new StatementWrapper(getDB().prepare(sql)),
