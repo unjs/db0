@@ -78,6 +78,22 @@ describe("connectors: postgresql normalizeParams", () => {
     expect(normalizeParams("SELECT ?&?")).toBe("SELECT $1&$2");
   });
 
+  it("rejects mixing `?` placeholders with numbered `$n` parameters", () => {
+    // both styles number from $1, so the generated placeholder would collide
+    // with the hand-written one and silently bind the wrong value
+    expect(() => normalizeParams("SELECT $1, ?")).toThrow(
+      "cannot mix `?` placeholders with numbered `$n` parameters",
+    );
+    // a `$n` that is data, not a parameter, is not a mix
+    expect(normalizeParams("SELECT 'costs $100? yes', ?")).toBe(
+      "SELECT 'costs $100? yes', $1",
+    );
+    expect(normalizeParams("SELECT ? -- see $1\n")).toBe(
+      "SELECT $1 -- see $1\n",
+    );
+    expect(normalizeParams("SELECT foo$1, ?")).toBe("SELECT foo$1, $1");
+  });
+
   it("does not hang or drop input on unterminated literals", () => {
     expect(normalizeParams("SELECT 'unterminated ?")).toBe(
       "SELECT 'unterminated ?",

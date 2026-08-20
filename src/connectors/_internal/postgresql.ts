@@ -12,6 +12,9 @@
 //   jsonb ?| text[]  -> jsonb_exists_any(jsonb, text[])
 //   jsonb ?& text[]  -> jsonb_exists_all(jsonb, text[])
 //   jsonb @? jsonpath -> jsonb_path_exists(jsonb, jsonpath)
+//
+// Both placeholder styles number from $1, so hand-written `$n` parameters
+// cannot be mixed with `?` in the same query and are rejected.
 export function normalizeParams(sql: string): string {
   if (!sql.includes("?")) {
     return sql;
@@ -20,6 +23,7 @@ export function normalizeParams(sql: string): string {
   let result = "";
   let index = 0;
   let paramIndex = 0;
+  let hasNumberedParams = false;
 
   while (index < sql.length) {
     const char = sql[index];
@@ -54,13 +58,20 @@ export function normalizeParams(sql: string): string {
         index = end;
         continue;
       }
-      // $tag$ ... $tag$ dollar-quoted string
+      // $tag$ ... $tag$ dollar-quoted string, or a $n numbered parameter
       case "$": {
         // A `$` directly attached to an identifier is part of that identifier
         // (`foo$tag$` is one identifier), so it cannot open a dollar-quote.
-        const end = isIdentifierChar(sql[index - 1])
-          ? -1
-          : skipDollarQuoted(sql, index);
+        if (isIdentifierChar(sql[index - 1])) {
+          break;
+        }
+        // A dollar-quote tag never starts with a digit, so `$1` in SQL code is
+        // a hand-written numbered parameter.
+        if (isDigit(sql[index + 1])) {
+          hasNumberedParams = true;
+          break;
+        }
+        const end = skipDollarQuoted(sql, index);
         if (end === -1) {
           break;
         }
@@ -77,6 +88,14 @@ export function normalizeParams(sql: string): string {
 
     result += char;
     index++;
+  }
+
+  // The generated placeholders restart at $1, so they would collide with the
+  // hand-written ones and silently bind the wrong values.
+  if (hasNumberedParams && paramIndex > 0) {
+    throw new Error(
+      "[db0] cannot mix `?` placeholders with numbered `$n` parameters in the same query",
+    );
   }
 
   return result;
@@ -108,6 +127,10 @@ const IDENTIFIER_CHAR_RE = /[\w$\u0080-\uFFFF]/;
 
 function isIdentifierChar(char: string | undefined): boolean {
   return char !== undefined && IDENTIFIER_CHAR_RE.test(char);
+}
+
+function isDigit(char: string | undefined): boolean {
+  return char !== undefined && char >= "0" && char <= "9";
 }
 
 /** Whether the quote at `start` opens an `E'...'` escape string literal. */
