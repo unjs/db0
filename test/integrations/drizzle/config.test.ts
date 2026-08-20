@@ -194,6 +194,21 @@ describe("integrations: drizzle: config: forbidJsonb", () => {
     expect(sql).not.toMatch(/jsonb_/);
     expect(sql).toMatch(/json_/);
   });
+
+  // A transaction is its own `SQLiteAsyncDatabase`, so it carries its own
+  // `forbidJsonb`: without threading it through the session, `tx.query.*` would
+  // still emit `jsonb_*` on a connector whose SQLite build has no JSONB.
+  it("keeps `json_*` helpers inside a transaction", async () => {
+    const db = createDatabase(betterSqlite3({ name: ":memory:" }));
+    const drizzleDb = drizzleSqlite(db, { relations, forbidJsonb: true });
+    const sql = await drizzleDb.transaction(
+      async (tx) =>
+        tx.query.authors.findMany({ with: { books: true } }).toSQL().sql,
+    );
+    expect(sql).not.toMatch(/jsonb_/);
+    expect(sql).toMatch(/json_/);
+    await db.dispose();
+  });
 });
 
 describe("integrations: drizzle: config: types", () => {

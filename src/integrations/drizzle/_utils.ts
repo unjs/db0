@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm";
 import type { AnyColumn, Table } from "drizzle-orm";
 import type { SelectedFieldsOrdered } from "drizzle-orm/operations";
+import type { Cache } from "drizzle-orm/cache/core";
 
 // Note: db0 connectors always return object rows keyed by the driver's column
 // name, while drizzle asks its drivers for positional arrays (`mode: "arrays"`)
@@ -328,4 +329,37 @@ export function useJitMappers(enabled: boolean | undefined): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * `casing` was removed from drizzle's config in v1 and is only rejected by
+ * TypeScript for inline object literals, so a config built in a variable or
+ * forwarded by a framework wrapper would silently generate the wrong SQL.
+ */
+export function assertNoCasingOption(config: unknown): void {
+  if (config && typeof config === "object" && "casing" in config) {
+    throw new Error(
+      "[db0] [drizzle] The `casing` option was removed in drizzle-orm v1. Apply `snakeCase.table()` / `camelCase.table()` (from `drizzle-orm`) to your schema instead.",
+    );
+  }
+}
+
+/**
+ * Wires drizzle's manual cache-invalidation API the way every official driver
+ * does: `db.$cache` becomes the configured cache with its `invalidate` hook
+ * pointing at `onMutate`.
+ *
+ * Unlike the official drivers we leave drizzle's built-in no-op `$cache` in
+ * place when no cache is configured, rather than replacing it with `undefined`.
+ */
+export function attachCache(
+  db: { $cache: { invalidate: Cache["onMutate"] } },
+  cache: Cache | undefined,
+): void {
+  if (!cache) {
+    return;
+  }
+  const $cache = cache as unknown as { invalidate: Cache["onMutate"] };
+  $cache.invalidate = cache.onMutate;
+  db.$cache = $cache;
 }

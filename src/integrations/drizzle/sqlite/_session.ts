@@ -43,6 +43,11 @@ export type DB0SQLiteRunResult = {
 export interface DB0SQLiteSessionOptions {
   logger?: Logger;
   cache?: Cache;
+  /**
+   * Forwarded to every transaction this session opens, so that `tx.query.*`
+   * emits the same JSON helpers as `db.query.*` (see `../sqlite/index.ts`).
+   */
+  forbidJsonb?: boolean;
 }
 
 type QueryMetadata = {
@@ -55,6 +60,7 @@ export class DB0SQLiteSession<
 > extends SQLiteAsyncSession<"async", DB0SQLiteRunResult, TRelations> {
   private logger: Logger;
   private cache: Cache | undefined;
+  private forbidJsonb: boolean | undefined;
 
   constructor(
     private db: Database,
@@ -65,6 +71,7 @@ export class DB0SQLiteSession<
     super(dialect, "async");
     this.logger = options.logger ?? new NoopLogger();
     this.cache = options.cache;
+    this.forbidJsonb = options.forbidJsonb;
   }
 
   prepareQuery(
@@ -132,6 +139,8 @@ export class DB0SQLiteSession<
       this.dialect,
       this,
       this.relations,
+      0,
+      this.forbidJsonb,
     );
     await this.run(
       sql.raw(`begin${config?.behavior ? " " + config.behavior : ""}`),
@@ -155,8 +164,16 @@ export class DB0SQLiteTransaction<
     private db0Session: DB0SQLiteSession<TRelations>,
     relations: TRelations,
     nestedIndex = 0,
+    forbidJsonb?: boolean,
   ) {
-    super(resultKind, db0Dialect, db0Session, relations, nestedIndex);
+    super(
+      resultKind,
+      db0Dialect,
+      db0Session,
+      relations,
+      nestedIndex,
+      forbidJsonb,
+    );
   }
 
   override async transaction<T>(
@@ -169,6 +186,7 @@ export class DB0SQLiteTransaction<
       this.db0Session,
       this._.relations,
       this.nestedIndex + 1,
+      this.forbidJsonb,
     );
     await this.db0Session.run(sql.raw(`savepoint ${savepointName}`));
     try {

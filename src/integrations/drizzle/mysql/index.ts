@@ -9,15 +9,18 @@ import type { DrizzleMySqlConfig } from "drizzle-orm/mysql-core";
 
 import type { AnyRelations, EmptyRelations } from "drizzle-orm";
 
-import type { Cache } from "drizzle-orm/cache/core";
-
 import { refineCodecs } from "drizzle-orm/codecs";
 import { castToText } from "drizzle-orm/mysql-core/codecs";
 import type { MySqlCodecs } from "drizzle-orm/mysql-core/codecs";
 import { mysql2Codecs } from "drizzle-orm/mysql2/codecs";
 import { planetscaleServerlessCodecs } from "drizzle-orm/planetscale-serverless/codecs";
 
-import { trackSelectedFields, useJitMappers } from "../_utils.ts";
+import {
+  assertNoCasingOption,
+  attachCache,
+  trackSelectedFields,
+  useJitMappers,
+} from "../_utils.ts";
 
 import type { DB0MySqlQueryResultHKT } from "./_session.ts";
 
@@ -141,37 +144,4 @@ export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   attachCache(drizzleDb, config?.cache);
 
   return drizzleDb;
-}
-
-/**
- * `casing` was removed from drizzle's config in v1 and is only rejected by
- * TypeScript for inline object literals, so a config built in a variable or
- * forwarded by a framework wrapper would silently generate the wrong SQL.
- */
-function assertNoCasingOption(config: unknown): void {
-  if (config && typeof config === "object" && "casing" in config) {
-    throw new Error(
-      "[db0] [drizzle] The `casing` option was removed in drizzle-orm v1. Apply `snakeCase.table()` / `camelCase.table()` (from `drizzle-orm`) to your schema instead.",
-    );
-  }
-}
-
-/**
- * Wires drizzle's manual cache-invalidation API the way every official driver
- * does: `db.$cache` becomes the configured cache with its `invalidate` hook
- * pointing at `onMutate`.
- *
- * Unlike the official drivers we leave drizzle's built-in no-op `$cache` in
- * place when no cache is configured, rather than replacing it with `undefined`.
- */
-function attachCache(
-  db: { $cache: { invalidate: Cache["onMutate"] } },
-  cache: Cache | undefined,
-): void {
-  if (!cache) {
-    return;
-  }
-  const $cache = cache as unknown as { invalidate: Cache["onMutate"] };
-  $cache.invalidate = cache.onMutate;
-  db.$cache = $cache;
 }

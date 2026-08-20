@@ -73,17 +73,39 @@ positional arrays (`mode: "arrays"`) while db0 connectors return objects keyed b
 column name. Since v1 no longer passes the selected fields to `prepareQuery()`,
 `_utils.ts` wraps `dialect.mapperGenerators.rows` (`trackSelectedFields()`) to
 record, per generated mapper, how to turn an object row into that query's
-select-order array; a session looks it up with `getRowConverter(mapper)` and
-falls back to `Object.values()` for mappers built without a field list
-(`$count()`, `values()`, the relational query builder). Decoding, nesting and
-left-join nulling are drizzle's job in v1 — db0 only places values in slots.
+select-order array; a session looks it up with `getRowConverter(mapper)`.
+Decoding, nesting and left-join nulling are drizzle's job in v1 — db0 only places
+values in slots.
+
+The key a field comes back under is the _driver's_, not drizzle's: a dialect may
+wrap a column in an unaliased cast (`cast("amount" as text)`, `"n"::text`), which
+renames it. So the plan is built lazily against a real row and a computed key
+only counts when that row carries it; everything else is matched by position
+against the row keys no field claimed. Mappers built without a field list
+(`$count()`, `values()`, the relational query builder) fall back to key order,
+guarded so array-index-like keys — which JS enumerates first — throw instead of
+scrambling the row.
 
 Same-named columns from different tables collapse into one object key, so those
 queries are rejected with a db0 error rather than silently returning a wrong
 value. Because a session converts inside its executor, drizzle wraps that error
-in a `DrizzleQueryError` and the db0 message arrives as its `cause`.
+in a `DrizzleQueryError` and the db0 message arrives as its `cause`. Alias
+collisions are checked once per query inside the wrapped mapper, so they are
+rejected even when the result is empty.
 
 Since v1, relations are passed as `relations` (from `defineRelations()`) rather
 than `schema`, and casing comes from the `snakeCase.table()` / `camelCase.table()`
 helpers instead of a `casing` option, so `column.name` is always the final SQL
-name.
+name — a stray `casing` in the config is rejected outright.
+
+v1 also moved all pg/mysql decoding into **codecs**, so each dialect's `drizzle()`
+defaults to the codec set matching `db.connector` (`pgCodecsFor()` /
+`mysqlCodecsFor()`). The official sets assume the driver was reconfigured to hand
+back raw text; db0 does not own the connection, so date/time (and mysql bigint)
+columns are cast to text in SQL instead. SQLite passes `forbidJsonb` (default
+`true` for `cloudflare-d1`), and all three wire `$client` and `$cache`.
+
+db0 has no streaming API: `iterator()` buffers the whole result set, and on mysql
+it errors for statements that resolve to driver metadata rather than rows.
+Non-returning `insert`/`update`/`delete` go through `Statement.run()`, so they
+resolve to that metadata instead of an empty array.

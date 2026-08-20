@@ -135,6 +135,13 @@ A column collision is detected from the columns of a returned row, so a query
 that returns no rows at all is not rejected; a collision between aliases is
 rejected either way.
 
+db0 has no streaming API, so `iterator()` cannot stream: the query runs to
+completion and the whole result set is held in memory before the first row is
+yielded. On MySQL it throws for `insert`/`update`/`delete` statements, which
+resolve to the driver's result metadata rather than to rows — those, and their
+Postgres equivalents, resolve to that metadata (affected rows, insert id) instead
+of an empty array.
+
 ## Configuration
 
 Create a `drizzle.config.ts` file for migration management:
