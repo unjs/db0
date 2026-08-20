@@ -15,4 +15,7 @@ __*
 /connectors
 /integrations
 
+# generated Prisma clients for integration tests
+/test/integrations/prisma/*/client
+
 tsconfig.tsbuildinfo
