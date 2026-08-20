@@ -190,12 +190,15 @@ describe("tracing", () => {
     });
 
     it("should keep prototype methods of class based databases", () => {
+      // Private fields make sure the wrapper calls through the original
+      // instance instead of running its methods against a foreign receiver.
       class ClassDatabase {
+        #dialect = "sqlite" as const;
         get connector() {
           return "sqlite" as const;
         }
         get dialect() {
-          return "sqlite" as const;
+          return this.#dialect;
         }
         get disposed() {
           return false;
@@ -226,6 +229,19 @@ describe("tracing", () => {
       expect(typeof traced[Symbol.asyncDispose]).toBe("function");
       expect(typeof traced.getInstance).toBe("function");
       expect(traced.dialect).toBe("sqlite");
+    });
+
+    it("should wrap a frozen database", async () => {
+      const plainDb = Object.freeze(
+        createDatabase(connector({ name: ":memory:" })),
+      );
+      const tracedDb = withTracing(plainDb);
+      onTestFinished(() => tracedDb.dispose());
+
+      const listener = createTracingListener("query");
+      await tracedDb.exec(`CREATE TABLE test (id INTEGER PRIMARY KEY)`);
+
+      expect(listener.handlers.start).toHaveBeenCalledTimes(1);
     });
 
     it("should not leak internal properties of the traced instance", () => {

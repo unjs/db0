@@ -9,7 +9,7 @@ import { sqlTemplate } from "./template.ts";
 
 export type TracedOperation = "query";
 
-const QUERY_OPERATION: TracedOperation = "query";
+const QUERY_CHANNEL = "db0.query";
 
 export interface TraceContext {
   query: string;
@@ -18,12 +18,66 @@ export interface TraceContext {
   dialect: SQLDialect;
 }
 
+/**
+ * Traces one query. The query string can be passed as a thunk so that building it
+ * (e.g. parsing an `sql` template) is skipped when nobody is subscribed.
+ */
+type TraceQuery = <T>(
+  exec: () => Promise<T>,
+  method: TraceContext["method"],
+  query: string | (() => string),
+) => Promise<T>;
+
 const TRACED: unique symbol = Symbol.for("db0.traced");
 
 type MaybeTracedDatabase<TConnector extends Connector = Connector> =
   Database<TConnector> & {
     [TRACED]?: boolean;
   };
+
+class TracedStatement implements Statement {
+  #statement: Statement;
+  #query: string;
+  #traceQuery: TraceQuery;
+
+  constructor(statement: Statement, query: string, traceQuery: TraceQuery) {
+    this.#statement = statement;
+    this.#query = query;
+    this.#traceQuery = traceQuery;
+  }
+
+  bind(...args: Primitive[]): TracedStatement {
+    return new TracedStatement(
+      this.#statement.bind(...args),
+      this.#query,
+      this.#traceQuery,
+    );
+  }
+
+  all(...args: Primitive[]): Promise<unknown[]> {
+    return this.#traceQuery(
+      async () => this.#statement.all(...args),
+      "prepare.all",
+      this.#query,
+    );
+  }
+
+  run(...args: Primitive[]): Promise<{ success: boolean }> {
+    return this.#traceQuery(
+      async () => this.#statement.run(...args),
+      "prepare.run",
+      this.#query,
+    );
+  }
+
+  get(...args: Primitive[]): Promise<unknown> {
+    return this.#traceQuery(
+      async () => this.#statement.get(...args),
+      "prepare.get",
+      this.#query,
+    );
+  }
+}
 
 /**
  * Wrap a database instance with tracing functionality.
@@ -51,109 +105,74 @@ export function withTracing<TConnector extends Connector = Connector>(
     return db;
   }
 
-  const queryChannel = tracingChannel<TraceContext>(`db0.${QUERY_OPERATION}`);
+  const queryChannel = tracingChannel<TraceContext>(QUERY_CHANNEL);
 
   // The context is built lazily to avoid any work when nobody is subscribed.
   // This is an async function so that subscribing never turns a rejection
   // (e.g. an invalid `sql` template) into a synchronous throw.
-  async function tracePromise<T>(
+  async function traceQuery<T>(
     exec: () => Promise<T>,
-    context: () => TraceContext,
+    method: TraceContext["method"],
+    query: string | (() => string),
   ): Promise<T> {
     if (!queryChannel.hasSubscribers) {
       return exec();
     }
-    return queryChannel.tracePromise(exec, context());
+    return queryChannel.tracePromise(exec, {
+      query: typeof query === "function" ? query() : query,
+      method,
+      connector: db.connector,
+      dialect: db.dialect,
+    });
   }
 
-  // Copy the property descriptors instead of spreading, so that getters like
-  // `dialect` and `disposed` stay getters. Spreading would evaluate them once,
-  // making `disposed` report the state at wrap-time forever after. The prototype
-  // is kept so that databases implemented as class instances keep their methods.
-  const tracedDb = Object.create(
-    Object.getPrototypeOf(db) as object | null,
-    Object.getOwnPropertyDescriptors(db),
-  ) as MaybeTracedDatabase<TConnector>;
+  // Every member delegates explicitly instead of being copied over from `db`.
+  // Copying property descriptors would snapshot own properties onto a foreign
+  // object, which breaks databases implemented as classes (methods and getters
+  // would run against a receiver that never got their private fields) and
+  // freezes the wrapper's view of the original at wrap time. Delegating keeps
+  // `db` as the receiver of every call, so getters like `disposed` always report
+  // the current state.
+  const tracedDb: Database<TConnector> = {
+    get connector() {
+      return db.connector;
+    },
+
+    get dialect() {
+      return db.dialect;
+    },
+
+    get disposed() {
+      return db.disposed;
+    },
+
+    getInstance: () => db.getInstance(),
+
+    // `exec` is wrapped in an async function so connectors throwing synchronously
+    // emit the same event sequence as connectors rejecting asynchronously. As a
+    // side effect, `exec` on a disposed database rejects instead of throwing
+    // synchronously; `exec` returns a promise either way, so awaiting is unaffected.
+    exec: (query) => traceQuery(async () => db.exec(query), "exec", query),
+
+    prepare: (query) =>
+      new TracedStatement(db.prepare(query), query, traceQuery),
+
+    sql: (strings, ...values) =>
+      traceQuery(
+        async () => db.sql(strings, ...values),
+        "sql",
+        () =>
+          // Rebuilding the query keeps bound parameters out of the traced context.
+          sqlTemplate(strings, ...values)[0],
+      ),
+
+    dispose: () => db.dispose(),
+
+    [Symbol.asyncDispose]: () => db.dispose(),
+  };
+
   // Non-enumerable, so spreading or serializing a traced database does not leak it.
   Object.defineProperty(tracedDb, TRACED, { value: true });
-
-  // `exec` is wrapped in an async function so connectors throwing synchronously
-  // emit the same event sequence as connectors rejecting asynchronously. As a
-  // side effect, `exec` on a disposed database rejects instead of throwing
-  // synchronously; `exec` returns a promise either way, so awaiting is unaffected.
-  tracedDb.exec = (query) =>
-    tracePromise(
-      async () => db.exec(query),
-      () => ({
-        query,
-        method: "exec",
-        connector: db.connector,
-        dialect: db.dialect,
-      }),
-    );
-
-  tracedDb.sql = (strings, ...values) =>
-    tracePromise(
-      async () => db.sql(strings, ...values),
-      () => ({
-        query: sqlTemplate(strings, ...values)[0],
-        method: "sql",
-        connector: db.connector,
-        dialect: db.dialect,
-      }),
-    );
-
-  class TracedStatement implements Statement {
-    #statement: Statement;
-    #query: string;
-
-    constructor(statement: Statement, query: string) {
-      this.#statement = statement;
-      this.#query = query;
-    }
-
-    #withTrace<T>(
-      fn: () => Promise<T>,
-      method: "prepare.all" | "prepare.run" | "prepare.get",
-    ) {
-      return tracePromise(fn, () => ({
-        query: this.#query,
-        method,
-        connector: db.connector,
-        dialect: db.dialect,
-      }));
-    }
-
-    bind(...args: Primitive[]) {
-      return new TracedStatement(this.#statement.bind(...args), this.#query);
-    }
-
-    all(...args: Primitive[]) {
-      return this.#withTrace(
-        async () => this.#statement.all(...args),
-        "prepare.all",
-      );
-    }
-
-    run(...args: Primitive[]) {
-      return this.#withTrace(
-        async () => this.#statement.run(...args),
-        "prepare.run",
-      );
-    }
-
-    get(...args: Primitive[]) {
-      return this.#withTrace(
-        async () => this.#statement.get(...args),
-        "prepare.get",
-      );
-    }
-  }
-
-  /**
-   * Prepare needs a special treatment because it returns a statement instance that needs to be patched.
-   */
-  tracedDb.prepare = (query) => new TracedStatement(db.prepare(query), query);
 
   return tracedDb;
 }
