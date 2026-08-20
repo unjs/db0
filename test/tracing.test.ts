@@ -358,6 +358,39 @@ describe("tracing", () => {
       expect(tracedDb.dialect).toBe(plainDb.dialect);
     });
 
+    it("should preserve capabilities from original database", () => {
+      const plainDb = createDatabase(
+        connector({
+          name: ":memory:",
+        }),
+      );
+      const tracedDb = withTracing(plainDb);
+
+      expect(tracedDb.capabilities).toEqual(plainDb.capabilities);
+      expect(tracedDb.capabilities).toBe(plainDb.capabilities);
+    });
+
+    it("should forward every member of the wrapped database", () => {
+      const plainDb = createDatabase(
+        connector({
+          name: ":memory:",
+        }),
+      );
+      const tracedDb = withTracing(plainDb);
+
+      // The wrapper delegates member by member, so a member added to `Database`
+      // would otherwise be dropped silently on traced instances.
+      const members = (target: object) =>
+        Reflect.ownKeys(target)
+          .filter(
+            (key) => Object.getOwnPropertyDescriptor(target, key)?.enumerable,
+          )
+          .map(String)
+          .sort();
+
+      expect(members(tracedDb)).toEqual(members(plainDb));
+    });
+
     it("should preserve disposed getter and reflect current state", async () => {
       const plainDb = createDatabase(
         connector({

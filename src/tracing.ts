@@ -148,6 +148,10 @@ export function withTracing<TConnector extends Connector = Connector>(
       return db.dialect;
     },
 
+    get capabilities() {
+      return db.capabilities;
+    },
+
     get disposed() {
       return db.disposed;
     },
