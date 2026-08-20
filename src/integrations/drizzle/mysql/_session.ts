@@ -3,10 +3,13 @@ import {
   type RelationalSchemaConfig,
   type Query,
   type TablesRelationalConfig,
+  type SQL,
   NoopLogger,
   fillPlaceholders,
   sql,
 } from "drizzle-orm";
+
+import { RowMapper, getCasing, mapRows } from "../_utils.ts";
 
 import {
   MySqlDialect,
@@ -25,7 +28,7 @@ import type {
   Mode,
 } from "drizzle-orm/mysql-core";
 
-import type { SQL } from "drizzle-orm";
+import type { CasingCache } from "drizzle-orm/casing";
 
 import type { Database } from "db0";
 
@@ -84,6 +87,7 @@ export class DB0MySqlSession<
       this.logger,
       fields,
       customResultMapper,
+      getCasing(this.dialect),
     ) as PreparedQueryKind<DB0MySqlPreparedQueryHKT, T>;
   }
 
@@ -91,6 +95,13 @@ export class DB0MySqlSession<
     const builtQuery = this.dialect.sqlToQuery(query);
     const prepared = this.prepareQuery(builtQuery, undefined);
     return prepared.execute() as Promise<T[]>;
+  }
+
+  // drizzle's mysql session reads `res[0][0]`, the `[rows, fields]` tuple the
+  // mysql2 driver returns; db0 hands back the rows on their own.
+  override async count(query: SQL): Promise<number> {
+    const res = await this.execute<{ count: string | number }[]>(query);
+    return Number(res[0]["count"]);
   }
 
   override async transaction<T>(
@@ -164,6 +175,11 @@ export class DB0MySqlTransaction<
 export class DB0MySqlPreparedQuery<
   T extends MySqlPreparedQueryConfig = MySqlPreparedQueryConfig,
 > extends MySqlPreparedQuery<T> {
+  /** @internal assigned by drizzle's select builder after construction */
+  declare joinsNotNullableMap: Record<string, boolean> | undefined;
+
+  private mapper: RowMapper;
+
   constructor(
     private db: Database,
     private queryString: string,
@@ -171,30 +187,32 @@ export class DB0MySqlPreparedQuery<
     private logger: Logger,
     private fields: SelectedFieldsOrdered | undefined,
     private customResultMapper?: (rows: unknown[][]) => T["execute"],
+    casing?: CasingCache,
   ) {
     super(undefined, undefined);
+    this.mapper = new RowMapper(fields, casing);
   }
 
   async execute(
     placeholderValues: Record<string, unknown> | undefined = {},
   ): Promise<T["execute"]> {
-    const params = fillPlaceholders(this.params, placeholderValues);
+    const params: any[] = fillPlaceholders(this.params, placeholderValues);
     this.logger.logQuery(this.queryString, params);
 
     const stmt = this.db.prepare(this.queryString);
 
     if (!this.fields && !this.customResultMapper) {
-      return stmt.all(...(params as any[]));
+      return stmt.all(...params);
     }
 
-    const rows = await stmt.all(...(params as any[]));
+    const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
-    if (this.customResultMapper) {
-      return this.customResultMapper(rows as unknown[][]);
-    }
-
-    // db0 returns object rows, return as-is when fields are present
-    return rows as T["execute"];
+    return mapRows(
+      rows,
+      this.mapper,
+      this.customResultMapper,
+      this.joinsNotNullableMap,
+    ) as T["execute"];
   }
 
   // eslint-disable-next-line require-yield
