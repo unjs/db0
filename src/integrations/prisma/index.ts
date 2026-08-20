@@ -1,108 +1,145 @@
-import type { Database, SQLDialect, Primitive } from "../../types.ts";
+import type { Database } from "../../types.ts";
 import type {
   IsolationLevel,
   SqlDriverAdapter,
+  SqlDriverAdapterFactory,
   SqlQuery,
   SqlResultSet,
   Transaction,
-  Provider,
-  SqlDriverAdapterFactory,
 } from "@prisma/driver-adapter-utils";
-import { DriverAdapterError } from "@prisma/driver-adapter-utils";
-import { Mutex } from "async-mutex";
+import {
+  getAffectedRows,
+  getProviderFromDialect,
+  getQueryArgs,
+  toResultSet,
+} from "./_utils.ts";
 
 const adapterName = "db0";
-const getProviderFromDialect = (dialect: SQLDialect): Provider => {
-  switch (dialect) {
-    case "postgresql": {
-      return "postgres";
-    }
-    case "libsql": {
-      return "sqlite";
-    }
-    default: {
-      return dialect;
-    }
+
+/**
+ * Structural equivalent of `DriverAdapterError` from
+ * `@prisma/driver-adapter-utils`, which detects it by `name` and `cause`.
+ * Inlined to keep db0 free of runtime dependencies.
+ */
+class DriverAdapterError extends Error {
+  override name = "DriverAdapterError";
+  constructor(cause: object) {
+    super("Driver adapter error");
+    this.cause = cause;
   }
+}
+
+/**
+ * Minimal FIFO mutex, used to serialize transactions over the single
+ * connection a db0 database wraps.
+ */
+const createMutex = (): (() => Promise<() => void>) => {
+  let last: Promise<void> = Promise.resolve();
+  return () => {
+    let release!: () => void;
+    const next = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const acquired = last.then(() => release);
+    last = last.then(() => next);
+    return acquired;
+  };
 };
 
+/**
+ * Creates a Prisma [driver adapter](https://www.prisma.io/docs/orm/overview/databases/database-drivers)
+ * backed by a db0 database instance.
+ *
+ * @param db - The db0 database to run Prisma queries through.
+ * @returns A driver adapter factory to pass as `new PrismaClient({ adapter })`.
+ */
 export function prisma(db: Database): SqlDriverAdapterFactory {
-  const mutex = new Mutex();
+  const acquire = createMutex();
   const provider = getProviderFromDialect(db.dialect);
 
-  const adapter: Omit<SqlDriverAdapter, "startTransaction"> = {
+  const queryable = {
     adapterName,
     provider,
 
-    executeScript: async function (script: string): Promise<void> {
+    queryRaw: async (params: SqlQuery): Promise<SqlResultSet> => {
+      const rows = await db
+        .prepare(params.sql)
+        .all(...(getQueryArgs(params, db.dialect) as never[]));
+      return toResultSet(rows);
+    },
+
+    executeRaw: async (params: SqlQuery): Promise<number> => {
+      const res = await db
+        .prepare(params.sql)
+        .run(...(getQueryArgs(params, db.dialect) as never[]));
+      return getAffectedRows(res);
+    },
+  } satisfies Pick<
+    SqlDriverAdapter,
+    "adapterName" | "provider" | "queryRaw" | "executeRaw"
+  >;
+
+  const adapter: Omit<SqlDriverAdapter, "startTransaction"> = {
+    ...queryable,
+
+    executeScript: async (script: string): Promise<void> => {
       await db.exec(script);
     },
 
-    dispose: db.dispose,
+    dispose: () => db.dispose(),
+  };
 
-    queryRaw: async function (params: SqlQuery): Promise<SqlResultSet> {
-      const stmt = db.prepare(params.sql);
-      const args = (params.args || []) as Primitive[];
+  const startTransaction = async (
+    isolationLevel?: IsolationLevel,
+  ): Promise<Transaction> => {
+    if (!db.capabilities.transactions) {
+      throw new Error(
+        `The \`${db.connector}\` connector does not support transactions.`,
+      );
+    }
 
-      return stmt.all(...args).then((result) => {
-        const columnNames = Object.keys((result as any)[0] || {});
-        const rows = (result as any[]).map((row) =>
-          columnNames.map((col) => row[col]),
-        );
-        const columnTypes = columnNames.map(() => 7 as const);
-        return { columnNames, columnTypes, rows };
+    if (
+      provider === "sqlite" &&
+      isolationLevel &&
+      isolationLevel !== "SERIALIZABLE"
+    ) {
+      throw new DriverAdapterError({
+        kind: "InvalidIsolationLevel",
+        level: isolationLevel,
       });
-    },
+    }
 
-    executeRaw: async function (params: SqlQuery) {
-      const stmt = db.prepare(params.sql);
-      const args = (params.args || []) as Primitive[];
+    const release = await acquire();
 
-      return stmt.run(...args).then((res) => (res as any).changes || 0);
-    },
+    try {
+      await db.exec("BEGIN");
+    } catch (error) {
+      release();
+      throw error;
+    }
+
+    let settled = false;
+    // `usePhantomQuery: false` means Prisma issues COMMIT/ROLLBACK itself, so
+    // the adapter only has to release the connection once it has.
+    const end = () => {
+      if (!settled) {
+        settled = true;
+        release();
+      }
+      return Promise.resolve();
+    };
+
+    return {
+      ...queryable,
+      options: { usePhantomQuery: false },
+      commit: end,
+      rollback: end,
+    };
   };
 
   return {
     adapterName,
     provider,
-    connect: function (): Promise<SqlDriverAdapter> {
-      return Promise.resolve({
-        ...adapter,
-
-        startTransaction: async function (
-          isolationLevel?: IsolationLevel,
-        ): Promise<Transaction> {
-          if (
-            provider === "sqlite" &&
-            isolationLevel &&
-            isolationLevel !== "SERIALIZABLE"
-          ) {
-            throw new DriverAdapterError({
-              kind: "InvalidIsolationLevel",
-              level: isolationLevel,
-            });
-          }
-
-          const release = await mutex.acquire();
-          const options = { usePhantomQuery: false };
-
-          db.exec("BEGIN");
-
-          return {
-            ...adapter,
-            options,
-
-            commit: async function () {
-              release();
-              return;
-            },
-            rollback: async function () {
-              release();
-              return;
-            },
-          };
-        },
-      });
-    },
+    connect: () => Promise.resolve({ ...adapter, startTransaction }),
   };
 }

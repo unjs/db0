@@ -5,3 +5,4 @@
 /node_modules
 /.output
 pnpm-lock.yaml
+/test/integrations/prisma/*/client
