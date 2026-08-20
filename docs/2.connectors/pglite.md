@@ -27,6 +27,8 @@ const db = createDatabase(
 );
 ```
 
+:read-more{title="Query parameters" to="/connectors/postgresql#query-parameters"}
+
 <!-- copy from https://pglite.dev/docs/api#main-constructor -->
 
 ## Options
