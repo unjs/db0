@@ -13,6 +13,7 @@ src/
 ├── database.ts           # createDatabase() factory — wraps Connector into Database
 ├── template.ts           # SQL tagged template literal parser (sql`...`)
 ├── _connectors.ts        # Auto-generated connector registry (do not edit manually)
+├── tracing.ts            # Opt-in `withTracing()` wrapper emitting `node:diagnostics_channel` events
 ├── connectors/           # One file per backend (17 total)
 │   ├── _internal/        # Shared helpers (BoundableStatement, cloudflare utils)
 │   ├── libsql/           # LibSQL variants (core, node, http, web)
@@ -54,7 +55,7 @@ Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/conne
 ## Key Patterns
 
 - **Zero deps** — no runtime deps and no peer deps; backend drivers are imported lazily via dynamic `import()` (see `_internal/utils.ts` `importLib()`), with a `lib` option escape hatch on every connector that needs one
-- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`
+- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`, `db0/tracing`
 - **All bare imports stay external** — only relative/internal code is bundled, so backend drivers are never inlined
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
 - **`BoundableStatement`** base class — shared bind/execute logic in `_internal/statement.ts`
