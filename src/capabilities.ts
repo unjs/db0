@@ -1,30 +1,30 @@
 import type { DatabaseCapabilities, SQLDialect } from "./types.ts";
 
 const sqlite: DatabaseCapabilities = Object.freeze({
-  supportsJSON: true,
-  supportsBooleans: false,
-  supportsArrays: false,
-  supportsDates: false,
-  supportsUUIDs: false,
-  supportsTransactions: true,
+  json: true,
+  booleans: false,
+  arrays: false,
+  dates: false,
+  uuids: false,
+  transactions: true,
 });
 
 const postgresql: DatabaseCapabilities = Object.freeze({
-  supportsJSON: true,
-  supportsBooleans: true,
-  supportsArrays: true,
-  supportsDates: true,
-  supportsUUIDs: true,
-  supportsTransactions: true,
+  json: true,
+  booleans: true,
+  arrays: true,
+  dates: true,
+  uuids: true,
+  transactions: true,
 });
 
 const mysql: DatabaseCapabilities = Object.freeze({
-  supportsJSON: true,
-  supportsBooleans: true,
-  supportsArrays: false,
-  supportsDates: true,
-  supportsUUIDs: false,
-  supportsTransactions: true,
+  json: true,
+  booleans: true,
+  arrays: false,
+  dates: true,
+  uuids: false,
+  transactions: true,
 });
 
 export const dialectCapabilities: Record<SQLDialect, DatabaseCapabilities> =

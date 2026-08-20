@@ -8,12 +8,12 @@ export type Primitive = string | number | boolean | undefined | null;
 export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
 
 export interface DatabaseCapabilities {
-  readonly supportsJSON: boolean;
-  readonly supportsBooleans: boolean;
-  readonly supportsArrays: boolean;
-  readonly supportsDates: boolean;
-  readonly supportsUUIDs: boolean;
-  readonly supportsTransactions: boolean;
+  readonly json: boolean;
+  readonly booleans: boolean;
+  readonly arrays: boolean;
+  readonly dates: boolean;
+  readonly uuids: boolean;
+  readonly transactions: boolean;
 }
 
 export type Statement = {

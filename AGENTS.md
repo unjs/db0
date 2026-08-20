@@ -59,6 +59,6 @@ Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/conne
 - **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`
 - **All bare imports stay external** — only relative/internal code is bundled, so backend drivers are never inlined
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
-- **Capabilities** — `db.capabilities` is a frozen snapshot from `src/capabilities.ts`, derived from the connector's `dialect` and refined by its optional `capabilityOverrides`. Note that `supportsTransactions` tracks the driver's _session model_, not the engine: connectors that open a new session per query (D1, PlanetScale, libsql over HTTP) set it to `false`
+- **Capabilities** — `db.capabilities` is a frozen snapshot from `src/capabilities.ts`, derived from the connector's `dialect` and refined by its optional `capabilityOverrides`. Note that `transactions` tracks the driver's _session model_, not the engine: connectors that open a new session per query (D1, PlanetScale, libsql over HTTP) set it to `false`
 - **`BoundableStatement`** base class — shared bind/execute logic in `_internal/statement.ts`
 - **AsyncDisposable** — `await using db = createDatabase(...)` is supported
