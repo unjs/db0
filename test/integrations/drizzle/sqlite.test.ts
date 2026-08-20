@@ -334,3 +334,138 @@ describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
     await db.sql`DROP TABLE IF EXISTS authors`;
   });
 });
+
+describe("integrations: drizzle: joins, decoders & casing (SQLite)", () => {
+  const users = dSqlite.sqliteTable("j_users", {
+    id: dSqlite.integer("id").primaryKey(),
+    name: dSqlite.text("name"),
+  });
+  const posts = dSqlite.sqliteTable("j_posts", {
+    id: dSqlite.integer("id").primaryKey(),
+    userId: dSqlite.integer("user_id"),
+    name: dSqlite.text("name"),
+  });
+  const tags = dSqlite.sqliteTable("j_tags", {
+    tagId: dSqlite.integer("tag_id").primaryKey(),
+    tagUserId: dSqlite.integer("tag_user_id"),
+    label: dSqlite.text("label"),
+  });
+
+  let drizzleDb: DrizzleDatabase;
+  let db: Database;
+
+  beforeAll(async () => {
+    db = createDatabase(betterSqlite3({ name: ":memory:" }));
+    drizzleDb = drizzle(db);
+    await db.sql`CREATE TABLE j_users (id INTEGER PRIMARY KEY, name TEXT)`;
+    await db.sql`CREATE TABLE j_posts (id INTEGER PRIMARY KEY, user_id INTEGER, name TEXT)`;
+    await db.sql`CREATE TABLE j_tags (tag_id INTEGER PRIMARY KEY, tag_user_id INTEGER, label TEXT)`;
+    await db.sql`INSERT INTO j_users VALUES (1, 'Ada'), (2, 'Grace')`;
+    await db.sql`INSERT INTO j_posts VALUES (10, 1, 'First post')`;
+    await db.sql`INSERT INTO j_tags VALUES (7, 1, 'pioneer')`;
+  });
+
+  it("left join nests both tables and nulls unmatched rows", async () => {
+    const res = await drizzleDb
+      .select()
+      .from(users)
+      .leftJoin(tags, eq(tags.tagUserId, users.id))
+      .all();
+
+    expect(res).toEqual([
+      { j_users: { id: 1, name: "Ada" }, j_tags: expect.any(Object) },
+      { j_users: { id: 2, name: "Grace" }, j_tags: null },
+    ]);
+    expect(res[0].j_tags).toEqual({ tagId: 7, tagUserId: 1, label: "pioneer" });
+  });
+
+  it("inner join keeps both sides", async () => {
+    const res = await drizzleDb
+      .select()
+      .from(users)
+      .innerJoin(tags, eq(tags.tagUserId, users.id))
+      .all();
+
+    expect(res).toEqual([
+      {
+        j_users: { id: 1, name: "Ada" },
+        j_tags: { tagId: 7, tagUserId: 1, label: "pioneer" },
+      },
+    ]);
+  });
+
+  it("throws instead of returning wrong values for ambiguous columns", async () => {
+    await expect(
+      drizzleDb
+        .select()
+        .from(users)
+        .leftJoin(posts, eq(posts.userId, users.id))
+        .all(),
+    ).rejects.toThrow(/`j_users.id` and `j_posts.id` both come back as `id`/);
+  });
+
+  it("aliased columns disambiguate a join", async () => {
+    const res = await drizzleDb
+      .select({
+        userId: sql<number>`${users.id}`.as("user_id"),
+        postId: sql<number>`${posts.id}`.as("post_id"),
+      })
+      .from(users)
+      .leftJoin(posts, eq(posts.userId, users.id))
+      .all();
+
+    expect(res).toEqual([
+      { userId: 1, postId: 10 },
+      { userId: 2, postId: null },
+    ]);
+  });
+
+  it("applies decoders of sql expressions", async () => {
+    const res = await drizzleDb
+      .select({
+        total: sql<number>`count(*)`.mapWith(Number).as("total"),
+        flag: sql<boolean>`1`.mapWith(Boolean).as("flag"),
+      })
+      .from(users)
+      .all();
+
+    expect(res[0].total).toBe(2);
+    expect(res[0].flag).toBe(true);
+  });
+
+  it("applies decoders of subquery selections", async () => {
+    const sub = drizzleDb
+      .select({ total: sql<number>`count(*)`.mapWith(Number).as("total") })
+      .from(users)
+      .as("sub");
+    const res = await drizzleDb.select({ total: sub.total }).from(sub).all();
+
+    expect(res).toEqual([{ total: 2 }]);
+  });
+
+  it("resolves column names built by the casing config", async () => {
+    const casingDb = createDatabase(betterSqlite3({ name: ":memory:" }));
+    const casingDrizzle = drizzle(casingDb, { casing: "snake_case" });
+    const profiles = dSqlite.sqliteTable("profiles", {
+      id: dSqlite.integer().primaryKey(),
+      fullName: dSqlite.text(),
+    });
+
+    await casingDb.sql`CREATE TABLE profiles (id INTEGER PRIMARY KEY, full_name TEXT)`;
+    await casingDb.sql`INSERT INTO profiles VALUES (1, 'Ada')`;
+
+    expect(await casingDrizzle.select().from(profiles).all()).toEqual([
+      { id: 1, fullName: "Ada" },
+    ]);
+    expect(await casingDrizzle.select().from(profiles).get()).toEqual({
+      id: 1,
+      fullName: "Ada",
+    });
+
+    await casingDb.dispose();
+  });
+
+  afterAll(async () => {
+    await db.dispose();
+  });
+});

@@ -7,7 +7,7 @@ import {
   sql,
 } from "drizzle-orm";
 
-import { rowToArray, mapRow } from "../_utils.ts";
+import { RowMapper, getCasing, mapRows } from "../_utils.ts";
 
 import {
   PgDialect,
@@ -24,6 +24,8 @@ import type {
 } from "drizzle-orm/pg-core";
 
 import type { Query } from "drizzle-orm";
+
+import type { CasingCache } from "drizzle-orm/casing";
 
 import type { Database } from "db0";
 
@@ -62,7 +64,7 @@ export class DB0PgSession<
     query: Query,
     fields: SelectedFieldsOrdered | undefined,
     _name: string | undefined,
-    _isResponseInArrayMode: boolean,
+    isResponseInArrayMode: boolean,
     customResultMapper?: (rows: unknown[][]) => T["execute"],
   ): DB0PgPreparedQuery<T> {
     return new DB0PgPreparedQuery(
@@ -71,7 +73,9 @@ export class DB0PgSession<
       query.params,
       this.logger,
       fields,
+      isResponseInArrayMode,
       customResultMapper,
+      getCasing(this.dialect),
     );
   }
 
@@ -135,15 +139,23 @@ export class DB0PgTransaction<
 export class DB0PgPreparedQuery<
   T extends PreparedQueryConfig = PreparedQueryConfig,
 > extends PgPreparedQuery<T> {
+  /** @internal assigned by drizzle's select builder after construction */
+  declare joinsNotNullableMap: Record<string, boolean> | undefined;
+
+  private mapper: RowMapper;
+
   constructor(
     private db: Database,
     private queryString: string,
     private params: unknown[],
     private logger: Logger,
     private fields: SelectedFieldsOrdered | undefined,
+    private isResponseInArrayMode_: boolean,
     private customResultMapper?: (rows: unknown[][]) => T["execute"],
+    casing?: CasingCache,
   ) {
     super({ sql: queryString, params }, undefined, undefined);
+    this.mapper = new RowMapper(fields, casing);
   }
 
   async execute(
@@ -160,35 +172,20 @@ export class DB0PgPreparedQuery<
 
     const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
-    if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields, row));
-      return this.customResultMapper(arr);
-    }
-
-    return rows.map((row) => mapRow(this.fields!, row)) as T["execute"];
+    return mapRows(
+      rows,
+      this.mapper,
+      this.customResultMapper,
+      this.joinsNotNullableMap,
+    ) as T["execute"];
   }
 
   async all(): Promise<T["all"]> {
-    const params = this.params as any[];
-    this.logger.logQuery(this.queryString, params);
-    const stmt = this.db.prepare(this.queryString);
-
-    if (!this.fields && !this.customResultMapper) {
-      return stmt.all(...params) as Promise<T["all"]>;
-    }
-
-    const rows = (await stmt.all(...params)) as Record<string, unknown>[];
-
-    if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields, row));
-      return this.customResultMapper(arr) as T["all"];
-    }
-
-    return rows.map((row) => mapRow(this.fields!, row)) as T["all"];
+    return this.execute() as Promise<T["all"]>;
   }
 
   /** @internal */
   isResponseInArrayMode(): boolean {
-    return true;
+    return this.isResponseInArrayMode_;
   }
 }

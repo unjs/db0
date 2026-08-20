@@ -265,3 +265,117 @@ describe("integrations: drizzle: relational queries & raw SQL (PostgreSQL/PGLite
     await db.dispose();
   });
 });
+
+describe("integrations: drizzle: joins, decoders & casing (PostgreSQL/PGLite)", () => {
+  const jUsers = dPg.pgTable("j_users", {
+    id: dPg.integer("id").primaryKey(),
+    name: dPg.text("name"),
+  });
+  const jPosts = dPg.pgTable("j_posts", {
+    id: dPg.integer("id").primaryKey(),
+    userId: dPg.integer("user_id"),
+    name: dPg.text("name"),
+  });
+  const jTags = dPg.pgTable("j_tags", {
+    tagId: dPg.integer("tag_id").primaryKey(),
+    tagUserId: dPg.integer("tag_user_id"),
+    label: dPg.text("label"),
+  });
+
+  let drizzleDb: DrizzlePgDatabase;
+  let db: Database;
+
+  beforeAll(async () => {
+    db = createDatabase(pgliteConnector({}));
+    drizzleDb = drizzlePg(db);
+    await db.sql`CREATE TABLE j_users (id INTEGER PRIMARY KEY, name TEXT)`;
+    await db.sql`CREATE TABLE j_posts (id INTEGER PRIMARY KEY, user_id INTEGER, name TEXT)`;
+    await db.sql`CREATE TABLE j_tags (tag_id INTEGER PRIMARY KEY, tag_user_id INTEGER, label TEXT)`;
+    await db.sql`INSERT INTO j_users VALUES (1, 'Ada'), (2, 'Grace')`;
+    await db.sql`INSERT INTO j_posts VALUES (10, 1, 'First post')`;
+    await db.sql`INSERT INTO j_tags VALUES (7, 1, 'pioneer')`;
+  });
+
+  it("left join nests both tables and nulls unmatched rows", async () => {
+    const res = await drizzleDb
+      .select()
+      .from(jUsers)
+      .leftJoin(jTags, eq(jTags.tagUserId, jUsers.id))
+      .orderBy(jUsers.id);
+
+    expect(res).toEqual([
+      {
+        j_users: { id: 1, name: "Ada" },
+        j_tags: { tagId: 7, tagUserId: 1, label: "pioneer" },
+      },
+      { j_users: { id: 2, name: "Grace" }, j_tags: null },
+    ]);
+  });
+
+  it("throws instead of returning wrong values for ambiguous columns", async () => {
+    await expect(
+      (async () =>
+        drizzleDb
+          .select()
+          .from(jUsers)
+          .leftJoin(jPosts, eq(jPosts.userId, jUsers.id)))(),
+    ).rejects.toThrow(/`j_users.id` and `j_posts.id` both come back as `id`/);
+  });
+
+  it("aliased columns disambiguate a join", async () => {
+    const res = await drizzleDb
+      .select({
+        userId: sql<number>`${jUsers.id}`.as("user_id"),
+        postId: sql<number>`${jPosts.id}`.as("post_id"),
+      })
+      .from(jUsers)
+      .leftJoin(jPosts, eq(jPosts.userId, jUsers.id))
+      .orderBy(jUsers.id);
+
+    expect(res).toEqual([
+      { userId: 1, postId: 10 },
+      { userId: 2, postId: null },
+    ]);
+  });
+
+  it("applies decoders of sql expressions", async () => {
+    const res = await drizzleDb
+      .select({
+        total: sql<number>`count(*)`.mapWith(Number).as("total"),
+        flag: sql<boolean>`true`.mapWith(Boolean).as("flag"),
+      })
+      .from(jUsers);
+
+    expect(res[0].total).toBe(2);
+    expect(res[0].flag).toBe(true);
+  });
+
+  it("applies decoders of subquery selections", async () => {
+    const sub = drizzleDb
+      .select({ total: sql<number>`count(*)`.mapWith(Number).as("total") })
+      .from(jUsers)
+      .as("sub");
+    const res = await drizzleDb.select({ total: sub.total }).from(sub);
+
+    expect(res).toEqual([{ total: 2 }]);
+  });
+
+  it("resolves column names built by the casing config", async () => {
+    const casingDrizzle = drizzlePg(db, { casing: "snake_case" });
+    const profiles = dPg.pgTable("profiles", {
+      id: dPg.integer().primaryKey(),
+      fullName: dPg.text(),
+    });
+
+    await db.sql`CREATE TABLE profiles (id INTEGER PRIMARY KEY, full_name TEXT)`;
+    await db.sql`INSERT INTO profiles VALUES (1, 'Ada')`;
+
+    expect(await casingDrizzle.select().from(profiles)).toEqual([
+      { id: 1, fullName: "Ada" },
+    ]);
+  });
+
+  afterAll(async () => {
+    await db.dispose();
+  });
+});

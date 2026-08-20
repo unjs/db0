@@ -231,3 +231,120 @@ describe.runIf(process.env.MYSQL_URL)(
     });
   },
 );
+
+describe.runIf(process.env.MYSQL_URL)(
+  "integrations: drizzle: joins, decoders & casing (MySQL)",
+  () => {
+    const jUsers = dMySql.mysqlTable("j_users", {
+      id: dMySql.int("id").primaryKey(),
+      name: dMySql.varchar("name", { length: 255 }),
+    });
+    const jPosts = dMySql.mysqlTable("j_posts", {
+      id: dMySql.int("id").primaryKey(),
+      userId: dMySql.int("user_id"),
+      name: dMySql.varchar("name", { length: 255 }),
+    });
+    const jTags = dMySql.mysqlTable("j_tags", {
+      tagId: dMySql.int("tag_id").primaryKey(),
+      tagUserId: dMySql.int("tag_user_id"),
+      label: dMySql.varchar("label", { length: 255 }),
+    });
+
+    let drizzleDb: DrizzleMySqlDatabase;
+    let db: Database;
+
+    beforeAll(async () => {
+      db = createDatabase(
+        mysql2Connector({ uri: process.env.MYSQL_URL as string }),
+      );
+      drizzleDb = drizzleMySql(db);
+      await db.sql`DROP TABLE IF EXISTS j_users`;
+      await db.sql`DROP TABLE IF EXISTS j_posts`;
+      await db.sql`DROP TABLE IF EXISTS j_tags`;
+      await db.sql`CREATE TABLE j_users (id INT PRIMARY KEY, name VARCHAR(255))`;
+      await db.sql`CREATE TABLE j_posts (id INT PRIMARY KEY, user_id INT, name VARCHAR(255))`;
+      await db.sql`CREATE TABLE j_tags (tag_id INT PRIMARY KEY, tag_user_id INT, label VARCHAR(255))`;
+      await db.sql`INSERT INTO j_users VALUES (1, 'Ada'), (2, 'Grace')`;
+      await db.sql`INSERT INTO j_posts VALUES (10, 1, 'First post')`;
+      await db.sql`INSERT INTO j_tags VALUES (7, 1, 'pioneer')`;
+    });
+
+    it("left join nests both tables and nulls unmatched rows", async () => {
+      const res = await drizzleDb
+        .select()
+        .from(jUsers)
+        .leftJoin(jTags, eq(jTags.tagUserId, jUsers.id))
+        .orderBy(jUsers.id);
+
+      expect(res).toEqual([
+        {
+          j_users: { id: 1, name: "Ada" },
+          j_tags: { tagId: 7, tagUserId: 1, label: "pioneer" },
+        },
+        { j_users: { id: 2, name: "Grace" }, j_tags: null },
+      ]);
+    });
+
+    it("throws instead of returning wrong values for ambiguous columns", async () => {
+      await expect(
+        (async () =>
+          drizzleDb
+            .select()
+            .from(jUsers)
+            .leftJoin(jPosts, eq(jPosts.userId, jUsers.id)))(),
+      ).rejects.toThrow(/`j_users.id` and `j_posts.id` both come back as `id`/);
+    });
+
+    it("aliased columns disambiguate a join", async () => {
+      const res = await drizzleDb
+        .select({
+          userId: sql<number>`${jUsers.id}`.as("user_id"),
+          postId: sql<number>`${jPosts.id}`.as("post_id"),
+        })
+        .from(jUsers)
+        .leftJoin(jPosts, eq(jPosts.userId, jUsers.id))
+        .orderBy(jUsers.id);
+
+      expect(res).toEqual([
+        { userId: 1, postId: 10 },
+        { userId: 2, postId: null },
+      ]);
+    });
+
+    it("applies decoders of sql expressions", async () => {
+      const res = await drizzleDb
+        .select({
+          total: sql<number>`count(*)`.mapWith(Number).as("total"),
+          flag: sql<boolean>`true`.mapWith(Boolean).as("flag"),
+        })
+        .from(jUsers);
+
+      expect(res[0].total).toBe(2);
+      expect(res[0].flag).toBe(true);
+    });
+
+    it("resolves column names built by the casing config", async () => {
+      const casingDrizzle = drizzleMySql(db, { casing: "snake_case" });
+      const profiles = dMySql.mysqlTable("profiles", {
+        id: dMySql.int(),
+        fullName: dMySql.varchar({ length: 255 }),
+      });
+
+      await db.sql`DROP TABLE IF EXISTS profiles`;
+      await db.sql`CREATE TABLE profiles (id INT PRIMARY KEY, full_name VARCHAR(255))`;
+      await db.sql`INSERT INTO profiles VALUES (1, 'Ada')`;
+
+      expect(await casingDrizzle.select().from(profiles)).toEqual([
+        { id: 1, fullName: "Ada" },
+      ]);
+    });
+
+    afterAll(async () => {
+      await db.sql`DROP TABLE IF EXISTS j_users`;
+      await db.sql`DROP TABLE IF EXISTS j_posts`;
+      await db.sql`DROP TABLE IF EXISTS j_tags`;
+      await db.sql`DROP TABLE IF EXISTS profiles`;
+      await db.dispose();
+    });
+  },
+);

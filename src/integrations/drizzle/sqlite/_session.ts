@@ -8,7 +8,7 @@ import {
   sql,
 } from "drizzle-orm";
 
-import { rowToArray, mapRow } from "../_utils.ts";
+import { RowMapper, getCasing, mapRows } from "../_utils.ts";
 
 import {
   SQLiteAsyncDialect,
@@ -23,6 +23,8 @@ import type {
   SQLiteExecuteMethod,
   SQLiteTransactionConfig,
 } from "drizzle-orm/sqlite-core";
+
+import type { CasingCache } from "drizzle-orm/casing";
 
 import type { Database, Statement } from "db0";
 
@@ -64,6 +66,7 @@ export class DB0SQLiteSession<
       executeMethod,
       isResponseInArrayMode,
       customResultMapper,
+      getCasing(this.dialect),
     );
   }
 
@@ -133,8 +136,12 @@ export class DB0SQLitePreparedQuery<
   values: T["values"];
   execute: T["execute"];
 }> {
+  /** @internal assigned by drizzle's select builder after construction */
+  declare joinsNotNullableMap: Record<string, boolean> | undefined;
+
   private fields: SelectedFieldsOrdered | undefined;
   private isResponseInArrayMode_: boolean;
+  private mapper: RowMapper;
 
   constructor(
     private stmt: Statement,
@@ -144,10 +151,12 @@ export class DB0SQLitePreparedQuery<
     executeMethod: SQLiteExecuteMethod,
     isResponseInArrayMode: boolean,
     /** @internal */ public customResultMapper?: (rows: unknown[][]) => unknown,
+    casing?: CasingCache,
   ) {
     super("async", executeMethod, query);
     this.fields = fields;
     this.isResponseInArrayMode_ = isResponseInArrayMode;
+    this.mapper = new RowMapper(fields, casing);
   }
 
   async run(
@@ -169,12 +178,12 @@ export class DB0SQLitePreparedQuery<
 
     const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
 
-    if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields, row));
-      return this.customResultMapper(arr) as T["all"];
-    }
-
-    return rows.map((row) => mapRow(this.fields!, row)) as T["all"];
+    return mapRows(
+      rows,
+      this.mapper,
+      this.customResultMapper,
+      this.joinsNotNullableMap,
+    ) as T["all"];
   }
 
   async get(placeholderValues?: Record<string, unknown>): Promise<T["get"]> {
@@ -190,11 +199,10 @@ export class DB0SQLitePreparedQuery<
     if (!row) return undefined as T["get"];
 
     if (this.customResultMapper) {
-      const arr = rowToArray(this.fields, row);
-      return this.customResultMapper([arr]) as T["get"];
+      return this.customResultMapper([this.mapper.toArray(row)]) as T["get"];
     }
 
-    return mapRow(this.fields!, row) as T["get"];
+    return this.mapper.toObject(row, this.joinsNotNullableMap) as T["get"];
   }
 
   async values<T extends any[] = unknown[]>(
@@ -205,7 +213,7 @@ export class DB0SQLitePreparedQuery<
     this.logger.logQuery(this.query.sql, params);
 
     const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
-    return rows.map((row) => rowToArray(this.fields, row) as T);
+    return rows.map((row) => this.mapper.toArray(row) as T);
   }
 
   /** @internal */

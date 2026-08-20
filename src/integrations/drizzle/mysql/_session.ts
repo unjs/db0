@@ -9,7 +9,7 @@ import {
   sql,
 } from "drizzle-orm";
 
-import { rowToArray, mapRow } from "../_utils.ts";
+import { RowMapper, getCasing, mapRows } from "../_utils.ts";
 
 import {
   MySqlDialect,
@@ -27,6 +27,8 @@ import type {
   SelectedFieldsOrdered,
   Mode,
 } from "drizzle-orm/mysql-core";
+
+import type { CasingCache } from "drizzle-orm/casing";
 
 import type { Database } from "db0";
 
@@ -85,6 +87,7 @@ export class DB0MySqlSession<
       this.logger,
       fields,
       customResultMapper,
+      getCasing(this.dialect),
     ) as PreparedQueryKind<DB0MySqlPreparedQueryHKT, T>;
   }
 
@@ -92,6 +95,13 @@ export class DB0MySqlSession<
     const builtQuery = this.dialect.sqlToQuery(query);
     const prepared = this.prepareQuery(builtQuery, undefined);
     return prepared.execute() as Promise<T[]>;
+  }
+
+  // drizzle's mysql session reads `res[0][0]`, the `[rows, fields]` tuple the
+  // mysql2 driver returns; db0 hands back the rows on their own.
+  override async count(query: SQL): Promise<number> {
+    const res = await this.execute<{ count: string | number }[]>(query);
+    return Number(res[0]["count"]);
   }
 
   override async transaction<T>(
@@ -165,6 +175,11 @@ export class DB0MySqlTransaction<
 export class DB0MySqlPreparedQuery<
   T extends MySqlPreparedQueryConfig = MySqlPreparedQueryConfig,
 > extends MySqlPreparedQuery<T> {
+  /** @internal assigned by drizzle's select builder after construction */
+  declare joinsNotNullableMap: Record<string, boolean> | undefined;
+
+  private mapper: RowMapper;
+
   constructor(
     private db: Database,
     private queryString: string,
@@ -172,8 +187,10 @@ export class DB0MySqlPreparedQuery<
     private logger: Logger,
     private fields: SelectedFieldsOrdered | undefined,
     private customResultMapper?: (rows: unknown[][]) => T["execute"],
+    casing?: CasingCache,
   ) {
     super(undefined, undefined);
+    this.mapper = new RowMapper(fields, casing);
   }
 
   async execute(
@@ -190,12 +207,12 @@ export class DB0MySqlPreparedQuery<
 
     const rows = (await stmt.all(...params)) as Record<string, unknown>[];
 
-    if (this.customResultMapper) {
-      const arr = rows.map((row) => rowToArray(this.fields, row));
-      return this.customResultMapper(arr);
-    }
-
-    return rows.map((row) => mapRow(this.fields!, row)) as T["execute"];
+    return mapRows(
+      rows,
+      this.mapper,
+      this.customResultMapper,
+      this.joinsNotNullableMap,
+    ) as T["execute"];
   }
 
   // eslint-disable-next-line require-yield
