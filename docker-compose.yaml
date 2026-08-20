@@ -16,3 +16,11 @@ services:
       MYSQL_DATABASE: db0
       MYSQL_USER: test
       MYSQL_PASSWORD: test
+  mssql:
+    # https://hub.docker.com/_/microsoft-mssql-server
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    network_mode: "host"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "MyStrong!Passw0rd"
+      MSSQL_PID: "Developer"
