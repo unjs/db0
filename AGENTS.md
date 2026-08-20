@@ -66,3 +66,53 @@ The Prisma tests need generated clients: run `pnpm prisma:generate` (one per pro
 - **Capabilities** — `db.capabilities` is a frozen snapshot from `src/capabilities.ts`, derived from the connector's `dialect` and refined by its optional `capabilityOverrides`. Note that `transactions` tracks the driver's _session model_, not the engine: connectors that open a new session per query (D1, PlanetScale, libsql over HTTP) set it to `false`
 - **`BoundableStatement`** base class — shared bind/execute logic in `_internal/statement.ts`
 - **AsyncDisposable** — `await using db = createDatabase(...)` is supported
+
+## Drizzle integration
+
+Targets **drizzle-orm v1** (currently the `rc` dist-tag). Each dialect provides a
+session over `SQLiteAsyncSession` / `PgAsyncSession` / `MySqlAsyncSession`; the
+prepared-query classes are concrete in v1, so the sessions only supply executors
+built on `db.prepare(...)` and hand back drizzle's own `SQLiteAsyncPreparedQuery`
+/ `PgAsyncPreparedQuery` / `MySqlAsyncPreparedQuery`.
+
+The one thing db0 has to solve is row shape: drizzle asks its drivers for
+positional arrays (`mode: "arrays"`) while db0 connectors return objects keyed by
+column name. Since v1 no longer passes the selected fields to `prepareQuery()`,
+`_utils.ts` wraps `dialect.mapperGenerators.rows` (`trackSelectedFields()`) to
+record, per generated mapper, how to turn an object row into that query's
+select-order array; a session looks it up with `getRowConverter(mapper)`.
+Decoding, nesting and left-join nulling are drizzle's job in v1 — db0 only places
+values in slots.
+
+The key a field comes back under is the _driver's_, not drizzle's: a dialect may
+wrap a column in an unaliased cast (`cast("amount" as text)`, `"n"::text`), which
+renames it. So the plan is built lazily against a real row and a computed key
+only counts when that row carries it; everything else is matched by position
+against the row keys no field claimed. Mappers built without a field list
+(`$count()`, `values()`, the relational query builder) fall back to key order,
+guarded so array-index-like keys — which JS enumerates first — throw instead of
+scrambling the row.
+
+Same-named columns from different tables collapse into one object key, so those
+queries are rejected with a db0 error rather than silently returning a wrong
+value. Because a session converts inside its executor, drizzle wraps that error
+in a `DrizzleQueryError` and the db0 message arrives as its `cause`. Alias
+collisions are checked once per query inside the wrapped mapper, so they are
+rejected even when the result is empty.
+
+Since v1, relations are passed as `relations` (from `defineRelations()`) rather
+than `schema`, and casing comes from the `snakeCase.table()` / `camelCase.table()`
+helpers instead of a `casing` option, so `column.name` is always the final SQL
+name — a stray `casing` in the config is rejected outright.
+
+v1 also moved all pg/mysql decoding into **codecs**, so each dialect's `drizzle()`
+defaults to the codec set matching `db.connector` (`pgCodecsFor()` /
+`mysqlCodecsFor()`). The official sets assume the driver was reconfigured to hand
+back raw text; db0 does not own the connection, so date/time (and mysql bigint)
+columns are cast to text in SQL instead. SQLite passes `forbidJsonb` (default
+`true` for `cloudflare-d1`), and all three wire `$client` and `$cache`.
+
+db0 has no streaming API: `iterator()` buffers the whole result set, and on mysql
+it errors for statements that resolve to driver metadata rather than rows.
+Non-returning `insert`/`update`/`delete` go through `Statement.run()`, so they
+resolve to that metadata instead of an empty array.

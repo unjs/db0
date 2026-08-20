@@ -12,13 +12,22 @@ icon: simple-icons:drizzle
 
 Install `drizzle-orm` dependency:
 
-:pm-install{name="drizzle-orm"}
+:pm-install{name="drizzle-orm@rc"}
+
+::note
+db0 targets Drizzle **v1**, which is currently published under the `rc` tag.
+See [Drizzle's v0 to v1 changes](https://orm.drizzle.team/docs/v0-v1-changes) for
+the breaking changes — most notably relations are now declared with
+`defineRelations()` and passed as `relations`, and per-column casing moved from
+the `casing` option to the `snakeCase.table()` / `camelCase.table()` helpers.
+::
 
 ## Example
 
 Define your database schema using Drizzle's schema system:
 
 ```ts [schema.ts]
+import { defineRelations } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -30,6 +39,9 @@ export const users = sqliteTable("users", {
   ),
 });
 
+// Relations power the relational query builder (`db.query.*`)
+export const relations = defineRelations({ users });
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 ```
@@ -40,14 +52,20 @@ Initialize your database with Drizzle integration:
 import { createDatabase } from "db0";
 import sqlite from "db0/connectors/better-sqlite3";
 import { drizzle } from "db0/integrations/drizzle";
-import * as schema from "./schema";
+import { relations } from "./schema";
 
 // Initialize DB instance with SQLite connector
 const db0 = createDatabase(sqlite({ name: "database.sqlite" }));
 
-// Create Drizzle instance with schema
-export const db = drizzle(db0, { schema });
+// Create Drizzle instance with relations
+export const db = drizzle(db0, { relations });
 ```
+
+::note
+Passing `relations` is optional — it is only needed for the relational query
+builder (`db.query.users.findMany(...)`). `drizzle(db0)` is enough for
+`select()`, `insert()`, `update()` and `delete()`.
+::
 
 Use Drizzle's migration system to create tables:
 
@@ -84,7 +102,45 @@ const johnDoe = await db
   .select()
   .from(users)
   .where(eq(users.email, "john@example.com"));
+
+// Relational queries, using the `relations` passed above
+const usersWithRelations = await db.query.users.findMany();
 ```
+
+## Caveats
+
+db0 connectors return rows as objects keyed by column name, so two selected
+columns that come back under the same key (for example `id` from both sides of a
+join) cannot be told apart. db0 raises an error instead of returning a wrong
+value; select such columns with unique aliases, or use the relational query
+builder, which always emits unique aliases:
+
+```ts
+const rows = await db
+  .select({
+    userId: sql<number>`${users.id}`.as("user_id"),
+    postId: sql<number>`${posts.id}`.as("post_id"),
+  })
+  .from(users)
+  .leftJoin(posts, eq(posts.userId, users.id));
+```
+
+The same applies to selected expressions the driver names identically — two bare
+`sql` expressions with the same text, or two expressions sharing one `.as()`
+name — and to an expression the driver names like an array index (`sql`...`.as("7")`),
+because JavaScript enumerates such keys before all others. Aliasing each
+expression uniquely resolves all of these.
+
+A column collision is detected from the columns of a returned row, so a query
+that returns no rows at all is not rejected; a collision between aliases is
+rejected either way.
+
+db0 has no streaming API, so `iterator()` cannot stream: the query runs to
+completion and the whole result set is held in memory before the first row is
+yielded. On MySQL it throws for `insert`/`update`/`delete` statements, which
+resolve to the driver's result metadata rather than to rows — those, and their
+Postgres equivalents, resolve to that metadata (affected rows, insert id) instead
+of an empty array.
 
 ## Configuration
 

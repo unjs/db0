@@ -1,84 +1,146 @@
-import {
-  type Logger,
-  type RelationalSchemaConfig,
-  type Query,
-  type TablesRelationalConfig,
-  NoopLogger,
-  fillPlaceholders,
-  sql,
-} from "drizzle-orm";
+import { type Logger, type Query, NoopLogger, sql } from "drizzle-orm";
 
-import { RowMapper, getCasing, mapRows } from "../_utils.ts";
+import { getRowConverter } from "../_utils.ts";
 
 import {
-  SQLiteAsyncDialect,
-  SQLiteSession,
-  SQLitePreparedQuery,
-  SQLiteTransaction,
+  SQLiteAsyncPreparedQuery,
+  SQLiteAsyncSession,
+  SQLiteAsyncTransaction,
 } from "drizzle-orm/sqlite-core";
 
 import type {
-  PreparedQueryConfig,
-  SelectedFieldsOrdered,
+  SQLiteDialect,
   SQLiteExecuteMethod,
   SQLiteTransactionConfig,
 } from "drizzle-orm/sqlite-core";
 
-import type { CasingCache } from "drizzle-orm/casing";
+import type { AnyRelations } from "drizzle-orm";
 
-import type { Database, Statement } from "db0";
+import type { Cache } from "drizzle-orm/cache/core";
+
+import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+
+import type { Database, Primitive } from "db0";
+
+/**
+ * What db0's sqlite connectors resolve `Statement.run()` with.
+ *
+ * `Statement["run"]` is declared as `{ success: boolean }`, but every connector
+ * passes its driver's own result through: better-sqlite3, node:sqlite and
+ * bun:sqlite add `changes` and `lastInsertRowid`, cloudflare-d1 returns D1's
+ * `{ success, meta }`, and the libsql connectors return libsql's `ResultSet`
+ * (`rowsAffected`, `lastInsertRowid` — and no `success` at all). So neither
+ * `success` nor any driver field can be promised, and the fields a given driver
+ * does add have to stay reachable.
+ */
+export type DB0SQLiteRunResult = {
+  success?: boolean;
+  changes?: number;
+  rowsAffected?: number;
+  lastInsertRowid?: number | bigint;
+} & Record<string, unknown>;
 
 export interface DB0SQLiteSessionOptions {
   logger?: Logger;
+  cache?: Cache;
+  /**
+   * Forwarded to every transaction this session opens, so that `tx.query.*`
+   * emits the same JSON helpers as `db.query.*` (see `../sqlite/index.ts`).
+   */
+  forbidJsonb?: boolean;
 }
 
-export class DB0SQLiteSession<
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
-> extends SQLiteSession<"async", unknown, TFullSchema, TSchema> {
-  declare dialect: SQLiteAsyncDialect;
+type QueryMetadata = {
+  type: "select" | "update" | "delete" | "insert";
+  tables: string[];
+};
 
+export class DB0SQLiteSession<
+  TRelations extends AnyRelations,
+> extends SQLiteAsyncSession<"async", DB0SQLiteRunResult, TRelations> {
   private logger: Logger;
+  private cache: Cache | undefined;
+  private forbidJsonb: boolean | undefined;
 
   constructor(
     private db: Database,
-    dialect: SQLiteAsyncDialect,
-    private schema: RelationalSchemaConfig<TSchema> | undefined,
+    dialect: SQLiteDialect,
+    private relations: TRelations,
     options: DB0SQLiteSessionOptions = {},
   ) {
-    super(dialect);
+    super(dialect, "async");
     this.logger = options.logger ?? new NoopLogger();
+    this.cache = options.cache;
+    this.forbidJsonb = options.forbidJsonb;
   }
 
   prepareQuery(
     query: Query,
-    fields: SelectedFieldsOrdered | undefined,
-    executeMethod: SQLiteExecuteMethod,
-    isResponseInArrayMode: boolean,
-    customResultMapper?: (rows: unknown[][]) => unknown,
-  ): DB0SQLitePreparedQuery {
+    mode: "arrays" | "objects" | "raw",
+    _prepare: boolean,
+    executeMethod?: SQLiteExecuteMethod,
+    mapper?: (rows: any[]) => any,
+    queryMetadata?: QueryMetadata,
+    cacheConfig?: WithCacheConfig,
+  ): SQLiteAsyncPreparedQuery<any> {
     const stmt = this.db.prepare(query.sql);
-    return new DB0SQLitePreparedQuery(
-      stmt,
-      query,
-      this.logger,
-      fields,
+    // db0 returns object rows; drizzle's mappers read them positionally.
+    const toArray = getRowConverter(mapper);
+    const asRows = (rows: unknown[]) =>
+      mode === "arrays"
+        ? (rows as Record<string, unknown>[]).map((row) => toArray(row))
+        : rows;
+
+    // `SQLiteAsyncPreparedQuery` has no `iterator()`, so unlike the mysql
+    // session there is nothing here that could stream (or pretend to).
+    return new SQLiteAsyncPreparedQuery(
+      "async",
       executeMethod,
-      isResponseInArrayMode,
-      customResultMapper,
-      getCasing(this.dialect),
+      {
+        all: (params) => stmt.all(...(params as Primitive[])).then(asRows),
+        get: (params) =>
+          stmt
+            .get(...(params as Primitive[]))
+            .then((row) =>
+              row
+                ? mode === "arrays"
+                  ? toArray(row as Record<string, unknown>)
+                  : row
+                : undefined,
+            ),
+        // Non-returning insert/update/delete: drizzle picks `run` as the
+        // execute method, so the driver's own metadata is what resolves.
+        run: (params) => stmt.run(...(params as Primitive[])),
+        values: (params) =>
+          stmt
+            .all(...(params as Primitive[]))
+            .then((rows) =>
+              (rows as Record<string, unknown>[]).map((row) => toArray(row)),
+            ),
+      },
+      query,
+      mapper,
+      mode,
+      this.logger,
+      this.cache,
+      queryMetadata,
+      cacheConfig,
     );
   }
 
+  // db0 exposes a single connection, so a transaction runs on this session and
+  // nested ones become savepoints.
   override async transaction<T>(
-    transaction: (tx: DB0SQLiteTransaction<TFullSchema, TSchema>) => Promise<T>,
+    transaction: (tx: DB0SQLiteTransaction<TRelations>) => Promise<T>,
     config?: SQLiteTransactionConfig,
   ): Promise<T> {
-    const tx = new DB0SQLiteTransaction<TFullSchema, TSchema>(
+    const tx = new DB0SQLiteTransaction<TRelations>(
       "async",
       this.dialect,
       this,
-      this.schema,
+      this.relations,
+      0,
+      this.forbidJsonb,
     );
     await this.run(
       sql.raw(`begin${config?.behavior ? " " + config.behavior : ""}`),
@@ -88,136 +150,84 @@ export class DB0SQLiteSession<
       await this.run(sql`commit`);
       return result;
     } catch (error_) {
-      await this.run(sql`rollback`);
-      throw error_;
+      return rollbackAndRethrow(() => this.run(sql`rollback`), error_);
     }
   }
 }
 
 export class DB0SQLiteTransaction<
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
-> extends SQLiteTransaction<"async", unknown, TFullSchema, TSchema> {
-  override async transaction<T>(
-    transaction: (tx: DB0SQLiteTransaction<TFullSchema, TSchema>) => Promise<T>,
-  ): Promise<T> {
-    const savepointName = `sp${this.nestedIndex}`;
-    const tx = new DB0SQLiteTransaction<TFullSchema, TSchema>(
-      "async",
-      // @ts-expect-error -- accessing inherited property
-      this.dialect,
-      // @ts-expect-error -- accessing inherited property
-      this.session,
-      this.schema,
-      this.nestedIndex + 1,
+  TRelations extends AnyRelations,
+> extends SQLiteAsyncTransaction<"async", DB0SQLiteRunResult, TRelations> {
+  constructor(
+    resultKind: "async",
+    private db0Dialect: SQLiteDialect,
+    private db0Session: DB0SQLiteSession<TRelations>,
+    relations: TRelations,
+    nestedIndex = 0,
+    forbidJsonb?: boolean,
+  ) {
+    super(
+      resultKind,
+      db0Dialect,
+      db0Session,
+      relations,
+      nestedIndex,
+      forbidJsonb,
     );
-    // @ts-expect-error -- accessing inherited property
-    await this.session.run(sql.raw(`savepoint ${savepointName}`));
+  }
+
+  override async transaction<T>(
+    transaction: (tx: DB0SQLiteTransaction<TRelations>) => Promise<T>,
+  ): Promise<T> {
+    const savepointName = `sp${this.nestedIndex + 1}`;
+    const tx = new DB0SQLiteTransaction<TRelations>(
+      "async",
+      this.db0Dialect,
+      this.db0Session,
+      this._.relations,
+      this.nestedIndex + 1,
+      this.forbidJsonb,
+    );
+    await this.db0Session.run(sql.raw(`savepoint ${savepointName}`));
     try {
       const result = await transaction(tx);
-      // @ts-expect-error -- accessing inherited property
-      await this.session.run(sql.raw(`release savepoint ${savepointName}`));
+      await this.db0Session.run(sql.raw(`release savepoint ${savepointName}`));
       return result;
     } catch (error_) {
-      // @ts-expect-error -- accessing inherited property
-      await this.session.run(sql.raw(`rollback to savepoint ${savepointName}`));
-      throw error_;
+      return rollbackAndRethrow(
+        () =>
+          this.db0Session.run(
+            sql.raw(`rollback to savepoint ${savepointName}`),
+          ),
+        error_,
+      );
     }
   }
 }
 
-export class DB0SQLitePreparedQuery<
-  T extends PreparedQueryConfig = PreparedQueryConfig,
-> extends SQLitePreparedQuery<{
-  type: "async";
-  run: Awaited<ReturnType<Statement["run"]>>;
-  all: T["all"];
-  get: T["get"];
-  values: T["values"];
-  execute: T["execute"];
-}> {
-  /** @internal assigned by drizzle's select builder after construction */
-  declare joinsNotNullableMap: Record<string, boolean> | undefined;
-
-  private fields: SelectedFieldsOrdered | undefined;
-  private isResponseInArrayMode_: boolean;
-  private mapper: RowMapper;
-
-  constructor(
-    private stmt: Statement,
-    query: Query,
-    private logger: Logger,
-    fields: SelectedFieldsOrdered | undefined,
-    executeMethod: SQLiteExecuteMethod,
-    isResponseInArrayMode: boolean,
-    /** @internal */ public customResultMapper?: (rows: unknown[][]) => unknown,
-    casing?: CasingCache,
-  ) {
-    super("async", executeMethod, query);
-    this.fields = fields;
-    this.isResponseInArrayMode_ = isResponseInArrayMode;
-    this.mapper = new RowMapper(fields, casing);
-  }
-
-  async run(
-    placeholderValues?: Record<string, unknown>,
-  ): Promise<{ success: boolean }> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
-    this.logger.logQuery(this.query.sql, params);
-    return this.stmt.run(...(params as any[]));
-  }
-
-  async all(placeholderValues?: Record<string, unknown>): Promise<T["all"]> {
-    const placeholders = placeholderValues ?? {};
-    const params: any[] = fillPlaceholders(this.query.params, placeholders);
-    this.logger.logQuery(this.query.sql, params);
-
-    if (!this.fields && !this.customResultMapper) {
-      return this.stmt.all(...params) as T["all"];
+/**
+ * Rolls back and rethrows the error the transaction body failed with.
+ *
+ * Awaiting the rollback directly in a `catch` block replaces the caller's error
+ * with the rollback's own one whenever the rollback fails too (a dropped
+ * connection, a server-aborted transaction) — exactly when the original error
+ * matters most. The rollback failure is attached as `cause` so it is still
+ * reported, never as a replacement.
+ */
+async function rollbackAndRethrow(
+  rollback: () => PromiseLike<unknown>,
+  error: unknown,
+): Promise<never> {
+  try {
+    await rollback();
+  } catch (rollbackError) {
+    if (error instanceof Error && error.cause === undefined) {
+      try {
+        error.cause = rollbackError;
+      } catch {
+        // A frozen error cannot carry the rollback failure.
+      }
     }
-
-    const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
-
-    return mapRows(
-      rows,
-      this.mapper,
-      this.customResultMapper,
-      this.joinsNotNullableMap,
-    ) as T["all"];
   }
-
-  async get(placeholderValues?: Record<string, unknown>): Promise<T["get"]> {
-    const placeholders = placeholderValues ?? {};
-    const params: any[] = fillPlaceholders(this.query.params, placeholders);
-    this.logger.logQuery(this.query.sql, params);
-
-    if (!this.fields && !this.customResultMapper) {
-      return this.stmt.get(...params) as T["get"];
-    }
-
-    const row = (await this.stmt.get(...params)) as Record<string, unknown>;
-    if (!row) return undefined as T["get"];
-
-    if (this.customResultMapper) {
-      return this.customResultMapper([this.mapper.toArray(row)]) as T["get"];
-    }
-
-    return this.mapper.toObject(row, this.joinsNotNullableMap) as T["get"];
-  }
-
-  async values<T extends any[] = unknown[]>(
-    placeholderValues?: Record<string, unknown>,
-  ): Promise<T[]> {
-    const placeholders = placeholderValues ?? {};
-    const params: any[] = fillPlaceholders(this.query.params, placeholders);
-    this.logger.logQuery(this.query.sql, params);
-
-    const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
-    return rows.map((row) => this.mapper.toArray(row) as T);
-  }
-
-  /** @internal */
-  isResponseInArrayMode(): boolean {
-    return this.isResponseInArrayMode_;
-  }
+  throw error;
 }
