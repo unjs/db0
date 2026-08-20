@@ -11,6 +11,7 @@ export const connectorCapabilities: Record<string, DatabaseCapabilities> = {
   "cloudflare-d1": dialectCapabilities.sqlite,
   postgresql: dialectCapabilities.postgresql,
   pglite: dialectCapabilities.postgresql,
+  neon: dialectCapabilities.postgresql,
   "cloudflare-hyperdrive-postgresql": dialectCapabilities.postgresql,
   mysql2: dialectCapabilities.mysql,
   planetscale: dialectCapabilities.mysql,

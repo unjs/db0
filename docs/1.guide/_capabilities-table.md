@@ -9,6 +9,7 @@
 | cloudflare-d1 | ✓ | — | — | — | — | ✓ | ✓ |
 | postgresql | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | pglite | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| neon | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | cloudflare-hyperdrive-postgresql | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | mysql2 | ✓ | ✓ | — | ✓ | — | ✓ | ✓ |
 | planetscale | ✓ | ✓ | — | ✓ | — | ✓ | ✓ |

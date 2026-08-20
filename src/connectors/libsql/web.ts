@@ -1,22 +1,49 @@
 import type { Config, Client } from "@libsql/client";
-import type { Connector, Primitive } from "db0";
-import { createClient } from "@libsql/client/http";
+import type { Connector } from "db0";
+import {
+  importLib,
+  lazyInstance,
+  type ConnectorDependencies,
+  type LibImport,
+} from "../_internal/utils.ts";
 import libSqlCore from "./core.ts";
 
-export type ConnectorOptions = Config;
+export type ConnectorOptions = Config & {
+  /**
+   * Optionally provide the [`@libsql/client`](https://www.npmjs.com/package/@libsql/client)
+   * library (the `@libsql/client/http` entry) to avoid dynamically importing it.
+   */
+  lib?: LibImport<typeof import("@libsql/client/http")>;
+};
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+};
+
+const CONNECTOR_NAME = "libsql-web";
 
 export default function libSqlConnector(
   opts: ConnectorOptions,
 ): Connector<Client> {
-  let _client: Client | undefined;
-  const getClient = () => {
-    if (!_client) {
-      _client = createClient(opts);
-    }
-    return _client;
-  };
+  const { lib, ...config } = opts;
+
+  const getClient = lazyInstance(async () => {
+    const { createClient } = await importLib(
+      CONNECTOR_NAME,
+      "@libsql/client/http",
+      lib,
+      () => import("@libsql/client/http"),
+    );
+    return createClient(config);
+  });
+
   return libSqlCore({
-    name: "libsql-web",
+    name: CONNECTOR_NAME,
     getClient,
+    dispose: async () => {
+      const client = await getClient.current;
+      getClient.reset();
+      client?.close?.();
+    },
   });
 }

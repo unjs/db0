@@ -7,7 +7,7 @@ const outputFile = fileURLToPath(new URL("../docs/1.guide/_capabilities-table.md
 
 const db0Connectors = [
   "better-sqlite3", "sqlite3", "bun-sqlite", "node-sqlite", "libsql", "cloudflare-d1",
-  "postgresql", "pglite", "cloudflare-hyperdrive-postgresql",
+  "postgresql", "pglite", "neon", "cloudflare-hyperdrive-postgresql",
   "mysql2", "planetscale", "cloudflare-hyperdrive-mysql",
 ];
 

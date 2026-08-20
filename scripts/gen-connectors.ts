@@ -1,15 +1,15 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
+import { join, resolve } from "pathe";
 import { findTypeExports } from "mlly";
 import { camelCase, upperFirst } from "scule";
+import type { ConnectorDependencies } from "../src/types.ts";
 
-const connectorsDir = fileURLToPath(
-  new URL("../src/connectors", import.meta.url),
-);
+const connectorsDir = resolve(import.meta.dirname, "../src/connectors");
 
-const connectorsMetaFile = fileURLToPath(
-  new URL("../src/_connectors.ts", import.meta.url),
+const connectorsMetaFile = resolve(
+  import.meta.dirname,
+  "../src/_connectors.ts",
 );
 
 const aliases = {
@@ -38,7 +38,7 @@ async function getConnectorFiles(dir: string): Promise<string[]> {
 
 const connectorFiles = await getConnectorFiles(connectorsDir);
 const connectorEntries = connectorFiles.map((file) =>
-  file.replace(connectorsDir + "/", ""),
+  file.slice(connectorsDir.length + 1),
 );
 
 const connectors: {
@@ -48,11 +48,12 @@ const connectors: {
   subpath: string;
   optionsTExport?: string;
   optionsTName?: string;
+  dependencies?: ConnectorDependencies;
 }[] = [];
 
 for (const entry of connectorEntries) {
   const pathName = entry.replace(/\.ts$/, "");
-  const name = pathName.replace(/\/|\\/g, "-");
+  const name = pathName.replace(/[/\\]/g, "-");
   const subpath = `db0/connectors/${pathName}`;
   const fullPath = join(connectorsDir, `${pathName}.ts`);
 
@@ -69,6 +70,13 @@ for (const entry of connectorEntries) {
 
   const optionsTName = upperFirst(safeName) + "Options";
 
+  // Connectors only import their third-party libraries dynamically, so this is safe to load.
+  const { CONNECTOR_DEPENDENCIES: dependencies } = contents.includes(
+    "CONNECTOR_DEPENDENCIES",
+  )
+    ? await import(pathToFileURL(fullPath).href)
+    : { CONNECTOR_DEPENDENCIES: undefined };
+
   connectors.push({
     name,
     safeName,
@@ -76,6 +84,7 @@ for (const entry of connectorEntries) {
     subpath,
     optionsTExport,
     optionsTName,
+    dependencies,
   });
 }
 
@@ -83,6 +92,7 @@ connectors.sort((a, b) => a.name.localeCompare(b.name));
 
 const genCode = /* ts */ `// Auto-generated using scripts/gen-connectors.
 // Do not manually edit!
+import type { ConnectorDependencies } from "./types.ts";
 ${connectors
   .filter((d) => d.optionsTExport)
   .map(
@@ -107,6 +117,33 @@ export type ConnectorOptions = {
 
 export const connectors: Record<ConnectorName, string> = Object.freeze({
   ${connectors.flatMap((d) => d.names.map((name, i) => `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": "${d.subpath}"`)).join(",\n  ")},
+} as const);
+
+/**
+ * Third-party packages each connector dynamically imports, keyed by the connector option
+ * that can be used to provide them (usually \`lib\`).
+ *
+ * Connectors not listed here have no third-party dependencies.
+ */
+export const connectorDependencies: Partial<
+  Record<ConnectorName, ConnectorDependencies>
+> = Object.freeze({
+  ${connectors
+    .filter((d) => d.dependencies)
+    .flatMap((d) =>
+      d.names.map(
+        (name, i) =>
+          `${i === 0 ? "" : `/** alias of ${d.name} */\n  `}"${name}": {\n    ${Object.entries(
+            d.dependencies!,
+          )
+            .map(
+              ([option, dep]) =>
+                `${option}: { name: "${dep.name}", version: "${dep.version}"${dep.optional ? ", optional: true" : ""} },`,
+            )
+            .join("\n    ")}\n  }`,
+      ),
+    )
+    .join(",\n  ")},
 } as const);
 `;
 
