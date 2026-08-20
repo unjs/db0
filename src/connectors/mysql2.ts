@@ -1,8 +1,26 @@
-import mysql from "mysql2/promise";
+import type mysql from "mysql2/promise";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
+import {
+  importLib,
+  lazyInstance,
+  type ConnectorDependencies,
+  type LibImport,
+} from "./_internal/utils.ts";
 
-export type ConnectorOptions = mysql.ConnectionOptions;
+export type ConnectorOptions = mysql.ConnectionOptions & {
+  /**
+   * Optionally provide the [`mysql2`](https://www.npmjs.com/package/mysql2) library
+   * (the `mysql2/promise` entry) to avoid dynamically importing it.
+   */
+  lib?: LibImport<typeof import("mysql2/promise")>;
+};
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "mysql2", version: "^3" },
+};
+
+const CONNECTOR_NAME = "mysql2";
 
 type InternalQuery = (
   sql: string,
@@ -12,18 +30,17 @@ type InternalQuery = (
 export default function mysqlConnector(
   opts: ConnectorOptions,
 ): Connector<mysql.Connection> {
-  let _connection: mysql.Connection | undefined;
-  const getConnection = async () => {
-    if (_connection) {
-      return _connection;
-    }
+  const { lib, ...config } = opts;
 
-    _connection = await mysql.createConnection({
-      ...opts,
-    });
-
-    return _connection;
-  };
+  const getConnection = lazyInstance(async () => {
+    const mysql = await importLib(
+      CONNECTOR_NAME,
+      "mysql2/promise",
+      lib,
+      () => import("mysql2/promise"),
+    );
+    return mysql.createConnection({ ...config });
+  });
 
   const query: InternalQuery = (sql, params) =>
     getConnection()
@@ -37,8 +54,9 @@ export default function mysqlConnector(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      await _connection?.end?.();
-      _connection = undefined;
+      const connection = await getConnection.current;
+      getConnection.reset();
+      await connection?.end?.();
     },
   };
 }
