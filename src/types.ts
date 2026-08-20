@@ -7,6 +7,15 @@ export type Primitive = string | number | boolean | undefined | null;
 
 export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
 
+export interface DatabaseCapabilities {
+  readonly json: boolean;
+  readonly booleans: boolean;
+  readonly arrays: boolean;
+  readonly dates: boolean;
+  readonly uuids: boolean;
+  readonly transactions: boolean;
+}
+
 export type Statement = {
   /**
    * Binds parameters to the statement.
@@ -84,6 +93,11 @@ export type Connector<TInstance = unknown> = {
   dialect: SQLDialect;
 
   /**
+   * Override specific database capabilities for this connector.
+   */
+  capabilityOverrides?: Partial<DatabaseCapabilities>;
+
+  /**
    * The client instance used internally.
    */
   getInstance: () => TInstance | Promise<TInstance>;
@@ -125,6 +139,11 @@ export interface Database<
 > extends AsyncDisposable {
   readonly connector: ConnectorName;
   readonly dialect: SQLDialect;
+
+  /**
+   * Database capabilities supported by this connector.
+   */
+  readonly capabilities: DatabaseCapabilities;
 
   /**
    * Indicates whether the database instance has been disposed/closed.

@@ -1,3 +1,4 @@
+import { getCapabilities } from "./capabilities.ts";
 import { sqlTemplate } from "./template.ts";
 import type { Connector, Database, SQLDialect } from "./types.ts";
 import type { Primitive } from "./types.ts";
@@ -20,6 +21,11 @@ const DISPOSED_ERR =
 export function createDatabase<TConnector extends Connector = Connector>(
   connector: TConnector,
 ): Database<TConnector> {
+  const capabilities = getCapabilities(
+    connector.dialect,
+    connector.capabilityOverrides,
+  );
+
   let _disposed = false;
   const checkDisposed = () => {
     if (_disposed) {
@@ -36,6 +42,10 @@ export function createDatabase<TConnector extends Connector = Connector>(
 
     get dialect() {
       return connector.dialect;
+    },
+
+    get capabilities() {
+      return capabilities;
     },
 
     get disposed() {

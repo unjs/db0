@@ -14,4 +14,5 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test:types
+      - run: pnpm prisma:generate
       - run: pnpm vitest
