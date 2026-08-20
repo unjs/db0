@@ -70,17 +70,12 @@ describe("connectors: postgresql normalizeParams", () => {
     );
   });
 
-  it("keeps the `?|` and `?&` jsonb operators", () => {
-    expect(
-      normalizeParams("SELECT * FROM t WHERE payload ?| ARRAY['a', 'b']"),
-    ).toBe("SELECT * FROM t WHERE payload ?| ARRAY['a', 'b']");
-    expect(
-      normalizeParams(
-        "SELECT * FROM t WHERE payload ?& ARRAY['a'] AND id = ? AND payload ?| ?",
-      ),
-    ).toBe(
-      "SELECT * FROM t WHERE payload ?& ARRAY['a'] AND id = $1 AND payload ?| $2",
-    );
+  it("rewrites placeholders that are directly followed by an operator", () => {
+    // the template tag emits a bare `?`, so `${a}||'b'` arrives as `?||'b'`
+    expect(normalizeParams("SELECT ?||'cd'")).toBe("SELECT $1||'cd'");
+    expect(normalizeParams("SELECT ?||?")).toBe("SELECT $1||$2");
+    expect(normalizeParams("SELECT ?::int&1")).toBe("SELECT $1::int&1");
+    expect(normalizeParams("SELECT ?&?")).toBe("SELECT $1&$2");
   });
 
   it("does not hang or drop input on unterminated literals", () => {

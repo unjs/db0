@@ -4,9 +4,14 @@
 // Only placeholders in actual SQL code must be rewritten. A `?` inside a string
 // literal, a quoted identifier or a comment is data and has to be left as-is.
 //
-// The jsonb operators `?|` and `?&` are recognised and left alone. A bare `?` is
-// always a placeholder, so the `jsonb ? text` operator has to be spelled
-// `jsonb_exists(jsonb, text)` instead.
+// Every `?` in SQL code is a placeholder, so operators that contain one cannot
+// be told apart from a placeholder and are not supported. Spell them as
+// function calls instead:
+//
+//   jsonb ? text     -> jsonb_exists(jsonb, text)
+//   jsonb ?| text[]  -> jsonb_exists_any(jsonb, text[])
+//   jsonb ?& text[]  -> jsonb_exists_all(jsonb, text[])
+//   jsonb @? jsonpath -> jsonb_path_exists(jsonb, jsonpath)
 export function normalizeParams(sql: string): string {
   if (!sql.includes("?")) {
     return sql;
@@ -64,12 +69,6 @@ export function normalizeParams(sql: string): string {
         continue;
       }
       case "?": {
-        // `?|` and `?&` are jsonb operators, never placeholders.
-        if (sql[index + 1] === "|" || sql[index + 1] === "&") {
-          result += sql.slice(index, index + 2);
-          index += 2;
-          continue;
-        }
         result += `$${++paramIndex}`;
         index++;
         continue;
@@ -137,11 +136,12 @@ function skipBlockComment(sql: string, start: number): number {
   return index;
 }
 
-const DOLLAR_TAG_RE = /^\$[A-Z_a-z\u0080-\uFFFF][\w\u0080-\uFFFF]*\$|^\$\$/;
+const DOLLAR_TAG_RE = /\$[A-Z_a-z\u0080-\uFFFF][\w\u0080-\uFFFF]*\$|\$\$/y;
 
 /** Index right after the closing dollar-quote tag, or `-1` if this is not a dollar-quoted string. */
 function skipDollarQuoted(sql: string, start: number): number {
-  const tag = DOLLAR_TAG_RE.exec(sql.slice(start))?.[0];
+  DOLLAR_TAG_RE.lastIndex = start;
+  const tag = DOLLAR_TAG_RE.exec(sql)?.[0];
   if (!tag) {
     return -1;
   }
