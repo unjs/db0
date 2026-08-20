@@ -20,9 +20,25 @@ import type { Cache } from "drizzle-orm/cache/core";
 
 import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
 
-import type { Database, Primitive, Statement } from "db0";
+import type { Database, Primitive } from "db0";
 
-export type DB0SQLiteRunResult = Awaited<ReturnType<Statement["run"]>>;
+/**
+ * What db0's sqlite connectors resolve `Statement.run()` with.
+ *
+ * `Statement["run"]` is declared as `{ success: boolean }`, but every connector
+ * passes its driver's own result through: better-sqlite3, node:sqlite and
+ * bun:sqlite add `changes` and `lastInsertRowid`, cloudflare-d1 returns D1's
+ * `{ success, meta }`, and the libsql connectors return libsql's `ResultSet`
+ * (`rowsAffected`, `lastInsertRowid` — and no `success` at all). So neither
+ * `success` nor any driver field can be promised, and the fields a given driver
+ * does add have to stay reachable.
+ */
+export type DB0SQLiteRunResult = {
+  success?: boolean;
+  changes?: number;
+  rowsAffected?: number;
+  lastInsertRowid?: number | bigint;
+} & Record<string, unknown>;
 
 export interface DB0SQLiteSessionOptions {
   logger?: Logger;
@@ -68,6 +84,8 @@ export class DB0SQLiteSession<
         ? (rows as Record<string, unknown>[]).map((row) => toArray(row))
         : rows;
 
+    // `SQLiteAsyncPreparedQuery` has no `iterator()`, so unlike the mysql
+    // session there is nothing here that could stream (or pretend to).
     return new SQLiteAsyncPreparedQuery(
       "async",
       executeMethod,
@@ -83,6 +101,8 @@ export class DB0SQLiteSession<
                   : row
                 : undefined,
             ),
+        // Non-returning insert/update/delete: drizzle picks `run` as the
+        // execute method, so the driver's own metadata is what resolves.
         run: (params) => stmt.run(...(params as Primitive[])),
         values: (params) =>
           stmt
@@ -121,8 +141,7 @@ export class DB0SQLiteSession<
       await this.run(sql`commit`);
       return result;
     } catch (error_) {
-      await this.run(sql`rollback`);
-      throw error_;
+      return rollbackAndRethrow(() => this.run(sql`rollback`), error_);
     }
   }
 }
@@ -157,10 +176,40 @@ export class DB0SQLiteTransaction<
       await this.db0Session.run(sql.raw(`release savepoint ${savepointName}`));
       return result;
     } catch (error_) {
-      await this.db0Session.run(
-        sql.raw(`rollback to savepoint ${savepointName}`),
+      return rollbackAndRethrow(
+        () =>
+          this.db0Session.run(
+            sql.raw(`rollback to savepoint ${savepointName}`),
+          ),
+        error_,
       );
-      throw error_;
     }
   }
+}
+
+/**
+ * Rolls back and rethrows the error the transaction body failed with.
+ *
+ * Awaiting the rollback directly in a `catch` block replaces the caller's error
+ * with the rollback's own one whenever the rollback fails too (a dropped
+ * connection, a server-aborted transaction) — exactly when the original error
+ * matters most. The rollback failure is attached as `cause` so it is still
+ * reported, never as a replacement.
+ */
+async function rollbackAndRethrow(
+  rollback: () => PromiseLike<unknown>,
+  error: unknown,
+): Promise<never> {
+  try {
+    await rollback();
+  } catch (rollbackError) {
+    if (error instanceof Error && error.cause === undefined) {
+      try {
+        error.cause = rollbackError;
+      } catch {
+        // A frozen error cannot carry the rollback failure.
+      }
+    }
+  }
+  throw error;
 }
