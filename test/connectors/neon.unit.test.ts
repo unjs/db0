@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 
-const { instantPostgres, clients, state, MockClient } = vi.hoisted(() => {
+const { clients, state, MockClient } = vi.hoisted(() => {
   const clients: any[] = [];
   const state = { connect: () => Promise.resolve() };
 
@@ -31,38 +31,27 @@ const { instantPostgres, clients, state, MockClient } = vi.hoisted(() => {
     }
   }
 
-  return { instantPostgres: vi.fn(), clients, state, MockClient };
+  return { clients, state, MockClient };
 });
 
-vi.mock("neon-new", () => ({ instantPostgres }));
 vi.mock("@neondatabase/serverless", () => ({ Client: MockClient }));
 
-import neonConnector from "../../src/connectors/neon";
-import neonInstantConnector from "../../src/connectors/neon-instant";
-import { normalizeParams } from "../../src/connectors/_internal/neon";
+import neonConnector, { normalizeParams } from "../../src/connectors/neon";
 import { createDatabase } from "../../src";
 
 beforeEach(() => {
   clients.length = 0;
   state.connect = () => Promise.resolve();
-  instantPostgres.mockReset();
-  instantPostgres.mockResolvedValue({
-    databaseUrl: "postgres://provisioned/db",
-  });
-  // The connector reuses an already-provisioned database from the environment.
-  vi.stubEnv("DATABASE_URL", "");
-  vi.stubEnv("NODE_ENV", "test");
 });
 
-describe("connectors: neon (sdk only)", () => {
-  test("connects with the given connection string and never provisions", async () => {
+describe("connectors: neon", () => {
+  test("connects with the given connection string", async () => {
     const db = createDatabase(
       neonConnector({ url: "postgres://user@host/db" }),
     );
     await db.getInstance();
 
     expect(clients[0].config.connectionString).toBe("postgres://user@host/db");
-    expect(instantPostgres).not.toHaveBeenCalled();
   });
 
   test("accepts a ClientConfig without a connection string", async () => {
@@ -77,80 +66,17 @@ describe("connectors: neon (sdk only)", () => {
   test("throws when no connection string is available", async () => {
     const db = createDatabase(neonConnector());
     await expect(db.getInstance()).rejects.toThrow(/Missing connection string/);
-    expect(instantPostgres).not.toHaveBeenCalled();
-  });
-});
-
-describe("connectors: neon-instant", () => {
-  test("provisions a database when nothing else identifies one", async () => {
-    const db = createDatabase(neonInstantConnector());
-    await db.getInstance();
-
-    expect(instantPostgres).toHaveBeenCalledOnce();
-    expect(clients[0].config.connectionString).toBe(
-      "postgres://provisioned/db",
-    );
-  });
-
-  test("forwards provisioning options and defaults the referrer", async () => {
-    const seed = { type: "sql-script", path: "init.sql" } as const;
-    const db = createDatabase(neonInstantConnector({ seed }));
-    await db.getInstance();
-
-    expect(instantPostgres).toHaveBeenCalledWith(
-      expect.objectContaining({ referrer: "db0/neon-connector", seed }),
-    );
-  });
-
-  test("keeps provisioning options out of the client config", async () => {
-    const db = createDatabase(
-      neonInstantConnector({
-        seed: { type: "sql-script", path: "init.sql" },
-        dotEnvFile: ".env.local",
-      }),
-    );
-    await db.getInstance();
-
-    expect(clients[0].config).not.toHaveProperty("seed");
-    expect(clients[0].config).not.toHaveProperty("dotEnvFile");
-    expect(clients[0].config).not.toHaveProperty("referrer");
-  });
-
-  test("reuses an already-provisioned database from the environment", async () => {
-    vi.stubEnv("DATABASE_URL", "postgres://existing/db");
-
-    const db = createDatabase(neonInstantConnector());
-    await db.getInstance();
-
-    expect(instantPostgres).not.toHaveBeenCalled();
-    expect(clients[0].config.connectionString).toBe("postgres://existing/db");
-  });
-
-  test("prefers an explicit connection string over provisioning", async () => {
-    const db = createDatabase(
-      neonInstantConnector({ url: "postgres://user@host/db" }),
-    );
-    await db.getInstance();
-
-    expect(instantPostgres).not.toHaveBeenCalled();
-  });
-
-  test("refuses to provision in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-
-    const db = createDatabase(neonInstantConnector());
-    await expect(db.getInstance()).rejects.toThrow(/production/);
-    expect(instantPostgres).not.toHaveBeenCalled();
   });
 });
 
 describe("connectors: neon client lifecycle", () => {
-  test("concurrent first queries share one client and provision once", async () => {
-    const db = createDatabase(neonInstantConnector());
+  test("concurrent first queries share one client", async () => {
+    const db = createDatabase(
+      neonConnector({ url: "postgres://user@host/db" }),
+    );
 
     await Promise.all([db.sql`SELECT 1`, db.sql`SELECT 2`, db.sql`SELECT 3`]);
 
-    expect(instantPostgres).toHaveBeenCalledOnce();
     expect(clients).toHaveLength(1);
     expect(clients[0].connects).toBe(1);
   });

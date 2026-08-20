@@ -33,10 +33,6 @@ const db = createDatabase(
 );
 ```
 
-::tip
-Want a database provisioned for you in development, without bringing your own connection string? Use the [Neon Instant connector](/connectors/neon-instant).
-::
-
 ## Options
 
 Options are passed through to the underlying [`Client`](https://neon.com/docs/serverless/serverless-driver), so any `ClientConfig` field is accepted in addition to the following.

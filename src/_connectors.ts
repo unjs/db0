@@ -12,14 +12,13 @@ import type { ConnectorOptions as LibSQLNodeOptions } from "db0/connectors/libsq
 import type { ConnectorOptions as LibSQLWebOptions } from "db0/connectors/libsql/web";
 import type { ConnectorOptions as MySQL2Options } from "db0/connectors/mysql2";
 import type { ConnectorOptions as NeonOptions } from "db0/connectors/neon";
-import type { ConnectorOptions as NeonInstantOptions } from "db0/connectors/neon-instant";
 import type { ConnectorOptions as NodeSQLiteOptions } from "db0/connectors/node-sqlite";
 import type { ConnectorOptions as PgliteOptions } from "db0/connectors/pglite";
 import type { ConnectorOptions as PlanetscaleOptions } from "db0/connectors/planetscale";
 import type { ConnectorOptions as PostgreSQLOptions } from "db0/connectors/postgresql";
 import type { ConnectorOptions as SQLite3Options } from "db0/connectors/sqlite3";
 
-export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "neon" | "neon-instant" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
+export type ConnectorName = "better-sqlite3" | "bun-sqlite" | "bun" | "cloudflare-d1" | "cloudflare-hyperdrive-mysql" | "cloudflare-hyperdrive-postgresql" | "libsql-core" | "libsql-http" | "libsql-node" | "libsql" | "libsql-web" | "mysql2" | "neon" | "node-sqlite" | "sqlite" | "pglite" | "planetscale" | "postgresql" | "sqlite3";
 
 export type ConnectorOptions = {
   "better-sqlite3": BetterSQLite3Options;
@@ -37,7 +36,6 @@ export type ConnectorOptions = {
   "libsql-web": LibSQLWebOptions;
   "mysql2": MySQL2Options;
   "neon": NeonOptions;
-  "neon-instant": NeonInstantOptions;
   "node-sqlite": NodeSQLiteOptions;
   /** alias of node-sqlite */
   "sqlite": NodeSQLiteOptions;
@@ -63,7 +61,6 @@ export const connectors: Record<ConnectorName, string> = Object.freeze({
   "libsql-web": "db0/connectors/libsql/web",
   "mysql2": "db0/connectors/mysql2",
   "neon": "db0/connectors/neon",
-  "neon-instant": "db0/connectors/neon-instant",
   "node-sqlite": "db0/connectors/node-sqlite",
   /** alias of node-sqlite */
   "sqlite": "db0/connectors/node-sqlite",
@@ -109,10 +106,6 @@ export const connectorDependencies: Partial<
   },
   "neon": {
     lib: { name: "@neondatabase/serverless", version: "^1" },
-  },
-  "neon-instant": {
-    lib: { name: "@neondatabase/serverless", version: "^1" },
-    provisionLib: { name: "neon-new", version: "^0.15", optional: true },
   },
   "pglite": {
     lib: { name: "@electric-sql/pglite", version: "^0.3 || ^0.4 || ^0.5" },
