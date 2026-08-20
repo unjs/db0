@@ -30,7 +30,7 @@ export function prisma(db: Database): SqlDriverAdapterFactory {
   const mutex = new Mutex();
   const provider = getProviderFromDialect(db.dialect);
 
-  const adapter: Omit<SqlDriverAdapter, 'startTransaction'> = {
+  const adapter: Omit<SqlDriverAdapter, "startTransaction"> = {
     adapterName,
     provider,
 
@@ -58,11 +58,9 @@ export function prisma(db: Database): SqlDriverAdapterFactory {
       const stmt = db.prepare(params.sql);
       const args = (params.args || []) as Primitive[];
 
-      return stmt
-        .run(...args)
-        .then((res) => (res as any).changes || 0);
-    }
-  }
+      return stmt.run(...args).then((res) => (res as any).changes || 0);
+    },
+  };
 
   return {
     adapterName,
@@ -74,11 +72,15 @@ export function prisma(db: Database): SqlDriverAdapterFactory {
         startTransaction: async function (
           isolationLevel?: IsolationLevel,
         ): Promise<Transaction> {
-          if (provider === 'sqlite' && isolationLevel && isolationLevel !== 'SERIALIZABLE') {
+          if (
+            provider === "sqlite" &&
+            isolationLevel &&
+            isolationLevel !== "SERIALIZABLE"
+          ) {
             throw new DriverAdapterError({
-              kind: 'InvalidIsolationLevel',
+              kind: "InvalidIsolationLevel",
               level: isolationLevel,
-            })
+            });
           }
 
           const release = await mutex.acquire();
