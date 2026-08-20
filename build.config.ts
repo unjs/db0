@@ -15,7 +15,12 @@ const integrationEntries = readdirSync(
   .map((entry) => `src/integrations/${entry}`)
   .sort();
 
-const input = ["src/index.ts", ...connectorEntries, ...integrationEntries];
+const input = [
+  "src/index.ts",
+  "src/tracing.ts",
+  ...connectorEntries,
+  ...integrationEntries,
+];
 
 validatePkg(input);
 

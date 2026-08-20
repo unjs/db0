@@ -13,6 +13,7 @@ src/
 ├── database.ts           # createDatabase() factory — wraps Connector into Database
 ├── template.ts           # SQL tagged template literal parser (sql`...`)
 ├── _connectors.ts        # Auto-generated connector registry (do not edit manually)
+├── tracing.ts            # Opt-in `withTracing()` wrapper emitting `node:diagnostics_channel` events
 ├── connectors/           # One file per backend (17 total)
 │   ├── _internal/        # Shared helpers (BoundableStatement, cloudflare utils)
 │   ├── libsql/           # LibSQL variants (core, node, http, web)
@@ -59,7 +60,7 @@ The Prisma tests need generated clients: run `pnpm prisma:generate` (one per pro
 ## Key Patterns
 
 - **Zero deps** — no runtime deps and no peer deps; backend drivers are imported lazily via dynamic `import()` (see `_internal/utils.ts` `importLib()`), with a `lib` option escape hatch on every connector that needs one
-- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`, `db0/integrations/prisma`
+- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`, `db0/integrations/prisma`, `db0/tracing`
 - **All bare imports stay external** — only relative/internal code is bundled, so backend drivers are never inlined
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
 - **Capabilities** — `db.capabilities` is a frozen snapshot from `src/capabilities.ts`, derived from the connector's `dialect` and refined by its optional `capabilityOverrides`. Note that `transactions` tracks the driver's _session model_, not the engine: connectors that open a new session per query (D1, PlanetScale, libsql over HTTP) set it to `false`
