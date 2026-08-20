@@ -1,6 +1,6 @@
 {
   "name": "db0",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "Lightweight SQL Connector",
   "repository": "unjs/db0",
   "license": "MIT",
