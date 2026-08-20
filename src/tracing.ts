@@ -1,4 +1,3 @@
-import type { ConnectorName } from "./_connectors.ts";
 import type {
   Connector,
   Database,
@@ -15,7 +14,7 @@ const QUERY_OPERATION: TracedOperation = "query";
 export interface TraceContext {
   query: string;
   method: "exec" | "sql" | "prepare.all" | "prepare.run" | "prepare.get";
-  connector: ConnectorName;
+  connector: Database["connector"];
   dialect: SQLDialect;
 }
 
@@ -30,15 +29,24 @@ type MaybeTracedDatabase<TConnector extends Connector = Connector> =
  * Wrap a database instance with tracing functionality.
  */
 export function withTracing<TConnector extends Connector = Connector>(
-  db: MaybeTracedDatabase<TConnector>,
+  db: Database<TConnector>,
 ): Database<TConnector> {
   // Avoids double patching
-  if (db[TRACED]) {
+  if ((db as MaybeTracedDatabase<TConnector>)[TRACED]) {
     return db;
   }
 
-  const { tracingChannel } =
-    globalThis.process?.getBuiltinModule?.("node:diagnostics_channel") || {};
+  // Runtimes disagree on what `getBuiltinModule` does with a module they do not
+  // implement (return `undefined` or throw), so tracing degrades either way.
+  let tracingChannel:
+    typeof import("node:diagnostics_channel").tracingChannel | undefined;
+  try {
+    tracingChannel = globalThis.process?.getBuiltinModule?.(
+      "node:diagnostics_channel",
+    )?.tracingChannel;
+  } catch {
+    tracingChannel = undefined;
+  }
   if (!tracingChannel) {
     return db;
   }
@@ -60,16 +68,19 @@ export function withTracing<TConnector extends Connector = Connector>(
 
   // Copy the property descriptors instead of spreading, so that getters like
   // `dialect` and `disposed` stay getters. Spreading would evaluate them once,
-  // making `disposed` report the state at wrap-time forever after.
-  const tracedDb = Object.defineProperties(
-    {} as MaybeTracedDatabase<TConnector>,
+  // making `disposed` report the state at wrap-time forever after. The prototype
+  // is kept so that databases implemented as class instances keep their methods.
+  const tracedDb = Object.create(
+    Object.getPrototypeOf(db) as object | null,
     Object.getOwnPropertyDescriptors(db),
-  );
+  ) as MaybeTracedDatabase<TConnector>;
   // Non-enumerable, so spreading or serializing a traced database does not leak it.
   Object.defineProperty(tracedDb, TRACED, { value: true });
 
   // `exec` is wrapped in an async function so connectors throwing synchronously
-  // emit the same event sequence as connectors rejecting asynchronously.
+  // emit the same event sequence as connectors rejecting asynchronously. As a
+  // side effect, `exec` on a disposed database rejects instead of throwing
+  // synchronously; `exec` returns a promise either way, so awaiting is unaffected.
   tracedDb.exec = (query) =>
     tracePromise(
       async () => db.exec(query),

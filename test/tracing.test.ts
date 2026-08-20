@@ -172,6 +172,62 @@ describe("tracing", () => {
       expect(() => (db.sql as any)("SELECT 1").catch(() => {})).not.toThrow();
     });
 
+    it("should return the database unchanged without diagnostics channels", () => {
+      const plainDb = createDatabase(connector({ name: ":memory:" }));
+
+      const missing = vi
+        .spyOn(process, "getBuiltinModule")
+        .mockReturnValue(undefined as any);
+      expect(withTracing(plainDb)).toBe(plainDb);
+
+      // Runtimes that reject unknown builtin ids must degrade the same way.
+      missing.mockImplementation(() => {
+        throw new Error("unsupported builtin");
+      });
+      expect(withTracing(plainDb)).toBe(plainDb);
+
+      missing.mockRestore();
+    });
+
+    it("should keep prototype methods of class based databases", () => {
+      class ClassDatabase {
+        get connector() {
+          return "sqlite" as const;
+        }
+        get dialect() {
+          return "sqlite" as const;
+        }
+        get disposed() {
+          return false;
+        }
+        getInstance() {
+          return Promise.resolve({} as any);
+        }
+        exec() {
+          return Promise.resolve();
+        }
+        prepare() {
+          return {} as any;
+        }
+        sql() {
+          return Promise.resolve({} as any);
+        }
+        dispose() {
+          return Promise.resolve();
+        }
+        [Symbol.asyncDispose]() {
+          return this.dispose();
+        }
+      }
+
+      const traced = withTracing(new ClassDatabase() as unknown as Database);
+
+      expect(typeof traced.dispose).toBe("function");
+      expect(typeof traced[Symbol.asyncDispose]).toBe("function");
+      expect(typeof traced.getInstance).toBe("function");
+      expect(traced.dialect).toBe("sqlite");
+    });
+
     it("should not leak internal properties of the traced instance", () => {
       const plainDb = createDatabase(connector({ name: ":memory:" }));
       const tracedDb = withTracing(plainDb);
@@ -553,10 +609,7 @@ describe("tracing", () => {
 
       // Query should be reconstructed with placeholders
       const query = selectCalls[0][0].query;
-      expect(query).toContain("SELECT * FROM users");
-      expect(query).toContain("WHERE");
-      expect(query).toContain("name");
-      expect(query).toContain("email");
+      expect(query).toBe("SELECT * FROM users WHERE name = ? AND email = ?");
       expect(selectCalls[0][0].dialect).toBe("sqlite");
     });
   });
@@ -572,18 +625,12 @@ describe("tracing", () => {
       const stmt = db.prepare("SELECT * FROM users WHERE id = ?");
       await stmt.all(1);
 
-      // Should have events for: exec, sql (prepare.all internally), and prepare.all
-      expect(listener.handlers.start.mock.calls.length).toBeGreaterThanOrEqual(
-        3,
-      );
-
-      // Check that different methods were called
+      // One event per public call: `sql` prepares internally but must not
+      // emit an extra `prepare.all` on top of its own `sql` event.
       const methods = listener.handlers.start.mock.calls.map(
         (call) => call[0].method,
       );
-      expect(methods).toContain("exec");
-      expect(methods).toContain("sql");
-      expect(methods).toContain("prepare.all");
+      expect(methods).toEqual(["exec", "sql", "prepare.all"]);
     });
   });
 
