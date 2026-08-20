@@ -1,10 +1,28 @@
-import { Client, type ExecutedQuery, type Config } from "@planetscale/database";
+import type { Client, ExecutedQuery, Config } from "@planetscale/database";
 
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
+import {
+  importLib,
+  lazyInstance,
+  type ConnectorDependencies,
+  type LibImport,
+} from "./_internal/utils.ts";
 
-export type ConnectorOptions = Config;
+export type ConnectorOptions = Config & {
+  /**
+   * Optionally provide the [`@planetscale/database`](https://www.npmjs.com/package/@planetscale/database)
+   * library to avoid dynamically importing it.
+   */
+  lib?: LibImport<typeof import("@planetscale/database")>;
+};
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "@planetscale/database", version: "^1" },
+};
+
+const CONNECTOR_NAME = "planetscale";
 
 type InternalQuery = (
   sql: string,
@@ -14,20 +32,22 @@ type InternalQuery = (
 export default function planetscaleConnector(
   opts: ConnectorOptions,
 ): Connector<Client> {
-  let _client: undefined | Client;
-  function getClient() {
-    if (_client) {
-      return _client;
-    }
-    const client = new Client(opts);
-    _client = client;
-    return client;
-  }
+  const { lib, ...config } = opts;
+
+  const getClient = lazyInstance(async () => {
+    const { Client } = await importLib(
+      CONNECTOR_NAME,
+      "@planetscale/database",
+      lib,
+      () => import("@planetscale/database"),
+    );
+    return new Client(config);
+  });
 
   // Discussion on how @planetscale/database client works:
   // https://github.com/drizzle-team/drizzle-orm/issues/1743#issuecomment-1879479647
-  const query: InternalQuery = (sql, params) =>
-    getClient().execute(sql, params);
+  const query: InternalQuery = async (sql, params) =>
+    (await getClient()).execute(sql, params);
 
   return {
     name: "planetscale",
@@ -36,7 +56,7 @@ export default function planetscaleConnector(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: () => {
-      _client = undefined;
+      getClient.reset();
     },
   };
 }

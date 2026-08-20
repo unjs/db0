@@ -1,9 +1,16 @@
-import pg from "pg";
+import type pg from "pg";
 
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
 import { getHyperdrive } from "./_internal/cloudflare.ts";
+import {
+  importLib,
+  interopDefault,
+  lazyInstance,
+  type ConnectorDependencies,
+  type LibImport,
+} from "./_internal/utils.ts";
 
 type OmitPgConfig = Omit<
   pg.ClientConfig,
@@ -11,7 +18,19 @@ type OmitPgConfig = Omit<
 >;
 export type ConnectorOptions = {
   bindingName: string;
+
+  /**
+   * Optionally provide the [`pg`](https://www.npmjs.com/package/pg) library
+   * to avoid dynamically importing it.
+   */
+  lib?: LibImport<typeof import("pg")>;
 } & OmitPgConfig;
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "pg", version: "^8" },
+};
+
+const CONNECTOR_NAME = "cloudflare-hyperdrive-postgresql";
 
 type InternalQuery = (
   sql: string,
@@ -21,22 +40,20 @@ type InternalQuery = (
 export default function cloudflareHyperdrivePostgresqlConnector(
   opts: ConnectorOptions,
 ): Connector<pg.Client> {
-  let _client: undefined | pg.Client | Promise<pg.Client>;
-  async function getClient() {
-    if (_client) {
-      return _client;
-    }
+  const { lib, ...config } = opts;
+
+  const getClient = lazyInstance(async () => {
+    const pg = interopDefault(
+      await importLib(CONNECTOR_NAME, "pg", lib, () => import("pg")),
+    );
     const hyperdrive = await getHyperdrive(opts.bindingName);
     const client = new pg.Client({
-      ...opts,
+      ...config,
       connectionString: hyperdrive.connectionString,
     });
-    _client = client.connect().then(() => {
-      _client = client;
-      return _client;
-    });
-    return _client;
-  }
+    await client.connect();
+    return client;
+  });
 
   const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
@@ -50,8 +67,9 @@ export default function cloudflareHyperdrivePostgresqlConnector(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      await (await _client)?.end?.();
-      _client = undefined;
+      const client = await getClient.current;
+      getClient.reset();
+      await client?.end?.();
     },
   };
 }
