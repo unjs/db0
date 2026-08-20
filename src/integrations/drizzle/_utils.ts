@@ -1,48 +1,74 @@
-import { Column, SQL, Subquery, getTableName, is } from "drizzle-orm";
-import type { CasingCache } from "drizzle-orm/casing";
+import { Column, SQL, getColumnTable, getTableName, is } from "drizzle-orm";
+import type { AnyColumn } from "drizzle-orm";
 import type { SelectedFieldsOrdered } from "drizzle-orm/operations";
 
 // Note: db0 connectors always return object rows keyed by the driver's column
-// name, so every selected field has to be looked up by name instead of by
-// position. Fields that the driver cannot key uniquely (two same-named columns
-// from different tables in a join) are rejected upfront by `RowMapper` — see
-// `assertUnambiguous()` — because there is no way to tell the two values apart
-// at this layer. Drizzle's relational query builder emits unique aliases, so
-// relational queries are unaffected.
+// name, while drizzle asks its drivers for positional arrays (`mode: "arrays"`)
+// and reads `row[index]` against the fields the query selected. Every selected
+// field therefore has to be looked up by name and handed back in select order.
+// Fields that the driver cannot key uniquely (two same-named columns from
+// different tables in a join) are rejected upfront by `assertUnambiguous()`,
+// because there is no way to tell the two values apart at this layer. Drizzle's
+// relational query builder emits unique aliases, so relational queries are
+// unaffected.
+//
+// Decoding, nesting and left-join nulling are drizzle's job since v1 — the
+// mapper it hands to `prepareQuery()` does all of it, so this module only has
+// to get the values into the right slots.
 
-type Decoder = { mapFromDriverValue: (value: unknown) => unknown };
+/** Turns one db0 object row into the positional array drizzle's mappers read. */
+export type RowConverter = (row: Record<string, unknown>) => unknown[];
 
-type Field = SelectedFieldsOrdered<Column>[number]["field"];
+/** The mappers drizzle passes to `prepareQuery()`. */
+type Mapper = (rows: any[]) => any;
 
-const identityDecoder: Decoder = { mapFromDriverValue: (value) => value };
+type Fields = SelectedFieldsOrdered<AnyColumn>;
+
+type Field = Fields[number]["field"];
 
 /**
- * The casing cache the dialect used to build the query, so column names are
- * resolved exactly the way they were emitted (`casing: "snake_case"` renames
- * columns declared without an explicit name).
+ * Converters for the mappers drizzle generated from a known field list, so a
+ * session can pick the matching one for the `mapper` it is handed.
  */
-export function getCasing(dialect: unknown): CasingCache | undefined {
-  return (dialect as { casing?: CasingCache } | undefined)?.casing;
+const converters = new WeakMap<Mapper, RowConverter>();
+
+/**
+ * Fallback for mappers built without a field list — `$count()`, `values()` and
+ * the relational query builder, all of which emit unique keys in select order.
+ */
+const byInsertionOrder: RowConverter = (row) => Object.values(row);
+
+/** The converter registered for `mapper`, or positional key order. */
+export function getRowConverter(mapper: Mapper | undefined): RowConverter {
+  return (mapper && converters.get(mapper)) ?? byInsertionOrder;
+}
+
+interface MapperGenerators {
+  rows: (
+    columns: Fields,
+    joinsNotNullableMap: Record<string, boolean> | undefined,
+  ) => Mapper;
 }
 
 /**
- * Mirrors the decoder lookup of drizzle's own `mapResultRow`, so `mapWith()`,
- * `$type()` and the built-in column decoders keep working. `decoder` is
- * `@internal` in drizzle's types, hence the casts.
+ * Registers a row converter for every mapper the dialect builds from a field
+ * list.
+ *
+ * `mapperGenerators` is a plain own property of the dialect and drizzle hands
+ * the generated mapper straight to `prepareQuery()`, so the mapper doubles as
+ * the key identifying the fields it was built for.
  */
-function getDecoder(field: Field): Decoder {
-  if (is(field, Column)) {
-    return field;
-  }
-  if (is(field, SQL)) {
-    return (
-      (field as unknown as { decoder?: Decoder }).decoder ?? identityDecoder
-    );
-  }
-  const sql = is(field, Subquery)
-    ? (field as unknown as { _: { sql: SQL } })._.sql
-    : (field as SQL.Aliased).sql;
-  return (sql as unknown as { decoder?: Decoder }).decoder ?? identityDecoder;
+export function trackSelectedFields<
+  TDialect extends { readonly mapperGenerators: MapperGenerators },
+>(dialect: TDialect): TDialect {
+  const generators = dialect.mapperGenerators;
+  const generateRows = generators.rows;
+  generators.rows = (columns, joinsNotNullableMap) => {
+    const mapper = generateRows(columns, joinsNotNullableMap);
+    converters.set(mapper, createRowConverter(columns));
+    return mapper;
+  };
+  return dialect;
 }
 
 /**
@@ -50,12 +76,9 @@ function getDecoder(field: Field): Decoder {
  * after the raw expression text (bare, non-aliased SQL) and it has to be
  * resolved positionally.
  */
-function getKey(
-  field: Field,
-  casing: CasingCache | undefined,
-): string | undefined {
+function getKey(field: Field): string | undefined {
   if (is(field, Column)) {
-    return casing ? casing.getColumnCasing(field) : field.name;
+    return field.name;
   }
   if (is(field, SQL.Aliased)) {
     return field.fieldAlias;
@@ -66,132 +89,38 @@ function getKey(
 /** Identifies the value behind a key, to detect fields that collapse into one. */
 function getIdentity(field: Field): string {
   return is(field, Column)
-    ? `${getTableName(field.table)}.${field.name}`
+    ? `${getTableName(getColumnTable(field))}.${field.name}`
     : `alias.${(field as SQL.Aliased).fieldAlias}`;
 }
 
-interface FieldPlan {
-  path: string[];
-  key: string | undefined;
-  decoder: Decoder;
-  /** Set for columns only, used to null out unmatched left joins. */
-  tableName: string | undefined;
+/**
+ * Builds the object row -> select-order array conversion for `fields`, on the
+ * first row it is asked to convert: the checks below reject queries db0 cannot
+ * map, and a session runs the conversion from inside its executor, so they
+ * surface as a rejected query rather than as a throw from the query builder.
+ */
+function createRowConverter(fields: Fields): RowConverter {
+  let convert: RowConverter | undefined;
+  return (row) => (convert ??= planRowConverter(fields))(row);
 }
 
-/**
- * Maps the object rows db0 connectors return onto the shape drizzle expects,
- * either as a positional array (for drizzle's own result mappers) or as the
- * nested object of a select.
- */
-export class RowMapper {
-  #fields: SelectedFieldsOrdered<Column> | undefined;
-  #casing: CasingCache | undefined;
-  #plan: FieldPlan[] | undefined;
+function planRowConverter(fields: Fields): RowConverter {
+  const keys = fields.map(({ field }) => getKey(field));
+  assertUnambiguous(fields, keys);
 
-  constructor(
-    fields: SelectedFieldsOrdered<Column> | undefined,
-    casing?: CasingCache,
-  ) {
-    this.#fields = fields;
-    this.#casing = casing;
+  if (keys.every((key) => key !== undefined)) {
+    return (row) => keys.map((key) => row[key!]);
   }
 
-  #getPlan(): FieldPlan[] {
-    if (!this.#plan) {
-      const fields = this.#fields!;
-      this.#plan = fields.map(({ path, field }) => ({
-        path: path as string[],
-        key: getKey(field, this.#casing),
-        decoder: getDecoder(field),
-        tableName: is(field, Column) ? getTableName(field.table) : undefined,
-      }));
-      assertUnambiguous(fields, this.#plan);
-    }
-    return this.#plan;
-  }
-
-  /**
-   * Keys to read each field from. Fields the driver keys by expression text get
-   * the row keys no other field claimed, in select order.
-   */
-  #resolveKeys(
-    plan: FieldPlan[],
-    row: Record<string, unknown>,
-  ): (string | undefined)[] {
-    if (plan.every((entry) => entry.key !== undefined)) {
-      return plan.map((entry) => entry.key);
-    }
-    const claimed = new Set(
-      plan.map((entry) => entry.key).filter((key) => key !== undefined),
-    );
+  // Fields the driver keys by expression text get the row keys no other field
+  // claimed, in select order.
+  const claimed = new Set(keys.filter((key) => key !== undefined));
+  return (row) => {
     const unclaimed = Object.keys(row).filter((key) => !claimed.has(key));
     assertOrdered(unclaimed);
     let index = 0;
-    return plan.map((entry) => entry.key ?? unclaimed[index++]);
-  }
-
-  /** Values in select order, undecoded, as drizzle's result mappers expect. */
-  toArray(row: Record<string, unknown>): unknown[] {
-    // The relational query builder passes no `fields` alongside its
-    // `customResultMapper`; db0 rows are objects, so hand back the values in
-    // SELECT order (object key insertion order matches the generated SQL).
-    if (!this.#fields) {
-      return Object.values(row);
-    }
-    const plan = this.#getPlan();
-    return this.#resolveKeys(plan, row).map((key) =>
-      key === undefined ? undefined : row[key],
-    );
-  }
-
-  /** Decoded, nested object row — the drizzle equivalent is `mapResultRow()`. */
-  toObject(
-    row: Record<string, unknown>,
-    joinsNotNullableMap?: Record<string, boolean>,
-  ): Record<string, unknown> {
-    const plan = this.#getPlan();
-    const keys = this.#resolveKeys(plan, row);
-    const result: Record<string, unknown> = {};
-    // Table name per nested object as long as all of its columns are null.
-    const nullifyMap: Record<string, string | false> = {};
-
-    for (const [index, { path, decoder, tableName }] of plan.entries()) {
-      const key = keys[index];
-      const rawValue = key === undefined ? undefined : row[key];
-      const value =
-        rawValue == null ? null : decoder.mapFromDriverValue(rawValue);
-
-      let node = result;
-      for (const [i, chunk] of path.entries()) {
-        if (i < path.length - 1) {
-          node = (node[chunk] as Record<string, unknown>) ??= {};
-        } else {
-          node[chunk] = value;
-        }
-      }
-
-      if (joinsNotNullableMap && tableName !== undefined && path.length === 2) {
-        const objectName = path[0];
-        if (objectName in nullifyMap) {
-          if (nullifyMap[objectName] !== tableName) {
-            nullifyMap[objectName] = false;
-          }
-        } else {
-          nullifyMap[objectName] = value === null ? tableName : false;
-        }
-      }
-    }
-
-    if (joinsNotNullableMap) {
-      for (const [objectName, tableName] of Object.entries(nullifyMap)) {
-        if (tableName !== false && !joinsNotNullableMap[tableName]) {
-          result[objectName] = null;
-        }
-      }
-    }
-
-    return result;
-  }
+    return keys.map((key) => row[key ?? unclaimed[index++]]);
+  };
 }
 
 /** Integer-like keys are enumerated first by JS, losing the select order. */
@@ -213,12 +142,9 @@ function assertOrdered(keys: string[]): void {
 }
 
 /** Fails on selected fields that the driver returns under a single key. */
-function assertUnambiguous(
-  fields: SelectedFieldsOrdered<Column>,
-  plan: FieldPlan[],
-): void {
+function assertUnambiguous(fields: Fields, keys: (string | undefined)[]): void {
   const owners = new Map<string, string>();
-  for (const [index, { key }] of plan.entries()) {
+  for (const [index, key] of keys.entries()) {
     if (key === undefined) {
       continue;
     }
@@ -236,14 +162,20 @@ function assertUnambiguous(
   }
 }
 
-/** Applies drizzle's result mapper, or maps the rows onto the selected fields. */
-export function mapRows(
-  rows: Record<string, unknown>[],
-  mapper: RowMapper,
-  customResultMapper: ((rows: unknown[][]) => unknown) | undefined,
-  joinsNotNullableMap: Record<string, boolean> | undefined,
-): unknown {
-  return customResultMapper
-    ? customResultMapper(rows.map((row) => mapper.toArray(row)) as unknown[][])
-    : rows.map((row) => mapper.toObject(row, joinsNotNullableMap));
+/**
+ * Whether drizzle may compile its row mappers with `new Function()`, mirroring
+ * the check its own drivers run: opting in is useless in an environment that
+ * forbids it (a CSP without `unsafe-eval`, some edge runtimes), and drizzle
+ * falls back to the premade mappers when this is `false`.
+ */
+export function useJitMappers(enabled: boolean | undefined): boolean {
+  if (!enabled) {
+    return false;
+  }
+  try {
+    // eslint-disable-next-line no-new-func
+    return new Function("input", '"use strict"; return input;')(true) === true;
+  } catch {
+    return false;
+  }
 }

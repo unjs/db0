@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { eq, relations, sql } from "drizzle-orm";
+import { defineRelations, eq, sql } from "drizzle-orm";
 
 import { type Connector, Database, createDatabase } from "../../../src";
 import {
@@ -204,23 +204,24 @@ describe("integrations: drizzle: relational queries & raw SQL (PostgreSQL/PGLite
     authorId: dPg.integer("author_id"),
     title: dPg.text("title"),
   });
-  const authorsRelations = relations(authors, ({ many }) => ({
-    books: many(books),
+  const relations = defineRelations({ authors, books }, (r) => ({
+    authors: {
+      books: r.many.books(),
+    },
+    books: {
+      author: r.one.authors({
+        from: r.books.authorId,
+        to: r.authors.id,
+      }),
+    },
   }));
-  const booksRelations = relations(books, ({ one }) => ({
-    author: one(authors, {
-      fields: [books.authorId],
-      references: [authors.id],
-    }),
-  }));
-  const schema = { authors, books, authorsRelations, booksRelations };
 
-  let drizzleDb: DrizzlePgDatabase<typeof schema>;
+  let drizzleDb: DrizzlePgDatabase<typeof relations>;
   let db: Database;
 
   beforeAll(async () => {
     db = createDatabase(pgliteConnector({}));
-    drizzleDb = drizzlePg(db, { schema });
+    drizzleDb = drizzlePg(db, { relations });
     await db.sql`DROP TABLE IF EXISTS books`;
     await db.sql`DROP TABLE IF EXISTS authors`;
     await db.sql`CREATE TABLE authors (id SERIAL PRIMARY KEY, name TEXT)`;
@@ -232,7 +233,7 @@ describe("integrations: drizzle: relational queries & raw SQL (PostgreSQL/PGLite
 
   it("relational findMany with nested relation", async () => {
     const res = await drizzleDb.query.authors.findMany({
-      with: { books: { orderBy: books.id } },
+      with: { books: { orderBy: { id: "asc" } } },
     });
     expect(res).toHaveLength(1);
     expect(res[0].name).toBe("Ada");
@@ -241,7 +242,7 @@ describe("integrations: drizzle: relational queries & raw SQL (PostgreSQL/PGLite
 
   it("relational findFirst with nested relation", async () => {
     const res = await drizzleDb.query.books.findFirst({
-      orderBy: books.id,
+      orderBy: { id: "asc" },
       with: { author: true },
     });
     expect(res?.title).toBe("First");
@@ -314,13 +315,21 @@ describe("integrations: drizzle: joins, decoders & casing (PostgreSQL/PGLite)", 
   });
 
   it("throws instead of returning wrong values for ambiguous columns", async () => {
-    await expect(
-      (async () =>
-        drizzleDb
-          .select()
-          .from(jUsers)
-          .leftJoin(jPosts, eq(jPosts.userId, jUsers.id)))(),
-    ).rejects.toThrow(/`j_users.id` and `j_posts.id` both come back as `id`/);
+    // drizzle v1 wraps anything thrown while running a query in a
+    // `DrizzleQueryError`, so the db0 message is carried as its cause.
+    const error = await drizzleDb
+      .select()
+      .from(jUsers)
+      .leftJoin(jPosts, eq(jPosts.userId, jUsers.id))
+      .then(
+        () => undefined,
+        (error_) => error_ as Error,
+      );
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error!.cause as Error | undefined)?.message).toMatch(
+      /`j_users.id` and `j_posts.id` both come back as `id`/,
+    );
   });
 
   it("aliased columns disambiguate a join", async () => {
@@ -361,9 +370,9 @@ describe("integrations: drizzle: joins, decoders & casing (PostgreSQL/PGLite)", 
     expect(res).toEqual([{ total: 2 }]);
   });
 
-  it("resolves column names built by the casing config", async () => {
-    const casingDrizzle = drizzlePg(db, { casing: "snake_case" });
-    const profiles = dPg.pgTable("profiles", {
+  it("resolves column names built by the casing helper", async () => {
+    const casingDrizzle = drizzlePg(db);
+    const profiles = dPg.snakeCase.table("profiles", {
       id: dPg.integer().primaryKey(),
       fullName: dPg.text(),
     });

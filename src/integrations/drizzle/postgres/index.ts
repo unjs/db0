@@ -3,29 +3,30 @@ import { DB0PgSession, type DB0PgSessionOptions } from "./_session.ts";
 
 import { DefaultLogger } from "drizzle-orm/logger";
 
-import { PgDatabase, PgDialect } from "drizzle-orm/pg-core";
+import { PgAsyncDatabase, PgDialect } from "drizzle-orm/pg-core";
 
-import {
-  type DrizzleConfig as DrizzleBaseConfig,
-  type RelationalSchemaConfig,
-  type TablesRelationalConfig,
-  createTableRelationsHelpers,
-  extractTablesRelationalConfig,
-} from "drizzle-orm";
+import type { DrizzlePgConfig } from "drizzle-orm/pg-core";
+
+import type { AnyRelations, EmptyRelations } from "drizzle-orm";
+
+import { trackSelectedFields, useJitMappers } from "../_utils.ts";
 
 import type { DB0PgQueryResultHKT } from "./_session.ts";
 
 export type DrizzlePgDatabase<
-  TSchema extends Record<string, unknown> = Record<string, never>,
-> = PgDatabase<DB0PgQueryResultHKT, TSchema>;
+  TRelations extends AnyRelations = EmptyRelations,
+> = PgAsyncDatabase<DB0PgQueryResultHKT, TRelations>;
 
-export function drizzle<
-  TSchema extends Record<string, unknown> = Record<string, never>,
->(
+export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   db: Database,
-  config?: DrizzleBaseConfig<TSchema>,
-): DrizzlePgDatabase<TSchema> {
-  const dialect = new PgDialect({ casing: config?.casing });
+  config?: DrizzlePgConfig<TRelations>,
+): DrizzlePgDatabase<TRelations> {
+  const dialect = trackSelectedFields(
+    new PgDialect({
+      useJitMappers: useJitMappers(config?.jit),
+      codecs: config?.codecs,
+    }),
+  );
 
   let logger: DB0PgSessionOptions["logger"];
   if (config?.logger === true) {
@@ -34,26 +35,12 @@ export function drizzle<
     logger = config.logger;
   }
 
-  let schema: RelationalSchemaConfig<TablesRelationalConfig> | undefined;
-  if (config?.schema) {
-    const tablesConfig = extractTablesRelationalConfig(
-      config.schema,
-      createTableRelationsHelpers,
-    );
-    schema = {
-      fullSchema: config.schema,
-      schema: tablesConfig.tables,
-      tableNamesMap: tablesConfig.tableNamesMap,
-    };
-  }
+  const relations = (config?.relations ?? {}) as TRelations;
 
-  const session = new DB0PgSession(db, dialect, schema, {
+  const session = new DB0PgSession(db, dialect, relations, {
     logger,
+    cache: config?.cache,
   });
 
-  return new PgDatabase(
-    dialect,
-    session,
-    schema as any,
-  ) as DrizzlePgDatabase<TSchema>;
+  return new PgAsyncDatabase(dialect, session, relations);
 }

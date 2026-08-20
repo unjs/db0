@@ -3,41 +3,30 @@ import { DB0MySqlSession, type DB0MySqlSessionOptions } from "./_session.ts";
 
 import { DefaultLogger } from "drizzle-orm/logger";
 
-import { MySqlDatabase, MySqlDialect } from "drizzle-orm/mysql-core";
+import { MySqlAsyncDatabase, MySqlDialect } from "drizzle-orm/mysql-core";
 
-import type { Mode } from "drizzle-orm/mysql-core";
+import type { DrizzleMySqlConfig } from "drizzle-orm/mysql-core";
 
-import {
-  type DrizzleConfig as DrizzleBaseConfig,
-  type RelationalSchemaConfig,
-  type TablesRelationalConfig,
-  createTableRelationsHelpers,
-  extractTablesRelationalConfig,
-} from "drizzle-orm";
+import type { AnyRelations, EmptyRelations } from "drizzle-orm";
 
-import type {
-  DB0MySqlQueryResultHKT,
-  DB0MySqlPreparedQueryHKT,
-} from "./_session.ts";
+import { trackSelectedFields, useJitMappers } from "../_utils.ts";
+
+import type { DB0MySqlQueryResultHKT } from "./_session.ts";
 
 export type DrizzleMySqlDatabase<
-  TSchema extends Record<string, unknown> = Record<string, never>,
-> = MySqlDatabase<DB0MySqlQueryResultHKT, DB0MySqlPreparedQueryHKT, TSchema>;
+  TRelations extends AnyRelations = EmptyRelations,
+> = MySqlAsyncDatabase<DB0MySqlQueryResultHKT, TRelations>;
 
-export interface DrizzleMySqlConfig<
-  TSchema extends Record<string, unknown> = Record<string, never>,
-> extends DrizzleBaseConfig<TSchema> {
-  mode?: Mode;
-}
-
-export function drizzle<
-  TSchema extends Record<string, unknown> = Record<string, never>,
->(
+export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   db: Database,
-  config?: DrizzleMySqlConfig<TSchema>,
-): DrizzleMySqlDatabase<TSchema> {
-  const dialect = new MySqlDialect({ casing: config?.casing });
-  const mode: Mode = config?.mode ?? "default";
+  config?: DrizzleMySqlConfig<TRelations>,
+): DrizzleMySqlDatabase<TRelations> {
+  const dialect = trackSelectedFields(
+    new MySqlDialect({
+      useJitMappers: useJitMappers(config?.jit),
+      codecs: config?.codecs,
+    }),
+  );
 
   let logger: DB0MySqlSessionOptions["logger"];
   if (config?.logger === true) {
@@ -46,27 +35,12 @@ export function drizzle<
     logger = config.logger;
   }
 
-  let schema: RelationalSchemaConfig<TablesRelationalConfig> | undefined;
-  if (config?.schema) {
-    const tablesConfig = extractTablesRelationalConfig(
-      config.schema,
-      createTableRelationsHelpers,
-    );
-    schema = {
-      fullSchema: config.schema,
-      schema: tablesConfig.tables,
-      tableNamesMap: tablesConfig.tableNamesMap,
-    };
-  }
+  const relations = (config?.relations ?? {}) as TRelations;
 
-  const session = new DB0MySqlSession(db, dialect, schema, mode, {
+  const session = new DB0MySqlSession(db, dialect, relations, {
     logger,
+    cache: config?.cache,
   });
 
-  return new MySqlDatabase(
-    dialect,
-    session,
-    schema as any,
-    mode,
-  ) as DrizzleMySqlDatabase<TSchema>;
+  return new MySqlAsyncDatabase(dialect, session, relations);
 }

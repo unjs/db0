@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { eq, relations, sql } from "drizzle-orm";
+import { defineRelations, eq, sql } from "drizzle-orm";
 
 import { type Connector, Database, createDatabase } from "../../../src";
 import {
@@ -117,21 +117,21 @@ for (const { name, connector } of connectors) {
   });
 }
 
-describe("integrations: drizzle: with schema parameter", () => {
+describe("integrations: drizzle: with relations parameter", () => {
   const usersSchema = dSqlite.sqliteTable("users_schema", {
     id: dSqlite.numeric("id"),
     name: dSqlite.text("name"),
     email: dSqlite.text("email"),
   });
 
-  const schema = { users: usersSchema };
+  const relations = defineRelations({ users: usersSchema });
 
-  let drizzleDb: DrizzleDatabase<typeof schema>;
+  let drizzleDb: DrizzleDatabase<typeof relations>;
   let db: Database;
 
   beforeAll(async () => {
     db = createDatabase(betterSqlite3({ name: ":memory:" }));
-    drizzleDb = drizzle(db, { schema });
+    drizzleDb = drizzle(db, { relations });
     await db.sql`DROP TABLE IF EXISTS users_schema`;
     await db.sql`create table if not exists users_schema (
       id integer primary key autoincrement,
@@ -140,7 +140,7 @@ describe("integrations: drizzle: with schema parameter", () => {
     )`;
   });
 
-  it("insert with schema", async () => {
+  it("insert with relations", async () => {
     const res = await drizzleDb
       .insert(usersSchema)
       .values({
@@ -154,7 +154,7 @@ describe("integrations: drizzle: with schema parameter", () => {
     expect(res[0].email).toBe("jane@example.com");
   });
 
-  it("select with schema", async () => {
+  it("select with relations", async () => {
     const res = await drizzleDb.select().from(usersSchema).all();
 
     expect(res.length).toBe(1);
@@ -274,23 +274,24 @@ describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
     authorId: dSqlite.integer("author_id"),
     title: dSqlite.text("title"),
   });
-  const authorsRelations = relations(authors, ({ many }) => ({
-    books: many(books),
+  const relations = defineRelations({ authors, books }, (r) => ({
+    authors: {
+      books: r.many.books(),
+    },
+    books: {
+      author: r.one.authors({
+        from: r.books.authorId,
+        to: r.authors.id,
+      }),
+    },
   }));
-  const booksRelations = relations(books, ({ one }) => ({
-    author: one(authors, {
-      fields: [books.authorId],
-      references: [authors.id],
-    }),
-  }));
-  const schema = { authors, books, authorsRelations, booksRelations };
 
-  let drizzleDb: DrizzleDatabase<typeof schema>;
+  let drizzleDb: DrizzleDatabase<typeof relations>;
   let db: Database;
 
   beforeAll(async () => {
     db = createDatabase(betterSqlite3({ name: ":memory:" }));
-    drizzleDb = drizzle(db, { schema });
+    drizzleDb = drizzle(db, { relations });
     await db.sql`DROP TABLE IF EXISTS books`;
     await db.sql`DROP TABLE IF EXISTS authors`;
     await db.sql`CREATE TABLE authors (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`;
@@ -302,7 +303,7 @@ describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
 
   it("relational findMany with nested relation", async () => {
     const res = await drizzleDb.query.authors.findMany({
-      with: { books: { orderBy: books.id } },
+      with: { books: { orderBy: { id: "asc" } } },
     });
     expect(res).toHaveLength(1);
     expect(res[0].name).toBe("Ada");
@@ -311,7 +312,7 @@ describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
 
   it("relational findFirst with nested relation", async () => {
     const res = await drizzleDb.query.books.findFirst({
-      orderBy: books.id,
+      orderBy: { id: "asc" },
       with: { author: true },
     });
     expect(res?.title).toBe("First");
@@ -397,13 +398,22 @@ describe("integrations: drizzle: joins, decoders & casing (SQLite)", () => {
   });
 
   it("throws instead of returning wrong values for ambiguous columns", async () => {
-    await expect(
-      drizzleDb
-        .select()
-        .from(users)
-        .leftJoin(posts, eq(posts.userId, users.id))
-        .all(),
-    ).rejects.toThrow(/`j_users.id` and `j_posts.id` both come back as `id`/);
+    // drizzle v1 wraps anything thrown while running a query in a
+    // `DrizzleQueryError`, so the db0 message is carried as its cause.
+    const error = await drizzleDb
+      .select()
+      .from(users)
+      .leftJoin(posts, eq(posts.userId, users.id))
+      .all()
+      .then(
+        () => undefined,
+        (error_) => error_ as Error,
+      );
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error!.cause as Error | undefined)?.message).toMatch(
+      /`j_users.id` and `j_posts.id` both come back as `id`/,
+    );
   });
 
   it("aliased columns disambiguate a join", async () => {
@@ -446,10 +456,10 @@ describe("integrations: drizzle: joins, decoders & casing (SQLite)", () => {
     expect(res).toEqual([{ total: 2 }]);
   });
 
-  it("resolves column names built by the casing config", async () => {
+  it("resolves column names built by the casing helper", async () => {
     const casingDb = createDatabase(betterSqlite3({ name: ":memory:" }));
-    const casingDrizzle = drizzle(casingDb, { casing: "snake_case" });
-    const profiles = dSqlite.sqliteTable("profiles", {
+    const casingDrizzle = drizzle(casingDb);
+    const profiles = dSqlite.snakeCase.table("profiles", {
       id: dSqlite.integer().primaryKey(),
       fullName: dSqlite.text(),
     });

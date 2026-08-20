@@ -35,13 +35,13 @@ Each connector lazily initializes its underlying client (via `lazyInstance()`) a
 
 ## Build & Dev
 
-| Command | Purpose |
-|---------|---------|
-| `pnpm build` | Generate connector registry + bundled build via `obuild` (index, every connector, and every integration are separate bundle entries with shared chunks; `build.config.ts` also validates `package.json` exports stay in sync) |
-| `pnpm dev` | Vitest watch mode |
-| `pnpm test` | Lint + typecheck (`tsgo`) + vitest with coverage + bun tests |
-| `pnpm vitest run <path>` | Run a specific test |
-| `pnpm lint` / `pnpm fmt` | ESLint + Prettier |
+| Command                  | Purpose                                                                                                                                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm build`             | Generate connector registry + bundled build via `obuild` (index, every connector, and every integration are separate bundle entries with shared chunks; `build.config.ts` also validates `package.json` exports stay in sync) |
+| `pnpm dev`               | Vitest watch mode                                                                                                                                                                                                             |
+| `pnpm test`              | Lint + typecheck (`tsgo`) + vitest with coverage + bun tests                                                                                                                                                                  |
+| `pnpm vitest run <path>` | Run a specific test                                                                                                                                                                                                           |
+| `pnpm lint` / `pnpm fmt` | ESLint + Prettier                                                                                                                                                                                                             |
 
 Package manager: **pnpm**. Build tool: **obuild**. Typecheck: **tsgo**.
 
@@ -59,3 +59,31 @@ Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/conne
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
 - **`BoundableStatement`** base class — shared bind/execute logic in `_internal/statement.ts`
 - **AsyncDisposable** — `await using db = createDatabase(...)` is supported
+
+## Drizzle integration
+
+Targets **drizzle-orm v1** (currently the `rc` dist-tag). Each dialect provides a
+session over `SQLiteAsyncSession` / `PgAsyncSession` / `MySqlAsyncSession`; the
+prepared-query classes are concrete in v1, so the sessions only supply executors
+built on `db.prepare(...)` and hand back drizzle's own `SQLiteAsyncPreparedQuery`
+/ `PgAsyncPreparedQuery` / `MySqlAsyncPreparedQuery`.
+
+The one thing db0 has to solve is row shape: drizzle asks its drivers for
+positional arrays (`mode: "arrays"`) while db0 connectors return objects keyed by
+column name. Since v1 no longer passes the selected fields to `prepareQuery()`,
+`_utils.ts` wraps `dialect.mapperGenerators.rows` (`trackSelectedFields()`) to
+record, per generated mapper, how to turn an object row into that query's
+select-order array; a session looks it up with `getRowConverter(mapper)` and
+falls back to `Object.values()` for mappers built without a field list
+(`$count()`, `values()`, the relational query builder). Decoding, nesting and
+left-join nulling are drizzle's job in v1 — db0 only places values in slots.
+
+Same-named columns from different tables collapse into one object key, so those
+queries are rejected with a db0 error rather than silently returning a wrong
+value. Because a session converts inside its executor, drizzle wraps that error
+in a `DrizzleQueryError` and the db0 message arrives as its `cause`.
+
+Since v1, relations are passed as `relations` (from `defineRelations()`) rather
+than `schema`, and casing comes from the `snakeCase.table()` / `camelCase.table()`
+helpers instead of a `casing` option, so `column.name` is always the final SQL
+name.

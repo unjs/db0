@@ -1,32 +1,31 @@
 import type { Database } from "db0";
-import { DB0SQLiteSession, type DB0SQLiteSessionOptions } from "./_session.ts";
+import {
+  DB0SQLiteSession,
+  type DB0SQLiteRunResult,
+  type DB0SQLiteSessionOptions,
+} from "./_session.ts";
 
 import { DefaultLogger } from "drizzle-orm/logger";
 
-import {
-  BaseSQLiteDatabase,
-  SQLiteAsyncDialect,
-} from "drizzle-orm/sqlite-core";
+import { SQLiteAsyncDatabase, SQLiteDialect } from "drizzle-orm/sqlite-core";
 
-import {
-  type DrizzleConfig as DrizzleBaseConfig,
-  type RelationalSchemaConfig,
-  type TablesRelationalConfig,
-  createTableRelationsHelpers,
-  extractTablesRelationalConfig,
-} from "drizzle-orm";
+import type { DrizzleSQLiteConfig } from "drizzle-orm/sqlite-core";
+
+import type { AnyRelations, EmptyRelations } from "drizzle-orm";
+
+import { trackSelectedFields, useJitMappers } from "../_utils.ts";
 
 export type DrizzleSQLiteDatabase<
-  TSchema extends Record<string, unknown> = Record<string, never>,
-> = BaseSQLiteDatabase<"async", any, TSchema>;
+  TRelations extends AnyRelations = EmptyRelations,
+> = SQLiteAsyncDatabase<"async", DB0SQLiteRunResult, TRelations>;
 
-export function drizzle<
-  TSchema extends Record<string, unknown> = Record<string, never>,
->(
+export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   db: Database,
-  config?: DrizzleBaseConfig<TSchema>,
-): DrizzleSQLiteDatabase<TSchema> {
-  const dialect = new SQLiteAsyncDialect({ casing: config?.casing });
+  config?: DrizzleSQLiteConfig<TRelations>,
+): DrizzleSQLiteDatabase<TRelations> {
+  const dialect = trackSelectedFields(
+    new SQLiteDialect({ useJitMappers: useJitMappers(config?.jit) }),
+  );
 
   let logger: DB0SQLiteSessionOptions["logger"];
   if (config?.logger === true) {
@@ -35,27 +34,12 @@ export function drizzle<
     logger = config.logger;
   }
 
-  let schema: RelationalSchemaConfig<TablesRelationalConfig> | undefined;
-  if (config?.schema) {
-    const tablesConfig = extractTablesRelationalConfig(
-      config.schema,
-      createTableRelationsHelpers,
-    );
-    schema = {
-      fullSchema: config.schema,
-      schema: tablesConfig.tables,
-      tableNamesMap: tablesConfig.tableNamesMap,
-    };
-  }
+  const relations = (config?.relations ?? {}) as TRelations;
 
-  const session = new DB0SQLiteSession(db, dialect, schema, {
+  const session = new DB0SQLiteSession(db, dialect, relations, {
     logger,
+    cache: config?.cache,
   });
 
-  return new BaseSQLiteDatabase(
-    "async",
-    dialect,
-    session,
-    schema,
-  ) as DrizzleSQLiteDatabase<TSchema>;
+  return new SQLiteAsyncDatabase("async", dialect, session, relations);
 }

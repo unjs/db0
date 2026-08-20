@@ -12,13 +12,22 @@ icon: simple-icons:drizzle
 
 Install `drizzle-orm` dependency:
 
-:pm-install{name="drizzle-orm"}
+:pm-install{name="drizzle-orm@rc"}
+
+::note
+db0 targets Drizzle **v1**, which is currently published under the `rc` tag.
+See [Drizzle's v0 to v1 changes](https://orm.drizzle.team/docs/v0-v1-changes) for
+the breaking changes — most notably relations are now declared with
+`defineRelations()` and passed as `relations`, and per-column casing moved from
+the `casing` option to the `snakeCase.table()` / `camelCase.table()` helpers.
+::
 
 ## Example
 
 Define your database schema using Drizzle's schema system:
 
 ```ts [schema.ts]
+import { defineRelations } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -30,6 +39,9 @@ export const users = sqliteTable("users", {
   ),
 });
 
+// Relations power the relational query builder (`db.query.*`)
+export const relations = defineRelations({ users });
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 ```
@@ -40,14 +52,20 @@ Initialize your database with Drizzle integration:
 import { createDatabase } from "db0";
 import sqlite from "db0/connectors/better-sqlite3";
 import { drizzle } from "db0/integrations/drizzle";
-import * as schema from "./schema";
+import { relations } from "./schema";
 
 // Initialize DB instance with SQLite connector
 const db0 = createDatabase(sqlite({ name: "database.sqlite" }));
 
-// Create Drizzle instance with schema
-export const db = drizzle(db0, { schema });
+// Create Drizzle instance with relations
+export const db = drizzle(db0, { relations });
 ```
+
+::note
+Passing `relations` is optional — it is only needed for the relational query
+builder (`db.query.users.findMany(...)`). `drizzle(db0)` is enough for
+`select()`, `insert()`, `update()` and `delete()`.
+::
 
 Use Drizzle's migration system to create tables:
 
@@ -84,6 +102,27 @@ const johnDoe = await db
   .select()
   .from(users)
   .where(eq(users.email, "john@example.com"));
+
+// Relational queries, using the `relations` passed above
+const usersWithRelations = await db.query.users.findMany();
+```
+
+## Caveats
+
+db0 connectors return rows as objects keyed by column name, so two selected
+columns that come back under the same key (for example `id` from both sides of a
+join) cannot be told apart. db0 raises an error instead of returning a wrong
+value; select such columns with unique aliases, or use the relational query
+builder, which always emits unique aliases:
+
+```ts
+const rows = await db
+  .select({
+    userId: sql<number>`${users.id}`.as("user_id"),
+    postId: sql<number>`${posts.id}`.as("post_id"),
+  })
+  .from(users)
+  .leftJoin(posts, eq(posts.userId, users.id));
 ```
 
 ## Configuration
