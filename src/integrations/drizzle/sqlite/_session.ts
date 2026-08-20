@@ -8,6 +8,8 @@ import {
   sql,
 } from "drizzle-orm";
 
+import { RowMapper, getCasing, mapRows } from "../_utils.ts";
+
 import {
   SQLiteAsyncDialect,
   SQLiteSession,
@@ -21,6 +23,8 @@ import type {
   SQLiteExecuteMethod,
   SQLiteTransactionConfig,
 } from "drizzle-orm/sqlite-core";
+
+import type { CasingCache } from "drizzle-orm/casing";
 
 import type { Database, Statement } from "db0";
 
@@ -50,7 +54,7 @@ export class DB0SQLiteSession<
     query: Query,
     fields: SelectedFieldsOrdered | undefined,
     executeMethod: SQLiteExecuteMethod,
-    _isResponseInArrayMode: boolean,
+    isResponseInArrayMode: boolean,
     customResultMapper?: (rows: unknown[][]) => unknown,
   ): DB0SQLitePreparedQuery {
     const stmt = this.db.prepare(query.sql);
@@ -60,7 +64,9 @@ export class DB0SQLiteSession<
       this.logger,
       fields,
       executeMethod,
+      isResponseInArrayMode,
       customResultMapper,
+      getCasing(this.dialect),
     );
   }
 
@@ -130,15 +136,27 @@ export class DB0SQLitePreparedQuery<
   values: T["values"];
   execute: T["execute"];
 }> {
+  /** @internal assigned by drizzle's select builder after construction */
+  declare joinsNotNullableMap: Record<string, boolean> | undefined;
+
+  private fields: SelectedFieldsOrdered | undefined;
+  private isResponseInArrayMode_: boolean;
+  private mapper: RowMapper;
+
   constructor(
     private stmt: Statement,
     query: Query,
     private logger: Logger,
-    _fields: SelectedFieldsOrdered | undefined,
+    fields: SelectedFieldsOrdered | undefined,
     executeMethod: SQLiteExecuteMethod,
+    isResponseInArrayMode: boolean,
     /** @internal */ public customResultMapper?: (rows: unknown[][]) => unknown,
+    casing?: CasingCache,
   ) {
     super("async", executeMethod, query);
+    this.fields = fields;
+    this.isResponseInArrayMode_ = isResponseInArrayMode;
+    this.mapper = new RowMapper(fields, casing);
   }
 
   async run(
@@ -150,32 +168,56 @@ export class DB0SQLitePreparedQuery<
   }
 
   async all(placeholderValues?: Record<string, unknown>): Promise<T["all"]> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
+    const placeholders = placeholderValues ?? {};
+    const params: any[] = fillPlaceholders(this.query.params, placeholders);
     this.logger.logQuery(this.query.sql, params);
-    return this.stmt.all(...(params as any[]));
+
+    if (!this.fields && !this.customResultMapper) {
+      return this.stmt.all(...params) as T["all"];
+    }
+
+    const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
+
+    return mapRows(
+      rows,
+      this.mapper,
+      this.customResultMapper,
+      this.joinsNotNullableMap,
+    ) as T["all"];
   }
 
   async get(placeholderValues?: Record<string, unknown>): Promise<T["get"]> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
+    const placeholders = placeholderValues ?? {};
+    const params: any[] = fillPlaceholders(this.query.params, placeholders);
     this.logger.logQuery(this.query.sql, params);
-    return this.stmt.get(...(params as any[]));
+
+    if (!this.fields && !this.customResultMapper) {
+      return this.stmt.get(...params) as T["get"];
+    }
+
+    const row = (await this.stmt.get(...params)) as Record<string, unknown>;
+    if (!row) return undefined as T["get"];
+
+    if (this.customResultMapper) {
+      return this.customResultMapper([this.mapper.toArray(row)]) as T["get"];
+    }
+
+    return this.mapper.toObject(row, this.joinsNotNullableMap) as T["get"];
   }
 
   async values<T extends any[] = unknown[]>(
     placeholderValues?: Record<string, unknown>,
   ): Promise<T[]> {
-    const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
+    const placeholders = placeholderValues ?? {};
+    const params: any[] = fillPlaceholders(this.query.params, placeholders);
     this.logger.logQuery(this.query.sql, params);
-    const rows = await this.stmt.all(...(params as any[]));
-    // db0 Statement doesn't have a values() method, so convert object rows to arrays
-    return (rows as Record<string, unknown>[]).map(
-      (row) => Object.values(row) as T,
-    );
+
+    const rows = (await this.stmt.all(...params)) as Record<string, unknown>[];
+    return rows.map((row) => this.mapper.toArray(row) as T);
   }
 
   /** @internal */
   isResponseInArrayMode(): boolean {
-    // db0 always returns object rows, never array rows
-    return false;
+    return this.isResponseInArrayMode_;
   }
 }
