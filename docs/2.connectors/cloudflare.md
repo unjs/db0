@@ -74,6 +74,8 @@ const db = createDatabase(
 
 Assigned binding name for your Hyperdrive instance.
 
+:read-more{title="Query parameters" to="/connectors/postgresql#query-parameters"}
+
 #### Additional Options
 
 You can also pass PostgreSQL client configuration options (except for `user`, `database`, `password`, `port`, `host`, and `connectionString` which are managed by Hyperdrive):

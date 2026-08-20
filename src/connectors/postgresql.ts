@@ -1,10 +1,32 @@
-import pg from "pg";
+import type pg from "pg";
 
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
+import { normalizeParams } from "./_internal/postgresql.ts";
+import {
+  importLib,
+  interopDefault,
+  lazyInstance,
+  type ConnectorDependencies,
+  type LibImport,
+} from "./_internal/utils.ts";
 
-export type ConnectorOptions = { url: string } | pg.ClientConfig;
+/**
+ * Optionally provide the [`pg`](https://www.npmjs.com/package/pg) library
+ * to avoid dynamically importing it.
+ */
+type WithLib = {
+  lib?: LibImport<typeof import("pg")>;
+};
+
+export type ConnectorOptions = ({ url: string } | pg.ClientConfig) & WithLib;
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "pg", version: "^8" },
+};
+
+const CONNECTOR_NAME = "postgresql";
 
 type InternalQuery = (
   sql: string,
@@ -14,18 +36,16 @@ type InternalQuery = (
 export default function postgresqlConnector(
   opts: ConnectorOptions,
 ): Connector<pg.Client> {
-  let _client: undefined | pg.Client | Promise<pg.Client>;
-  function getClient() {
-    if (_client) {
-      return _client;
-    }
-    const client = new pg.Client("url" in opts ? opts.url : opts);
-    _client = client.connect().then(() => {
-      _client = client;
-      return _client;
-    });
-    return _client;
-  }
+  const { lib, ...config } = opts;
+
+  const getClient = lazyInstance(async () => {
+    const pg = interopDefault(
+      await importLib(CONNECTOR_NAME, "pg", lib, () => import("pg")),
+    );
+    const client = new pg.Client("url" in config ? config.url : config);
+    await client.connect();
+    return client;
+  });
 
   const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
@@ -39,16 +59,11 @@ export default function postgresqlConnector(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      await (await _client)?.end?.();
-      _client = undefined;
+      const client = await getClient.current;
+      getClient.reset();
+      await client?.end?.();
     },
   };
-}
-
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
-function normalizeParams(sql: string) {
-  let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
 }
 
 class StatementWrapper extends BoundableStatement<void> {

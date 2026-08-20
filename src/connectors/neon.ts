@@ -1,57 +1,62 @@
-import type pg from "pg";
+import type * as pg from "@neondatabase/serverless";
 
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
-import { getHyperdrive } from "./_internal/cloudflare.ts";
 import { normalizeParams } from "./_internal/postgresql.ts";
 import {
   importLib,
-  interopDefault,
   lazyInstance,
   type ConnectorDependencies,
   type LibImport,
 } from "./_internal/utils.ts";
 
-type OmitPgConfig = Omit<
-  pg.ClientConfig,
-  "user" | "database" | "password" | "port" | "host" | "connectionString"
->;
-export type ConnectorOptions = {
-  bindingName: string;
-
-  /**
-   * Optionally provide the [`pg`](https://www.npmjs.com/package/pg) library
-   * to avoid dynamically importing it.
-   */
-  lib?: LibImport<typeof import("pg")>;
-} & OmitPgConfig;
-
-export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
-  lib: { name: "pg", version: "^8" },
+/**
+ * Optionally provide the [`@neondatabase/serverless`](https://www.npmjs.com/package/@neondatabase/serverless)
+ * library to avoid dynamically importing it.
+ */
+type WithLib = {
+  lib?: LibImport<typeof import("@neondatabase/serverless")>;
 };
 
-const CONNECTOR_NAME = "cloudflare-hyperdrive-postgresql";
+export type ConnectorOptions = ({ url?: string } | pg.ClientConfig) & WithLib;
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "@neondatabase/serverless", version: "^1" },
+};
+
+const CONNECTOR_NAME = "neon";
 
 type InternalQuery = (
   sql: string,
   params?: Primitive[],
 ) => Promise<pg.QueryResult>;
 
-export default function cloudflareHyperdrivePostgresqlConnector(
-  opts: ConnectorOptions,
+export default function neonConnector(
+  opts?: ConnectorOptions,
 ): Connector<pg.Client> {
-  const { lib, ...config } = opts;
+  const { lib, url, ...config } = (opts || {}) as { url?: string } & WithLib &
+    pg.ClientConfig;
 
   const getClient = lazyInstance(async () => {
-    const pg = interopDefault(
-      await importLib(CONNECTOR_NAME, "pg", lib, () => import("pg")),
+    if (url) {
+      config.connectionString = url;
+    }
+
+    // `pg.ClientConfig` can identify a database without a connection string.
+    if (!config.connectionString && !config.host) {
+      throw new Error(
+        `[db0] [${CONNECTOR_NAME}] Missing connection string. Pass \`url\` or a \`host\` to the connector.`,
+      );
+    }
+
+    const pg = await importLib(
+      CONNECTOR_NAME,
+      "@neondatabase/serverless",
+      lib,
+      () => import("@neondatabase/serverless"),
     );
-    const hyperdrive = await getHyperdrive(opts.bindingName);
-    const client = new pg.Client({
-      ...config,
-      connectionString: hyperdrive.connectionString,
-    });
+    const client = new pg.Client(config);
     await client.connect();
     return client;
   });
@@ -62,13 +67,13 @@ export default function cloudflareHyperdrivePostgresqlConnector(
   };
 
   return {
-    name: "cloudflare-hyperdrive-postgresql",
+    name: CONNECTOR_NAME,
     dialect: "postgresql",
     getInstance: () => getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      const client = await getClient.current;
+      const client = await getClient.current?.catch(() => undefined);
       getClient.reset();
       await client?.end?.();
     },
