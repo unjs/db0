@@ -4,6 +4,7 @@ import {
   Database,
   DatabaseCapabilities,
   createDatabase,
+  getCapabilities,
   type SQLDialect,
 } from "../../src";
 
@@ -40,19 +41,12 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
   });
 
   it("capabilities match", () => {
-    expect(db.capabilities).toBeDefined();
-    expect(typeof db.capabilities.supportsJSON).toBe("boolean");
-    expect(typeof db.capabilities.supportsBooleans).toBe("boolean");
-    expect(typeof db.capabilities.supportsArrays).toBe("boolean");
-    expect(typeof db.capabilities.supportsDates).toBe("boolean");
-    expect(typeof db.capabilities.supportsUUIDs).toBe("boolean");
-    expect(typeof db.capabilities.supportsTransactions).toBe("boolean");
-    expect(typeof db.capabilities.supportsBatch).toBe("boolean");
-    if (opts.capabilities) {
-      for (const [key, value] of Object.entries(opts.capabilities)) {
-        expect(db.capabilities[key as keyof DatabaseCapabilities]).toBe(value);
-      }
-    }
+    expect(db.capabilities).toEqual(
+      getCapabilities(opts.dialect, opts.capabilities),
+    );
+    // Capabilities are a stable, immutable snapshot.
+    expect(db.capabilities).toBe(db.capabilities);
+    expect(Object.isFrozen(db.capabilities)).toBe(true);
   });
 
   it("drop and create table", async () => {

@@ -21,6 +21,7 @@ describe("connectors: cloudflare-d1", () => {
 
   testConnector({
     dialect: "sqlite",
+    capabilities: { supportsTransactions: false },
     connector: cloudflareD1({
       bindingName: "test",
     }),

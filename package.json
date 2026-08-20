@@ -22,10 +22,6 @@
     "./connectors/libsql/*": {
       "types": "./dist/connectors/libsql/*.d.mts",
       "default": "./dist/connectors/libsql/*.mjs"
-    },
-    "./capabilities": {
-      "types": "./dist/capabilities.d.mts",
-      "default": "./dist/capabilities.mjs"
     }
   },
   "types": "./dist/index.d.mts",
@@ -38,8 +34,8 @@
     "gen-capabilities": "jiti scripts/gen-capabilities-docs.ts",
     "db0": "pnpm jiti src/cli",
     "dev": "vitest",
-    "lint": "prettier -c src test",
-    "fmt": "prettier -w src test",
+    "lint": "prettier -c src test scripts",
+    "fmt": "prettier -w src test scripts",
     "prepack": "pnpm build",
     "release": "pnpm test && changelogen --release --push && pnpm publish",
     "test": "pnpm lint && pnpm test:types && vitest run --coverage && pnpm test:bun",

@@ -14,7 +14,6 @@ export interface DatabaseCapabilities {
   readonly supportsDates: boolean;
   readonly supportsUUIDs: boolean;
   readonly supportsTransactions: boolean;
-  readonly supportsBatch: boolean;
 }
 
 export type Statement = {

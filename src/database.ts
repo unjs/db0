@@ -21,6 +21,11 @@ const DISPOSED_ERR =
 export function createDatabase<TConnector extends Connector = Connector>(
   connector: TConnector,
 ): Database<TConnector> {
+  const capabilities = getCapabilities(
+    connector.dialect,
+    connector.capabilityOverrides,
+  );
+
   let _disposed = false;
   const checkDisposed = () => {
     if (_disposed) {
@@ -40,7 +45,7 @@ export function createDatabase<TConnector extends Connector = Connector>(
     },
 
     get capabilities() {
-      return getCapabilities(connector.dialect, connector.capabilityOverrides);
+      return capabilities;
     },
 
     get disposed() {
