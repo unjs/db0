@@ -9,7 +9,7 @@ import {
 } from "vitest";
 import { tracingChannel } from "node:diagnostics_channel";
 import { createDatabase } from "../src/database.ts";
-import { withTracing } from "../src/tracing.ts";
+import { withTracing, QUERY_CHANNEL } from "../src/tracing.ts";
 import type { Database } from "../src/types.ts";
 import type { TracedOperation, TraceContext } from "../src/tracing.ts";
 import connector from "../src/connectors/better-sqlite3.ts";
@@ -189,7 +189,7 @@ describe("tracing", () => {
       missing.mockRestore();
     });
 
-    it("should keep prototype methods of class based databases", () => {
+    it("should delegate to class based databases instead of copying descriptors", () => {
       // Private fields make sure the wrapper calls through the original
       // instance instead of running its methods against a foreign receiver.
       class ClassDatabase {
@@ -229,6 +229,45 @@ describe("tracing", () => {
       expect(typeof traced[Symbol.asyncDispose]).toBe("function");
       expect(typeof traced.getInstance).toBe("function");
       expect(traced.dialect).toBe("sqlite");
+    });
+
+    it("should delegate dispose and asyncDispose to their own implementations", async () => {
+      const disposeCalls: string[] = [];
+      const plainDb = createDatabase(connector({ name: ":memory:" }));
+      // `[Symbol.asyncDispose]` is deliberately not an alias of `dispose` here,
+      // so delegating to the wrong member would be visible.
+      const stub = {
+        ...plainDb,
+        dispose: () => {
+          disposeCalls.push("dispose");
+          return Promise.resolve();
+        },
+        [Symbol.asyncDispose]: () => {
+          disposeCalls.push("asyncDispose");
+          return Promise.resolve();
+        },
+      } as Database;
+
+      const traced = withTracing(stub);
+      await traced.dispose();
+      await traced[Symbol.asyncDispose]();
+
+      expect(disposeCalls).toEqual(["dispose", "asyncDispose"]);
+      await plainDb.dispose();
+    });
+
+    it("should expose the channel name it traces on", async () => {
+      expect(QUERY_CHANNEL).toBe("db0.query");
+
+      const channel = tracingChannel<TraceContext>(QUERY_CHANNEL);
+      const start = vi.fn();
+      channel.subscribe({ start } as any);
+      onTestFinished(() => channel.unsubscribe({ start } as any));
+
+      await db.exec(`CREATE TABLE from_constant (id INTEGER PRIMARY KEY)`);
+
+      expect(start).toHaveBeenCalledTimes(1);
+      expect(start.mock.calls[0][0].query).toContain("from_constant");
     });
 
     it("should wrap a frozen database", async () => {

@@ -1,5 +1,5 @@
 import { createDatabase } from "../../src";
-import { withTracing } from "../../src/tracing";
+import { withTracing, QUERY_CHANNEL } from "../../src/tracing";
 import type { TraceContext } from "../../src/tracing";
 import { tracingChannel } from "node:diagnostics_channel";
 
@@ -22,7 +22,7 @@ async function main() {
 }
 
 function subscribeToTracing() {
-  const queryChannel = tracingChannel<TraceContext>("db0.query");
+  const queryChannel = tracingChannel<TraceContext>(QUERY_CHANNEL);
 
   queryChannel.subscribe({
     start: (data) => {

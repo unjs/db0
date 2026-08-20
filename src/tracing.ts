@@ -9,7 +9,13 @@ import { sqlTemplate } from "./template.ts";
 
 export type TracedOperation = "query";
 
-const QUERY_CHANNEL = "db0.query";
+/**
+ * Name of the tracing channel every query is traced on.
+ *
+ * Subscribers can use it instead of hardcoding the string:
+ * `tracingChannel<TraceContext>(QUERY_CHANNEL)`.
+ */
+export const QUERY_CHANNEL = "db0.query";
 
 export interface TraceContext {
   query: string;
@@ -163,12 +169,16 @@ export function withTracing<TConnector extends Connector = Connector>(
         "sql",
         () =>
           // Rebuilding the query keeps bound parameters out of the traced context.
+          // This parses the template a second time (`db.sql` parses it again to
+          // run it), which is a deliberate trade-off: the alternative is threading
+          // precompiled SQL through `Database.sql`, and the cost is only paid when
+          // somebody is subscribed.
           sqlTemplate(strings, ...values)[0],
       ),
 
     dispose: () => db.dispose(),
 
-    [Symbol.asyncDispose]: () => db.dispose(),
+    [Symbol.asyncDispose]: () => db[Symbol.asyncDispose](),
   };
 
   // Non-enumerable, so spreading or serializing a traced database does not leak it.
