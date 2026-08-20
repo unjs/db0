@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: db0
   mysql:
     # https://hub.docker.com/_/mysql
-    image: mysql@sha256:ae269281abffe401d65f04cb54d45a069a495b8174b9c0a815e502fed7fa0370
+    image: mysql@sha256:66aec17cd21a956029b83f083b813073859e8355dc1a00e55df6ba02f0e32345
     ports: ["3306:3306"]
     environment:
       MYSQL_ROOT_PASSWORD: test

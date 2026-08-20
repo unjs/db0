@@ -1,13 +1,32 @@
 import type {
+  PGlite,
   PGliteOptions,
   PGliteInterfaceExtensions,
   Results as PGLiteQueryResults,
 } from "@electric-sql/pglite";
-import { PGlite } from "@electric-sql/pglite";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
+import { normalizeParams } from "./_internal/postgresql.ts";
+import {
+  importLib,
+  lazyInstance,
+  type ConnectorDependencies,
+  type LibImport,
+} from "./_internal/utils.ts";
 
-export type ConnectorOptions = PGliteOptions;
+export type ConnectorOptions = PGliteOptions & {
+  /**
+   * Optionally provide the [`@electric-sql/pglite`](https://www.npmjs.com/package/@electric-sql/pglite)
+   * library to avoid dynamically importing it.
+   */
+  lib?: LibImport<typeof import("@electric-sql/pglite")>;
+};
+
+export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
+  lib: { name: "@electric-sql/pglite", version: "^0.3 || ^0.4 || ^0.5" },
+};
+
+const CONNECTOR_NAME = "pglite";
 
 type InternalQuery = (
   sql: string,
@@ -20,11 +39,17 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(
   type PGLiteInstance = PGlite &
     PGliteInterfaceExtensions<TOptions["extensions"]>;
 
-  let _client: undefined | PGLiteInstance | Promise<PGLiteInstance>;
+  const { lib, ...config } = opts || ({} as TOptions);
 
-  function getClient() {
-    return (_client ||= PGlite.create(opts).then((res) => (_client = res)));
-  }
+  const getClient = lazyInstance<PGLiteInstance>(async () => {
+    const { PGlite } = await importLib(
+      CONNECTOR_NAME,
+      "@electric-sql/pglite",
+      lib,
+      () => import("@electric-sql/pglite"),
+    );
+    return PGlite.create(config) as Promise<PGLiteInstance>;
+  });
 
   const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
@@ -40,16 +65,11 @@ export default function pgliteConnector<TOptions extends ConnectorOptions>(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      await (await _client)?.close?.();
-      _client = undefined;
+      const client = await getClient.current;
+      getClient.reset();
+      await client?.close?.();
     },
   };
-}
-
-// https://www.postgresql.org/docs/9.3/sql-prepare.html
-function normalizeParams(sql: string) {
-  let i = 0;
-  return sql.replace(/\?/g, () => `$${++i}`);
 }
 
 class StatementWrapper extends BoundableStatement<void> {

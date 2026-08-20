@@ -2,13 +2,16 @@ import { beforeAll, expect, it } from "vitest";
 import {
   Connector,
   Database,
+  DatabaseCapabilities,
   createDatabase,
+  getCapabilities,
   type SQLDialect,
 } from "../../src";
 
 export function testConnector<TConnector extends Connector = Connector>(opts: {
   connector: TConnector;
   dialect: SQLDialect;
+  capabilities?: Partial<DatabaseCapabilities>;
 }) {
   let db: Database<TConnector>;
   beforeAll(() => {
@@ -35,6 +38,15 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
 
   it("dialect matches", () => {
     expect(db.dialect).toBe(opts.dialect);
+  });
+
+  it("capabilities match", () => {
+    expect(db.capabilities).toEqual(
+      getCapabilities(opts.dialect, opts.capabilities),
+    );
+    // Capabilities are a stable, immutable snapshot.
+    expect(db.capabilities).toBe(db.capabilities);
+    expect(Object.isFrozen(db.capabilities)).toBe(true);
   });
 
   it("drop and create table", async () => {

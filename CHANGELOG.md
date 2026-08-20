@@ -1,6 +1,75 @@
 # Changelog
 
 
+## v0.4.0
+
+[compare changes](https://github.com/unjs/db0/compare/v0.3.4...v0.4.0)
+
+### 🚀 Enhancements
+
+- **drizzle:** Support schema parameter ([#183](https://github.com/unjs/db0/pull/183))
+- **drizzle:** Update with postgres and mysql connectors ([#219](https://github.com/unjs/db0/pull/219))
+- Expose connector name ([#205](https://github.com/unjs/db0/pull/205))
+- ⚠️  Require explicit library passing to connectors ([cc5f0fb](https://github.com/unjs/db0/commit/cc5f0fb))
+- Add `neon` for serverless postgres ([#191](https://github.com/unjs/db0/pull/191))
+- Add database capabilities ([#207](https://github.com/unjs/db0/pull/207))
+- Add prisma adapter ([#210](https://github.com/unjs/db0/pull/210))
+- Add tracing channels support ([#193](https://github.com/unjs/db0/pull/193))
+- **drizzle:** ⚠️  Upgrade to drizzle-orm v1 ([#250](https://github.com/unjs/db0/pull/250))
+
+### 🩹 Fixes
+
+- **postgresql:** Only rewrite `?` placeholders outside string literals and comments ([#248](https://github.com/unjs/db0/pull/248))
+- **drizzle:** Remap object rows to TS field names for all dialects ([#227](https://github.com/unjs/db0/pull/227))
+
+### 📖 Documentation
+
+- Add notice about `sqlite3` not being maintained ([#220](https://github.com/unjs/db0/pull/220))
+- Add connector docs for prisma postgres ([#199](https://github.com/unjs/db0/pull/199))
+
+### 📦 Build
+
+- Bundle dist entries ([3b13154](https://github.com/unjs/db0/commit/3b13154))
+
+### 🏡 Chore
+
+- **docs:** Update lockfile ([f70a51c](https://github.com/unjs/db0/commit/f70a51c))
+- Update deps ([f45bdc4](https://github.com/unjs/db0/commit/f45bdc4))
+- Update ci ([da02ab1](https://github.com/unjs/db0/commit/da02ab1))
+- Update ci ([f52a303](https://github.com/unjs/db0/commit/f52a303))
+- Lint ([b36b593](https://github.com/unjs/db0/commit/b36b593))
+- Update deps ([8277d72](https://github.com/unjs/db0/commit/8277d72))
+- Use port-mapping in docker compose ([#208](https://github.com/unjs/db0/pull/208))
+- Update deps ([af13d78](https://github.com/unjs/db0/commit/af13d78))
+- Apply automated updates ([ebd8028](https://github.com/unjs/db0/commit/ebd8028))
+- Rename lint script ([c180379](https://github.com/unjs/db0/commit/c180379))
+- Fix build script on windows ([#204](https://github.com/unjs/db0/pull/204))
+- Add agents.md ([8356a77](https://github.com/unjs/db0/commit/8356a77))
+- Update deps ([57babed](https://github.com/unjs/db0/commit/57babed))
+- Fix cf types ([d2a0e70](https://github.com/unjs/db0/commit/d2a0e70))
+- Disable eslint temporarily ([8f3abb5](https://github.com/unjs/db0/commit/8f3abb5))
+- Update  undocs ([079b75e](https://github.com/unjs/db0/commit/079b75e))
+- Update deps ([2d88f1c](https://github.com/unjs/db0/commit/2d88f1c))
+- Update lock ([2734147](https://github.com/unjs/db0/commit/2734147))
+
+#### ⚠️ Breaking Changes
+
+- ⚠️  Require explicit library passing to connectors ([cc5f0fb](https://github.com/unjs/db0/commit/cc5f0fb))
+- **drizzle:** ⚠️  Upgrade to drizzle-orm v1 ([#250](https://github.com/unjs/db0/pull/250))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Pi0x <x@pi0.io>
+- Abdelrahman Awad ([@logaretm](https://github.com/logaretm))
+- Inesh Bose <dev@inesh.xyz>
+- Max ([@onmax](https://github.com/onmax))
+- João Meyer ([@meyer1994](https://github.com/meyer1994))
+- Atila Fassina <atila.fassina@databricks.com>
+- Mochammad Fadhlan Al-Ghiffari ([@MFA-G](https://github.com/MFA-G))
+- Ankur Datta ([@ankur-arch](https://github.com/ankur-arch))
+- Adam Haglund ([@beeequeue](https://github.com/beeequeue))
+
 ## v0.3.4
 
 [compare changes](https://github.com/unjs/db0/compare/v0.3.3...v0.3.4)

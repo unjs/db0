@@ -2,9 +2,11 @@ packages:
   - "examples/**"
 allowBuilds:
   '@parcel/watcher': false
+  '@prisma/engines': true
   better-sqlite3: true
   es5-ext: false
   esbuild: false
+  prisma: true
   sharp: false
   sqlite3: true
   workerd: false

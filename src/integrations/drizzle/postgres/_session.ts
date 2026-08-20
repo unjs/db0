@@ -1,121 +1,172 @@
-import {
-  type Logger,
-  type RelationalSchemaConfig,
-  type TablesRelationalConfig,
-  NoopLogger,
-  fillPlaceholders,
-  sql,
-} from "drizzle-orm";
+import { type Logger, type Query, NoopLogger, sql } from "drizzle-orm";
+
+import { getRowConverter } from "../_utils.ts";
 
 import {
-  PgDialect,
-  PgPreparedQuery,
-  PgSession,
-  PgTransaction,
+  PgAsyncPreparedQuery,
+  PgAsyncSession,
+  PgAsyncTransaction,
 } from "drizzle-orm/pg-core";
 
 import type {
-  PreparedQueryConfig,
-  PgTransactionConfig,
+  PgDialect,
   PgQueryResultHKT,
-  SelectedFieldsOrdered,
+  PgTransactionConfig,
+  PreparedQueryConfig,
 } from "drizzle-orm/pg-core";
 
-import type { Query } from "drizzle-orm";
+import type { AnyRelations, Assume, SQL } from "drizzle-orm";
 
-import type { Database } from "db0";
+import type { Cache } from "drizzle-orm/cache/core";
+
+import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+
+import type { Database, Primitive } from "db0";
 
 export interface DB0PgSessionOptions {
   logger?: Logger;
+  cache?: Cache;
 }
 
-type Assume<T, U> = T extends U ? T : U;
+/**
+ * What db0's postgres connectors resolve `Statement.run()` with: `success`
+ * plus every own field of the driver's own result object — `rowCount`,
+ * `command` and `rows` (node-postgres, neon, hyperdrive), `affectedRows`
+ * (pglite), `rowsAffected` (planetscale). Nothing beyond that is common to all
+ * drivers, so every field is optional and the rest stays reachable.
+ */
+export type DB0PgRunResult = {
+  success?: boolean;
+  rowCount?: number | null;
+  affectedRows?: number;
+  rowsAffected?: number;
+  command?: string;
+  rows?: Record<string, unknown>[];
+} & Record<string, unknown>;
 
+/**
+ * Drizzle instantiates this with the row type a statement returns, and with
+ * `never` for the statements that return no rows at all — a non-returning
+ * `insert`/`update`/`delete`. Those resolve to the connector's `run()` result
+ * (see {@link DB0PgRunResult}), everything else to the rows themselves.
+ */
 export interface DB0PgQueryResultHKT extends PgQueryResultHKT {
-  type: Assume<
-    this["row"],
-    {
-      [column: string]: any;
-    }
-  >[];
+  type: [this["row"]] extends [never]
+    ? DB0PgRunResult
+    : Assume<
+        this["row"],
+        {
+          [column: string]: any;
+        }
+      >[];
 }
+
+type QueryMetadata = {
+  type: "select" | "update" | "delete" | "insert";
+  tables: string[];
+};
 
 export class DB0PgSession<
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
-> extends PgSession<DB0PgQueryResultHKT, TFullSchema, TSchema> {
+  TRelations extends AnyRelations,
+> extends PgAsyncSession<DB0PgQueryResultHKT, TRelations> {
   private logger: Logger;
+  private cache: Cache | undefined;
 
   constructor(
     private db: Database,
     dialect: PgDialect,
-    private schema: RelationalSchemaConfig<TSchema> | undefined,
+    private relations: TRelations,
     options: DB0PgSessionOptions = {},
   ) {
     super(dialect);
     this.logger = options.logger ?? new NoopLogger();
+    this.cache = options.cache;
   }
 
   prepareQuery<T extends PreparedQueryConfig = PreparedQueryConfig>(
     query: Query,
-    fields: SelectedFieldsOrdered | undefined,
-    _name: string | undefined,
-    _isResponseInArrayMode: boolean,
-    customResultMapper?: (rows: unknown[][]) => T["execute"],
-  ): DB0PgPreparedQuery<T> {
-    return new DB0PgPreparedQuery(
-      this.db,
-      query.sql,
-      query.params,
+    mode: "arrays" | "objects" | "raw",
+    _name: string | boolean,
+    mapper?: (rows: any[]) => any,
+    queryMetadata?: QueryMetadata,
+    cacheConfig?: WithCacheConfig,
+  ): PgAsyncPreparedQuery<T> {
+    // db0 returns object rows; drizzle's mappers read them positionally.
+    const toArray = getRowConverter(mapper);
+
+    // db0's postgres connectors keep nothing but the SQL string in a prepared
+    // statement (the connection is resolved per execution), so it is prepared
+    // once here instead of on every execution.
+    const stmt = this.db.prepare(query.sql);
+
+    const executor = returnsRows(mode, queryMetadata)
+      ? async (params: unknown[] = []) => {
+          const rows = await stmt.all(...(params as Primitive[]));
+          return mode === "arrays"
+            ? (rows as Record<string, unknown>[]).map((row) => toArray(row))
+            : rows;
+        }
+      : // A statement without rows to return carries its result in the driver's
+        // metadata (affected rows, command tag), which only `run()` surfaces —
+        // `all()` would resolve it to an empty row array.
+        (params: unknown[] = []) => stmt.run(...(params as Primitive[]));
+
+    return new PgAsyncPreparedQuery(
+      executor,
+      query,
+      mapper,
+      mode,
       this.logger,
-      fields,
-      customResultMapper,
+      this.cache,
+      queryMetadata,
+      cacheConfig,
     );
   }
 
+  // db0 exposes a single connection, so a transaction runs on this session and
+  // nested ones become savepoints.
   override async transaction<T>(
-    transaction: (tx: DB0PgTransaction<TFullSchema, TSchema>) => Promise<T>,
+    transaction: (tx: DB0PgTransaction<TRelations>) => Promise<T>,
     config?: PgTransactionConfig,
   ): Promise<T> {
-    const tx = new DB0PgTransaction<TFullSchema, TSchema>(
+    const tx = new DB0PgTransaction<TRelations>(
       this.dialect,
       this,
-      this.schema,
+      this.relations,
     );
-    const configSql =
-      // @ts-expect-error -- accessing @internal method
-      config ? sql` ${tx.getTransactionConfigSQL(config)}` : undefined;
-    await tx.execute(sql`begin${configSql}`);
+    await tx.execute(
+      sql`begin${config ? sql` ${transactionConfigSQL(config)}` : undefined}`,
+    );
     try {
       const result = await transaction(tx);
       await tx.execute(sql`commit`);
       return result;
     } catch (error) {
-      await tx.execute(sql`rollback`);
-      throw error;
+      return rollbackAndRethrow(() => tx.execute(sql`rollback`), error);
     }
-  }
-
-  override async count(query: import("drizzle-orm").SQL): Promise<number> {
-    const res = await this.execute<{ count: string }[]>(query);
-    return Number(res[0]["count"]);
   }
 }
 
 export class DB0PgTransaction<
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
-> extends PgTransaction<DB0PgQueryResultHKT, TFullSchema, TSchema> {
+  TRelations extends AnyRelations,
+> extends PgAsyncTransaction<DB0PgQueryResultHKT, TRelations> {
+  constructor(
+    private db0Dialect: PgDialect,
+    private db0Session: DB0PgSession<TRelations>,
+    relations: TRelations,
+    nestedIndex = 0,
+  ) {
+    super(db0Dialect, db0Session, relations, nestedIndex, false);
+  }
+
   override async transaction<T>(
-    transaction: (tx: DB0PgTransaction<TFullSchema, TSchema>) => Promise<T>,
+    transaction: (tx: DB0PgTransaction<TRelations>) => Promise<T>,
   ): Promise<T> {
     const savepointName = `sp${this.nestedIndex + 1}`;
-    const tx = new DB0PgTransaction<TFullSchema, TSchema>(
-      // @ts-expect-error -- accessing inherited property
-      this.dialect,
-      // @ts-expect-error -- accessing inherited property
-      this.session,
-      this.schema,
+    const tx = new DB0PgTransaction<TRelations>(
+      this.db0Dialect,
+      this.db0Session,
+      this._.relations,
       this.nestedIndex + 1,
     );
     await tx.execute(sql.raw(`savepoint ${savepointName}`));
@@ -124,57 +175,71 @@ export class DB0PgTransaction<
       await tx.execute(sql.raw(`release savepoint ${savepointName}`));
       return result;
     } catch (error_) {
-      await tx.execute(sql.raw(`rollback to savepoint ${savepointName}`));
-      throw error_;
+      return rollbackAndRethrow(
+        () => tx.execute(sql.raw(`rollback to savepoint ${savepointName}`)),
+        error_,
+      );
     }
   }
 }
 
-export class DB0PgPreparedQuery<
-  T extends PreparedQueryConfig = PreparedQueryConfig,
-> extends PgPreparedQuery<T> {
-  constructor(
-    private db: Database,
-    private queryString: string,
-    private params: unknown[],
-    private logger: Logger,
-    private fields: SelectedFieldsOrdered | undefined,
-    private customResultMapper?: (rows: unknown[][]) => T["execute"],
-  ) {
-    super({ sql: queryString, params }, undefined, undefined);
-  }
+/**
+ * Whether the statement drizzle prepared returns rows.
+ *
+ * Drizzle only uses `raw` mode with `insert`/`update`/`delete` metadata for
+ * statements that return nothing — `returning()` switches the mode to `arrays`
+ * — while raw statements without metadata (`db.execute(sql`...`)`) may well
+ * select rows.
+ */
+function returnsRows(
+  mode: "arrays" | "objects" | "raw",
+  queryMetadata: QueryMetadata | undefined,
+): boolean {
+  return (
+    mode !== "raw" ||
+    queryMetadata === undefined ||
+    queryMetadata.type === "select"
+  );
+}
 
-  async execute(
-    placeholderValues: Record<string, unknown> | undefined = {},
-  ): Promise<T["execute"]> {
-    const params = fillPlaceholders(this.params, placeholderValues);
-    this.logger.logQuery(this.queryString, params);
-
-    const stmt = this.db.prepare(this.queryString);
-
-    if (!this.fields && !this.customResultMapper) {
-      return stmt.all(...(params as any[]));
+/**
+ * Rolls back and rethrows the error the transaction body failed with.
+ *
+ * Awaiting the rollback directly in a `catch` block replaces the caller's error
+ * with the rollback's own one whenever the rollback fails too (a dropped
+ * connection, a server-aborted transaction) — exactly when the original error
+ * matters most. The rollback failure is attached as `cause` so it is still
+ * reported, never as a replacement.
+ */
+async function rollbackAndRethrow(
+  rollback: () => PromiseLike<unknown>,
+  error: unknown,
+): Promise<never> {
+  try {
+    await rollback();
+  } catch (rollbackError) {
+    if (error instanceof Error && error.cause === undefined) {
+      try {
+        error.cause = rollbackError;
+      } catch {
+        // A frozen error cannot carry the rollback failure.
+      }
     }
-
-    const rows = await stmt.all(...(params as any[]));
-
-    if (this.customResultMapper) {
-      return this.customResultMapper(rows as unknown[][]);
-    }
-
-    // db0 returns object rows, return as-is when fields are present
-    return rows as T["execute"];
   }
+  throw error;
+}
 
-  async all(): Promise<T["all"]> {
-    const stmt = this.db.prepare(this.queryString);
-    this.logger.logQuery(this.queryString, this.params);
-    return stmt.all(...(this.params as any[])) as Promise<T["all"]>;
+/** `BEGIN` modifiers, the same ones drizzle's own pg drivers emit. */
+function transactionConfigSQL(config: PgTransactionConfig): SQL {
+  const chunks: string[] = [];
+  if (config.isolationLevel) {
+    chunks.push(`isolation level ${config.isolationLevel}`);
   }
-
-  /** @internal */
-  isResponseInArrayMode(): boolean {
-    // db0 always returns object rows, never array rows
-    return false;
+  if (config.accessMode) {
+    chunks.push(config.accessMode);
   }
+  if (typeof config.deferrable === "boolean") {
+    chunks.push(config.deferrable ? "deferrable" : "not deferrable");
+  }
+  return sql.raw(chunks.join(" "));
 }

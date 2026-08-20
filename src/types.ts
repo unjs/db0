@@ -7,6 +7,15 @@ export type Primitive = string | number | boolean | undefined | null;
 
 export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql" | "mssql";
 
+export interface DatabaseCapabilities {
+  readonly json: boolean;
+  readonly booleans: boolean;
+  readonly arrays: boolean;
+  readonly dates: boolean;
+  readonly uuids: boolean;
+  readonly transactions: boolean;
+}
+
 export type Statement = {
   /**
    * Binds parameters to the statement.
@@ -84,6 +93,11 @@ export type Connector<TInstance = unknown> = {
   dialect: SQLDialect;
 
   /**
+   * Override specific database capabilities for this connector.
+   */
+  capabilityOverrides?: Partial<DatabaseCapabilities>;
+
+  /**
    * The client instance used internally.
    */
   getInstance: () => TInstance | Promise<TInstance>;
@@ -125,6 +139,11 @@ export interface Database<
 > extends AsyncDisposable {
   readonly connector: ConnectorName;
   readonly dialect: SQLDialect;
+
+  /**
+   * Database capabilities supported by this connector.
+   */
+  readonly capabilities: DatabaseCapabilities;
 
   /**
    * Indicates whether the database instance has been disposed/closed.
@@ -176,3 +195,51 @@ export interface Database<
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }
+
+/**
+ * A third-party package that a connector dynamically imports at runtime.
+ */
+export interface ConnectorDependency {
+  /**
+   * Name of the npm package.
+   *
+   * Can differ from the import specifier used by the connector (e.g. `mysql2` for `mysql2/promise`).
+   */
+  name: string;
+
+  /**
+   * Supported version range of the package.
+   */
+  version: string;
+
+  /**
+   * The dependency is only needed for some connector features or configurations.
+   */
+  optional?: boolean;
+}
+
+/**
+ * Third-party packages a connector dynamically imports, keyed by the connector option
+ * that can be used to provide them (usually `lib`).
+ *
+ * Connectors expose this as a `CONNECTOR_DEPENDENCIES` export so that consumer frameworks
+ * can check or install what a configured connector needs.
+ */
+export type ConnectorDependencies = Record<string, ConnectorDependency>;
+
+/**
+ * A library used by a connector.
+ *
+ * Connectors dynamically import their dependencies. If the bundler or runtime cannot
+ * resolve them (or you simply prefer a static top-level import), the library can be provided
+ * as the module namespace object itself or as a (possibly async) function returning it.
+ *
+ * @example
+ * ```ts
+ * import * as mysql2 from "mysql2/promise";
+ * mysqlConnector({ lib: mysql2 });
+ * // or
+ * mysqlConnector({ lib: () => import("mysql2/promise") });
+ * ```
+ */
+export type LibImport<T> = T | (() => T | Promise<T>);

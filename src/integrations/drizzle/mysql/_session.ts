@@ -1,108 +1,158 @@
-import {
-  type Logger,
-  type RelationalSchemaConfig,
-  type Query,
-  type TablesRelationalConfig,
-  NoopLogger,
-  fillPlaceholders,
-  sql,
-} from "drizzle-orm";
+import { type Logger, type Query, NoopLogger, sql } from "drizzle-orm";
+
+import { getRowConverter } from "../_utils.ts";
 
 import {
-  MySqlDialect,
-  MySqlSession,
-  MySqlPreparedQuery,
-  MySqlTransaction,
+  MySqlAsyncPreparedQuery,
+  MySqlAsyncSession,
+  MySqlAsyncTransaction,
 } from "drizzle-orm/mysql-core";
 
 import type {
+  MySqlDialect,
   MySqlPreparedQueryConfig,
-  MySqlPreparedQueryHKT,
   MySqlQueryResultHKT,
   MySqlTransactionConfig,
-  PreparedQueryKind,
-  SelectedFieldsOrdered,
-  Mode,
 } from "drizzle-orm/mysql-core";
 
-import type { SQL } from "drizzle-orm";
+import type { AnyRelations, Assume } from "drizzle-orm";
 
-import type { Database } from "db0";
+import type { Cache } from "drizzle-orm/cache/core";
+
+import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+
+import type { Database, Primitive } from "db0";
 
 export interface DB0MySqlSessionOptions {
   logger?: Logger;
+  cache?: Cache;
 }
 
-type Assume<T, U> = T extends U ? T : U;
+/**
+ * What db0's mysql connectors resolve `Statement.run()` with: `success` plus
+ * every own field of the driver's own result — mysql2's `ResultSetHeader`
+ * (`affectedRows`, `insertId`, `changedRows`, `warningStatus`) or
+ * planetscale's `{ rowsAffected, insertId }`. Nothing beyond that is common to
+ * all drivers, so every field is optional and the rest stays reachable.
+ */
+export type DB0MySqlRunResult = {
+  success?: boolean;
+  affectedRows?: number;
+  rowsAffected?: number;
+  changedRows?: number;
+  insertId?: number | string;
+} & Record<string, unknown>;
 
+/**
+ * Drizzle instantiates this with the row type a statement returns, and with
+ * `never` for the statements that return no rows at all — an
+ * `insert`/`update`/`delete` without `$returningId()`. Those resolve to the
+ * connector's `run()` result (see {@link DB0MySqlRunResult}), everything else
+ * to the rows themselves.
+ */
 export interface DB0MySqlQueryResultHKT extends MySqlQueryResultHKT {
-  type: Assume<
-    this["row"],
-    {
-      [column: string]: any;
-    }
-  >[];
+  type: [this["row"]] extends [never]
+    ? DB0MySqlRunResult
+    : Assume<
+        this["row"],
+        {
+          [column: string]: any;
+        }
+      >[];
 }
 
-export interface DB0MySqlPreparedQueryHKT extends MySqlPreparedQueryHKT {
-  type: DB0MySqlPreparedQuery<Assume<this["config"], MySqlPreparedQueryConfig>>;
-}
+type QueryMetadata = {
+  type: "select" | "update" | "delete" | "insert";
+  tables: string[];
+};
 
 export class DB0MySqlSession<
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
-> extends MySqlSession<
-  DB0MySqlQueryResultHKT,
-  DB0MySqlPreparedQueryHKT,
-  TFullSchema,
-  TSchema
-> {
+  TRelations extends AnyRelations,
+> extends MySqlAsyncSession<DB0MySqlQueryResultHKT, TRelations> {
   private logger: Logger;
+  private cache: Cache | undefined;
 
   constructor(
     private db: Database,
     dialect: MySqlDialect,
-    private schema: RelationalSchemaConfig<TSchema> | undefined,
-    private mode: Mode,
+    private relations: TRelations,
     options: DB0MySqlSessionOptions = {},
   ) {
     super(dialect);
     this.logger = options.logger ?? new NoopLogger();
+    this.cache = options.cache;
   }
 
   prepareQuery<T extends MySqlPreparedQueryConfig>(
     query: Query,
-    fields: SelectedFieldsOrdered | undefined,
-    customResultMapper?: (rows: unknown[][]) => T["execute"],
-    _generatedIds?: Record<string, unknown>[],
-    _returningIds?: SelectedFieldsOrdered,
-  ): PreparedQueryKind<DB0MySqlPreparedQueryHKT, T> {
-    return new DB0MySqlPreparedQuery(
-      this.db,
-      query.sql,
-      query.params,
+    mode: "arrays" | "objects" | "raw",
+    mapper?: (rows: any) => any,
+    queryMetadata?: QueryMetadata,
+    cacheConfig?: WithCacheConfig,
+  ): MySqlAsyncPreparedQuery<T> {
+    // db0 returns object rows; drizzle's mappers read them positionally.
+    const toArray = getRowConverter(mapper);
+
+    // db0's mysql connectors keep nothing but the SQL string in a prepared
+    // statement (the connection is resolved per execution), so it is prepared
+    // once here instead of on every execution.
+    const stmt = this.db.prepare(query.sql);
+
+    const rowsExpected = returnsRows(mode, queryMetadata);
+
+    const executor = rowsExpected
+      ? async (params: unknown[] = []) => {
+          const rows = await stmt.all(...(params as Primitive[]));
+          return mode === "arrays"
+            ? (rows as Record<string, unknown>[]).map((row) => toArray(row))
+            : rows;
+        }
+      : // A statement without rows to return carries its result in the driver's
+        // metadata (affected rows, insert id), which `run()` surfaces. `all()`
+        // hands back the raw `ResultSetHeader` under an `unknown[]` type,
+        // which is not even an array.
+        (params: unknown[] = []) => stmt.run(...(params as Primitive[]));
+
+    return new MySqlAsyncPreparedQuery(
+      executor,
+      // db0 has no streaming API, so `iterator()` cannot stream: the query runs
+      // to completion and the whole result set is held in memory before the
+      // first row is yielded. Without an explicit iterator drizzle falls back to
+      // iterating the executor result, which throws `rows is not iterable` for
+      // the statements that resolve to driver metadata instead of rows.
+      rowsExpected
+        ? async function* (params) {
+            yield* (await executor(params)) as any[][];
+          }
+        : // eslint-disable-next-line require-yield
+          async function* () {
+            throw new Error(
+              `[db0] [drizzle] \`iterator()\` is not supported for \`${queryMetadata?.type ?? "raw"}\` statements: ` +
+                `they resolve to the driver's result metadata (affected rows, insert id), not to rows. ` +
+                `Await the query (or call \`.execute()\`) instead.`,
+            );
+          },
+      query,
+      mapper,
+      mode,
       this.logger,
-      fields,
-      customResultMapper,
-    ) as PreparedQueryKind<DB0MySqlPreparedQueryHKT, T>;
+      this.cache,
+      queryMetadata,
+      cacheConfig,
+    );
   }
 
-  override async all<T = unknown>(query: SQL): Promise<T[]> {
-    const builtQuery = this.dialect.sqlToQuery(query);
-    const prepared = this.prepareQuery(builtQuery, undefined);
-    return prepared.execute() as Promise<T[]>;
-  }
-
+  // db0 exposes a single connection, so a transaction runs on this session and
+  // nested ones become savepoints.
   override async transaction<T>(
-    transaction: (tx: DB0MySqlTransaction<TFullSchema, TSchema>) => Promise<T>,
+    transaction: (tx: DB0MySqlTransaction<TRelations>) => Promise<T>,
     config?: MySqlTransactionConfig,
   ): Promise<T> {
-    const tx = new DB0MySqlTransaction<TFullSchema, TSchema>(
+    const tx = new DB0MySqlTransaction<TRelations>(
       this.dialect,
-      this as MySqlSession<any, any, any, any>,
-      this.schema,
+      this,
+      this.relations,
       0,
-      this.mode,
     );
     if (config) {
       const setTransactionConfigSql = this.getSetTransactionSQL(config);
@@ -121,33 +171,32 @@ export class DB0MySqlSession<
       await tx.execute(sql`commit`);
       return result;
     } catch (error) {
-      await tx.execute(sql`rollback`);
-      throw error;
+      return rollbackAndRethrow(() => tx.execute(sql`rollback`), error);
     }
   }
 }
 
 export class DB0MySqlTransaction<
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
-> extends MySqlTransaction<
-  DB0MySqlQueryResultHKT,
-  DB0MySqlPreparedQueryHKT,
-  TFullSchema,
-  TSchema
-> {
+  TRelations extends AnyRelations,
+> extends MySqlAsyncTransaction<DB0MySqlQueryResultHKT, TRelations> {
+  constructor(
+    private db0Dialect: MySqlDialect,
+    private db0Session: DB0MySqlSession<TRelations>,
+    relations: TRelations,
+    nestedIndex: number,
+  ) {
+    super(db0Dialect, db0Session, relations, nestedIndex);
+  }
+
   override async transaction<T>(
-    transaction: (tx: DB0MySqlTransaction<TFullSchema, TSchema>) => Promise<T>,
+    transaction: (tx: DB0MySqlTransaction<TRelations>) => Promise<T>,
   ): Promise<T> {
     const savepointName = `sp${this.nestedIndex + 1}`;
-    const tx = new DB0MySqlTransaction<TFullSchema, TSchema>(
-      // @ts-expect-error -- accessing inherited property
-      this.dialect,
-      // @ts-expect-error -- accessing inherited property
-      this.session,
-      this.schema,
+    const tx = new DB0MySqlTransaction<TRelations>(
+      this.db0Dialect,
+      this.db0Session,
+      this._.relations,
       this.nestedIndex + 1,
-      this.mode,
     );
     await tx.execute(sql.raw(`savepoint ${savepointName}`));
     try {
@@ -155,50 +204,56 @@ export class DB0MySqlTransaction<
       await tx.execute(sql.raw(`release savepoint ${savepointName}`));
       return result;
     } catch (error_) {
-      await tx.execute(sql.raw(`rollback to savepoint ${savepointName}`));
-      throw error_;
+      return rollbackAndRethrow(
+        () => tx.execute(sql.raw(`rollback to savepoint ${savepointName}`)),
+        error_,
+      );
     }
   }
 }
 
-export class DB0MySqlPreparedQuery<
-  T extends MySqlPreparedQueryConfig = MySqlPreparedQueryConfig,
-> extends MySqlPreparedQuery<T> {
-  constructor(
-    private db: Database,
-    private queryString: string,
-    private params: unknown[],
-    private logger: Logger,
-    private fields: SelectedFieldsOrdered | undefined,
-    private customResultMapper?: (rows: unknown[][]) => T["execute"],
-  ) {
-    super(undefined, undefined);
-  }
+/**
+ * Whether the statement drizzle prepared returns rows.
+ *
+ * Drizzle only uses `raw` mode with `insert`/`update`/`delete` metadata for
+ * statements that return nothing (`$returningId()` derives its ids from the
+ * insert metadata), while raw statements without metadata
+ * (`db.execute(sql`...`)`) may well select rows.
+ */
+function returnsRows(
+  mode: "arrays" | "objects" | "raw",
+  queryMetadata: QueryMetadata | undefined,
+): boolean {
+  return (
+    mode !== "raw" ||
+    queryMetadata === undefined ||
+    queryMetadata.type === "select"
+  );
+}
 
-  async execute(
-    placeholderValues: Record<string, unknown> | undefined = {},
-  ): Promise<T["execute"]> {
-    const params = fillPlaceholders(this.params, placeholderValues);
-    this.logger.logQuery(this.queryString, params);
-
-    const stmt = this.db.prepare(this.queryString);
-
-    if (!this.fields && !this.customResultMapper) {
-      return stmt.all(...(params as any[]));
+/**
+ * Rolls back and rethrows the error the transaction body failed with.
+ *
+ * Awaiting the rollback directly in a `catch` block replaces the caller's error
+ * with the rollback's own one whenever the rollback fails too (a dropped
+ * connection, a server-aborted transaction) — exactly when the original error
+ * matters most. The rollback failure is attached as `cause` so it is still
+ * reported, never as a replacement.
+ */
+async function rollbackAndRethrow(
+  rollback: () => PromiseLike<unknown>,
+  error: unknown,
+): Promise<never> {
+  try {
+    await rollback();
+  } catch (rollbackError) {
+    if (error instanceof Error && error.cause === undefined) {
+      try {
+        error.cause = rollbackError;
+      } catch {
+        // A frozen error cannot carry the rollback failure.
+      }
     }
-
-    const rows = await stmt.all(...(params as any[]));
-
-    if (this.customResultMapper) {
-      return this.customResultMapper(rows as unknown[][]);
-    }
-
-    // db0 returns object rows, return as-is when fields are present
-    return rows as T["execute"];
   }
-
-  // eslint-disable-next-line require-yield
-  async *iterator(): AsyncGenerator<T["iterator"]> {
-    throw new Error("Streaming is not supported by the db0 MySQL driver");
-  }
+  throw error;
 }
