@@ -19,7 +19,8 @@ src/
 │   └── *.ts              # better-sqlite3, bun-sqlite, mysql2, postgresql, etc.
 └── integrations/
     ├── drizzle/           # Drizzle ORM adapter (sqlite, postgres, mysql dialects)
-    └── kysely/            # Kysely query builder adapter (auto-detects dialect)
+    ├── kysely/            # Kysely query builder adapter (auto-detects dialect)
+    └── prisma/            # Prisma driver adapter (sqlite, postgres, mysql providers)
 ```
 
 ## Core API
@@ -53,10 +54,12 @@ Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/conne
 
 `test/connector-capabilities.test.ts` does the same for capabilities: it builds each connector and asserts the docs table in `scripts/_capabilities-data.ts` matches the connector's real `dialect` + `capabilityOverrides`.
 
+The Prisma tests need generated clients: run `pnpm prisma:generate` (one per provider, output is gitignored) before `pnpm vitest`, otherwise the suites skip themselves. `pnpm test` and CI do this for you.
+
 ## Key Patterns
 
 - **Zero deps** — no runtime deps and no peer deps; backend drivers are imported lazily via dynamic `import()` (see `_internal/utils.ts` `importLib()`), with a `lib` option escape hatch on every connector that needs one
-- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`
+- **Modular exports** — `db0/connectors/*`, `db0/integrations/drizzle`, `db0/integrations/kysely`, `db0/integrations/prisma`
 - **All bare imports stay external** — only relative/internal code is bundled, so backend drivers are never inlined
 - **Dialect-aware** — adjusts SQL behavior (e.g., `RETURNING` support) per `SQLDialect`
 - **Capabilities** — `db.capabilities` is a frozen snapshot from `src/capabilities.ts`, derived from the connector's `dialect` and refined by its optional `capabilityOverrides`. Note that `transactions` tracks the driver's _session model_, not the engine: connectors that open a new session per query (D1, PlanetScale, libsql over HTTP) set it to `false`
