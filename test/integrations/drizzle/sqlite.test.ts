@@ -199,7 +199,7 @@ describe("integrations: drizzle: column name remapping (SQLite)", () => {
   });
 
   it("select returns camelCase keys, not snake_case", async () => {
-    const res = await drizzleDb.select().from(events).all();
+    const res = await drizzleDb.select().from(events).orderBy(events.id).all();
     expect(res.length).toBe(2);
     expect(res[0]).toHaveProperty("fooBar");
     expect(res[0]).toHaveProperty("createdAt");
@@ -302,7 +302,7 @@ describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
 
   it("relational findMany with nested relation", async () => {
     const res = await drizzleDb.query.authors.findMany({
-      with: { books: true },
+      with: { books: { orderBy: books.id } },
     });
     expect(res).toHaveLength(1);
     expect(res[0].name).toBe("Ada");
@@ -311,6 +311,7 @@ describe("integrations: drizzle: relational queries & raw SQL (SQLite)", () => {
 
   it("relational findFirst with nested relation", async () => {
     const res = await drizzleDb.query.books.findFirst({
+      orderBy: books.id,
       with: { author: true },
     });
     expect(res?.title).toBe("First");
@@ -370,6 +371,7 @@ describe("integrations: drizzle: joins, decoders & casing (SQLite)", () => {
       .select()
       .from(users)
       .leftJoin(tags, eq(tags.tagUserId, users.id))
+      .orderBy(users.id)
       .all();
 
     expect(res).toEqual([
@@ -412,6 +414,7 @@ describe("integrations: drizzle: joins, decoders & casing (SQLite)", () => {
       })
       .from(users)
       .leftJoin(posts, eq(posts.userId, users.id))
+      .orderBy(users.id)
       .all();
 
     expect(res).toEqual([

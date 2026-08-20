@@ -197,7 +197,7 @@ describe.runIf(process.env.MYSQL_URL)(
 
     it("relational findMany with nested relation", async () => {
       const res = await drizzleDb.query.authors.findMany({
-        with: { books: true },
+        with: { books: { orderBy: books.id } },
       });
       expect(res).toHaveLength(1);
       expect(res[0].name).toBe("Ada");
@@ -206,6 +206,7 @@ describe.runIf(process.env.MYSQL_URL)(
 
     it("relational findFirst with nested relation", async () => {
       const res = await drizzleDb.query.books.findFirst({
+        orderBy: books.id,
         with: { author: true },
       });
       expect(res?.title).toBe("First");

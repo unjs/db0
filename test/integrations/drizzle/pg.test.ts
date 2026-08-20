@@ -232,7 +232,7 @@ describe("integrations: drizzle: relational queries & raw SQL (PostgreSQL/PGLite
 
   it("relational findMany with nested relation", async () => {
     const res = await drizzleDb.query.authors.findMany({
-      with: { books: true },
+      with: { books: { orderBy: books.id } },
     });
     expect(res).toHaveLength(1);
     expect(res[0].name).toBe("Ada");
@@ -241,6 +241,7 @@ describe("integrations: drizzle: relational queries & raw SQL (PostgreSQL/PGLite
 
   it("relational findFirst with nested relation", async () => {
     const res = await drizzleDb.query.books.findFirst({
+      orderBy: books.id,
       with: { author: true },
     });
     expect(res?.title).toBe("First");
