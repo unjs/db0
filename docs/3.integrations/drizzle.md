@@ -125,6 +125,16 @@ const rows = await db
   .leftJoin(posts, eq(posts.userId, users.id));
 ```
 
+The same applies to selected expressions the driver names identically — two bare
+`sql` expressions with the same text, or two expressions sharing one `.as()`
+name — and to an expression the driver names like an array index (`sql`...`.as("7")`),
+because JavaScript enumerates such keys before all others. Aliasing each
+expression uniquely resolves all of these.
+
+A column collision is detected from the columns of a returned row, so a query
+that returns no rows at all is not rejected; a collision between aliases is
+rejected either way.
+
 ## Configuration
 
 Create a `drizzle.config.ts` file for migration management:
