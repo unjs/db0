@@ -9,6 +9,7 @@ describe.runIf(
 )("connectors: planetscale.test", () => {
   testConnector({
     dialect: "mysql",
+    capabilities: { transactions: false },
     connector: connector({
       host: process.env.PLANETSCALE_HOST!,
       username: process.env.PLANETSCALE_USERNAME!,

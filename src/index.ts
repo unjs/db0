@@ -1,4 +1,5 @@
 export { createDatabase } from "./database.ts";
+export { dialectCapabilities, getCapabilities } from "./capabilities.ts";
 
 export { connectors, connectorDependencies } from "./_connectors.ts";
 
@@ -7,6 +8,7 @@ export type {
   ConnectorDependency,
   ConnectorDependencies,
   Database,
+  DatabaseCapabilities,
   ExecResult,
   LibImport,
   Primitive,

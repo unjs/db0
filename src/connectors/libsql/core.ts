@@ -1,10 +1,11 @@
 import type { Client, InStatement } from "@libsql/client";
-import type { Connector, Primitive } from "db0";
+import type { Connector, DatabaseCapabilities, Primitive } from "db0";
 import { BoundableStatement } from "../_internal/statement.ts";
 
 export type ConnectorOptions = {
   getClient: () => Client | Promise<Client>;
   name?: string;
+  capabilityOverrides?: Partial<DatabaseCapabilities>;
   dispose?: () => void | Promise<void>;
 };
 
@@ -19,6 +20,7 @@ export default function libSqlCoreConnector(
   return {
     name: opts.name || "libsql-core",
     dialect: "libsql",
+    capabilityOverrides: opts.capabilityOverrides,
     getInstance: async () => opts.getClient(),
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),

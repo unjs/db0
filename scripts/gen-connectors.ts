@@ -64,7 +64,8 @@ for (const entry of connectorEntries) {
 
   const safeName = camelCase(name).replace(/db/i, "DB").replace(/sql/i, "SQL");
 
-  const alternativeNames: string[] = aliases[name] || [];
+  const alternativeNames: readonly string[] =
+    aliases[name as keyof typeof aliases] || [];
 
   const names = [...new Set([name, ...alternativeNames])];
 
