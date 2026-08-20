@@ -1,5 +1,6 @@
 // Auto-generated using scripts/gen-connectors.
 // Do not manually edit!
+import type { ConnectorDependencies } from "./types.ts";
 import type { ConnectorOptions as BetterSQLite3Options } from "db0/connectors/better-sqlite3";
 import type { ConnectorOptions as BunSQLiteOptions } from "db0/connectors/bun-sqlite";
 import type { ConnectorOptions as CloudflareD1Options } from "db0/connectors/cloudflare-d1";
@@ -70,4 +71,59 @@ export const connectors: Record<ConnectorName, string> = Object.freeze({
   "planetscale": "db0/connectors/planetscale",
   "postgresql": "db0/connectors/postgresql",
   "sqlite3": "db0/connectors/sqlite3",
+} as const);
+
+/**
+ * Third-party packages each connector dynamically imports, keyed by the connector option
+ * that can be used to provide them (usually `lib`).
+ *
+ * Connectors not listed here have no third-party dependencies.
+ */
+export const connectorDependencies: Partial<
+  Record<ConnectorName, ConnectorDependencies>
+> = Object.freeze({
+  "better-sqlite3": {
+    lib: { name: "better-sqlite3", version: "^11 || ^12 || ^13" },
+  },
+  "cloudflare-hyperdrive-mysql": {
+    lib: { name: "mysql2", version: "^3" },
+  },
+  "cloudflare-hyperdrive-postgresql": {
+    lib: { name: "pg", version: "^8" },
+  },
+  "libsql-http": {
+    lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+  },
+  "libsql-node": {
+    lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+  },
+  /** alias of libsql-node */
+  "libsql": {
+    lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+  },
+  "libsql-web": {
+    lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+  },
+  "mysql2": {
+    lib: { name: "mysql2", version: "^3" },
+  },
+  "neon": {
+    lib: { name: "@neondatabase/serverless", version: "^1" },
+  },
+  "neon-instant": {
+    lib: { name: "@neondatabase/serverless", version: "^1" },
+    provisionLib: { name: "neon-new", version: "^0.15", optional: true },
+  },
+  "pglite": {
+    lib: { name: "@electric-sql/pglite", version: "^0.3 || ^0.4 || ^0.5" },
+  },
+  "planetscale": {
+    lib: { name: "@planetscale/database", version: "^1" },
+  },
+  "postgresql": {
+    lib: { name: "pg", version: "^8" },
+  },
+  "sqlite3": {
+    lib: { name: "sqlite3", version: "^5 || ^6" },
+  },
 } as const);

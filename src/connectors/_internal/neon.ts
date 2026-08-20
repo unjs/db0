@@ -1,7 +1,10 @@
-import * as pg from "@neondatabase/serverless";
+import type * as pg from "@neondatabase/serverless";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./statement.ts";
+import { lazyInstance } from "./utils.ts";
+
+export type NeonLib = typeof import("@neondatabase/serverless");
 
 export type NeonClientOptions = { url?: string } | pg.ClientConfig;
 
@@ -37,11 +40,10 @@ function toClientConfig(opts: NeonClientOptions | undefined): pg.ClientConfig {
 export function createNeonConnector(
   name: string,
   opts: NeonClientOptions | undefined,
+  importNeon: () => Promise<NeonLib>,
   resolveConnectionString: ConnectionStringResolver = resolveStaticConnectionString,
 ): Connector<pg.Client> {
-  let _client: undefined | Promise<pg.Client>;
-
-  async function connect(): Promise<pg.Client> {
+  const getClient = lazyInstance(async () => {
     const config = toClientConfig(opts);
     const connectionString = await resolveConnectionString(opts);
 
@@ -56,21 +58,11 @@ export function createNeonConnector(
       );
     }
 
+    const pg = await importNeon();
     const client = new pg.Client(config);
     await client.connect();
     return client;
-  }
-
-  function getClient(): Promise<pg.Client> {
-    if (!_client) {
-      // Assigned synchronously so concurrent callers share one client.
-      _client = connect().catch((error) => {
-        _client = undefined; // Let the next call retry instead of caching the failure.
-        throw error;
-      });
-    }
-    return _client;
-  }
+  });
 
   const query: InternalQuery = async (sql, params) => {
     const client = await getClient();
@@ -84,9 +76,9 @@ export function createNeonConnector(
     exec: (sql) => query(sql),
     prepare: (sql) => new StatementWrapper(sql, query),
     dispose: async () => {
-      const client = _client;
-      _client = undefined;
-      await (await client?.catch(() => undefined))?.end?.();
+      const client = await getClient.current?.catch(() => undefined);
+      getClient.reset();
+      await client?.end?.();
     },
   };
 }

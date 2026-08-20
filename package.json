@@ -12,15 +12,15 @@
       "default": "./dist/index.mjs"
     },
     "./connectors/*": {
-      "types": "./dist/connectors/*.d.ts",
+      "types": "./dist/connectors/*.d.mts",
       "default": "./dist/connectors/*.mjs"
     },
     "./integrations/*": {
-      "types": "./dist/integrations/*/index.d.ts",
+      "types": "./dist/integrations/*/index.d.mts",
       "default": "./dist/integrations/*/index.mjs"
     },
     "./connectors/libsql/*": {
-      "types": "./dist/connectors/libsql/*.d.ts",
+      "types": "./dist/connectors/libsql/*.d.mts",
       "default": "./dist/connectors/libsql/*.mjs"
     }
   },
@@ -42,76 +42,37 @@
     "test:types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5",
-    "@electric-sql/pglite": "^0.5.4",
+    "@cloudflare/workers-types": "^5.20260819.1",
+    "@electric-sql/pglite": "^0.5.5",
     "@libsql/client": "^0.17.4",
     "@neondatabase/serverless": "^1.1.0",
     "@planetscale/database": "^1.20.1",
-    "@types/better-sqlite3": "^7.6.13",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/bun": "^1.3.14",
-    "@types/pg": "^8.20.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@types/pg": "^8.23.1",
+    "@vitest/coverage-v8": "^4.1.11",
     "automd": "^0.4.3",
-    "better-sqlite3": "^12.11.1",
+    "better-sqlite3": "^13.0.3",
     "changelogen": "^0.6.2",
     "db0": "^0.3.4",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.1",
     "eslint-config-unjs": "^0.6.2",
     "jiti": "^2.7.0",
-    "kysely": "^0.29.3",
+    "kysely": "^0.29.5",
     "mlly": "^1.8.2",
-    "mysql2": "^3.22.6",
+    "mysql2": "^3.23.3",
     "neon-new": "^0.15.0",
     "obuild": "^0.4.38",
     "pathe": "^2.0.3",
-    "pg": "^8.22.0",
-    "prettier": "^3.9.5",
+    "pg": "^8.23.0",
+    "prettier": "^3.9.6",
     "scule": "^1.3.0",
+    "sqlite3": "^6.0.1",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10",
-    "wrangler": "^4.110.0"
+    "vitest": "^4.1.11",
+    "wrangler": "^4.124.0"
   },
-  "peerDependencies": {
-    "@electric-sql/pglite": "*",
-    "@libsql/client": "*",
-    "@neondatabase/serverless": "*",
-    "better-sqlite3": "*",
-    "drizzle-orm": "*",
-    "kysely": "*",
-    "mysql2": "*",
-    "neon-new": "*",
-    "sqlite3": "*"
-  },
-  "peerDependenciesMeta": {
-    "@libsql/client": {
-      "optional": true
-    },
-    "@neondatabase/serverless": {
-      "optional": true
-    },
-    "neon-new": {
-      "optional": true
-    },
-    "better-sqlite3": {
-      "optional": true
-    },
-    "drizzle-orm": {
-      "optional": true
-    },
-    "kysely": {
-      "optional": true
-    },
-    "mysql2": {
-      "optional": true
-    },
-    "@electric-sql/pglite": {
-      "optional": true
-    },
-    "sqlite3": {
-      "optional": true
-    }
-  },
-  "packageManager": "pnpm@11.12.0"
+  "packageManager": "pnpm@11.22.0"
 }

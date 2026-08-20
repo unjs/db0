@@ -98,3 +98,8 @@ Accepts every [Neon connector option](/connectors/neon#options), plus the [`neon
 - **Type:** `string` _(optional)_
 - **Default:** `"db0/neon-connector"`
 - Referrer name Neon uses for tracking.
+
+### `provisionLib`
+
+- **Type:** `typeof import("neon-new")` or a function returning it _(optional)_
+- Provide `neon-new` yourself instead of letting the connector import it dynamically, the same way [`lib`](/connectors#connector-dependencies) works for the database driver.

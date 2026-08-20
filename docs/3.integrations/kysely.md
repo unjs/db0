@@ -12,9 +12,7 @@ icon: mynaui:letter-k
 
 Install `kysely` dependency:
 
-```bash
-npx nypm add kysely
-```
+:pm-install{name="kysely"}
 
 Create a db0 database and wrap it with Kysely:
 
@@ -80,8 +78,14 @@ Kysely's transaction API works out of the box:
 
 ```ts
 await ky.transaction().execute(async (trx) => {
-  await trx.insertInto("users").values({ name: "Alice", email: "alice@example.com" }).execute();
-  await trx.insertInto("users").values({ name: "Bob", email: "bob@example.com" }).execute();
+  await trx
+    .insertInto("users")
+    .values({ name: "Alice", email: "alice@example.com" })
+    .execute();
+  await trx
+    .insertInto("users")
+    .values({ name: "Bob", email: "bob@example.com" })
+    .execute();
 });
 ```
 
@@ -89,12 +93,12 @@ await ky.transaction().execute(async (trx) => {
 
 The integration automatically selects the correct Kysely dialect based on the db0 connector:
 
-| db0 dialect    | Kysely dialect |
-| -------------- | -------------- |
-| `sqlite`       | SQLite         |
-| `libsql`       | SQLite         |
-| `postgresql`   | PostgreSQL     |
-| `mysql`        | MySQL          |
+| db0 dialect  | Kysely dialect |
+| ------------ | -------------- |
+| `sqlite`     | SQLite         |
+| `libsql`     | SQLite         |
+| `postgresql` | PostgreSQL     |
+| `mysql`      | MySQL          |
 
 This means you can switch connectors without changing your Kysely code.
 
