@@ -39,6 +39,10 @@ export default function libSqlConnector(
 
   return libSqlCore({
     name: CONNECTOR_NAME,
+    // Every `client.execute()` opens a fresh Hrana stream and closes it in the
+    // same request, so `BEGIN`/`COMMIT` sent as separate statements never share
+    // a stream. Transactions require `client.transaction()`.
+    capabilityOverrides: { transactions: false },
     getClient,
     dispose: async () => {
       const client = await getClient.current;
