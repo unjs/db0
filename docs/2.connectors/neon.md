@@ -33,6 +33,8 @@ const db = createDatabase(
 );
 ```
 
+:read-more{title="Query parameters" to="/connectors/postgresql#query-parameters"}
+
 ## Options
 
 Options are passed through to the underlying [`Client`](https://neon.com/docs/serverless/serverless-driver), so any `ClientConfig` field is accepted in addition to the following.

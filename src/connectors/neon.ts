@@ -3,6 +3,7 @@ import type * as pg from "@neondatabase/serverless";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
+import { normalizeParams } from "./_internal/postgresql.ts";
 import {
   importLib,
   lazyInstance,
@@ -77,66 +78,6 @@ export default function neonConnector(
       await client?.end?.();
     },
   };
-}
-
-/**
- * Rewrites `?` placeholders into postgres' `$n` form, leaving `?` occurrences
- * that are not placeholders alone: those inside string literals or quoted
- * identifiers, inside comments, and the jsonb operators `?|`, `?&` and `??`.
- *
- * https://www.postgresql.org/docs/9.3/sql-prepare.html
- */
-export function normalizeParams(sql: string): string {
-  let result = "";
-  let index = 0;
-
-  for (let i = 0; i < sql.length; i++) {
-    const char = sql[i];
-
-    // Quoted string ('...', including E'..' bodies) or identifier ("...").
-    if (char === "'" || char === '"') {
-      const end = sql.indexOf(char, i + 1);
-      if (end === -1) {
-        result += sql.slice(i);
-        break;
-      }
-      result += sql.slice(i, end + 1);
-      i = end;
-      continue;
-    }
-
-    if (char === "-" && sql[i + 1] === "-") {
-      const end = sql.indexOf("\n", i);
-      const stop = end === -1 ? sql.length : end;
-      result += sql.slice(i, stop);
-      i = stop - 1;
-      continue;
-    }
-
-    if (char === "/" && sql[i + 1] === "*") {
-      const end = sql.indexOf("*/", i + 2);
-      const stop = end === -1 ? sql.length : end + 2;
-      result += sql.slice(i, stop);
-      i = stop - 1;
-      continue;
-    }
-
-    if (char === "?") {
-      const next = sql[i + 1];
-      // jsonb operators, not placeholders.
-      if (next === "|" || next === "&" || next === "?") {
-        result += char + next;
-        i++;
-        continue;
-      }
-      result += `$${++index}`;
-      continue;
-    }
-
-    result += char;
-  }
-
-  return result;
 }
 
 class StatementWrapper extends BoundableStatement<void> {

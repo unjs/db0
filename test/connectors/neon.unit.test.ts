@@ -36,7 +36,7 @@ const { clients, state, MockClient } = vi.hoisted(() => {
 
 vi.mock("@neondatabase/serverless", () => ({ Client: MockClient }));
 
-import neonConnector, { normalizeParams } from "../../src/connectors/neon";
+import neonConnector from "../../src/connectors/neon";
 import { createDatabase } from "../../src";
 
 beforeEach(() => {
@@ -111,31 +111,5 @@ describe("connectors: neon client lifecycle", () => {
     );
     await expect(db.getInstance()).rejects.toThrow("boom");
     await expect(db.dispose()).resolves.toBeUndefined();
-  });
-});
-
-describe("neon: normalizeParams", () => {
-  test("rewrites placeholders into $n", () => {
-    expect(normalizeParams("SELECT * FROM t WHERE a = ? AND b = ?")).toBe(
-      "SELECT * FROM t WHERE a = $1 AND b = $2",
-    );
-  });
-
-  test("leaves `?` inside string literals alone", () => {
-    expect(normalizeParams("SELECT ? WHERE note = 'why?'")).toBe(
-      "SELECT $1 WHERE note = 'why?'",
-    );
-  });
-
-  test("leaves jsonb operators alone", () => {
-    expect(normalizeParams("SELECT * FROM t WHERE data ?| ? AND d ?& ?")).toBe(
-      "SELECT * FROM t WHERE data ?| $1 AND d ?& $2",
-    );
-  });
-
-  test("leaves `?` inside comments alone", () => {
-    expect(normalizeParams("SELECT ? -- why?\nFROM t")).toBe(
-      "SELECT $1 -- why?\nFROM t",
-    );
   });
 });
