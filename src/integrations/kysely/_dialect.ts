@@ -29,6 +29,9 @@ export class DB0Connection implements DatabaseConnection {
     }
 
     const rows = (await stmt.all(...(parameters as Primitive[]))) as R[];
+    if (!isMutation) {
+      return { rows };
+    }
     return {
       rows,
       // db0 does not expose numAffectedRows/insertId,
