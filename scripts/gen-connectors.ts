@@ -139,7 +139,7 @@ export const connectorDependencies: Partial<
           )
             .map(
               ([option, dep]) =>
-                `${option}: { name: "${dep.name}", version: "${dep.version}"${dep.optional ? ", optional: true" : ""} },`,
+                `${option}: { name: "${dep.name}"${dep.import ? `, import: "${dep.import}"` : ""}, version: "${dep.version}"${dep.optional ? ", optional: true" : ""} },`,
             )
             .join("\n    ")}\n  }`,
       ),

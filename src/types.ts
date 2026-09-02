@@ -201,11 +201,21 @@ export interface Database<
  */
 export interface ConnectorDependency {
   /**
-   * Name of the npm package.
+   * Name of the npm package to install.
    *
-   * Can differ from the import specifier used by the connector (e.g. `mysql2` for `mysql2/promise`).
+   * Can differ from the import specifier used by the connector, which is then
+   * exposed as `import` (e.g. `mysql2` for `mysql2/promise`).
    */
   name: string;
+
+  /**
+   * Import specifier the connector uses, when it differs from `name`
+   * (e.g. `mysql2/promise` for the `mysql2` package).
+   *
+   * Consumers that resolve the library themselves (to pass it back via the `lib` option)
+   * should import this rather than `name`.
+   */
+  import?: string;
 
   /**
    * Supported version range of the package.

@@ -51,7 +51,7 @@ Package manager: **pnpm**. Build tool: **obuild**. Typecheck: **tsgo**.
 
 Tests live in `test/connectors/`. A shared `testConnector()` helper (`test/connectors/_tests.ts`) runs a standard suite (create, insert, select, dispose) against any connector. Each connector test file is minimal — just calls `testConnector()` with the right setup.
 
-`test/connector-dependencies.test.ts` asserts the generated `connectorDependencies` map matches the `importLib()` calls in each connector source, so declared metadata cannot drift.
+`test/connector-dependencies.test.ts` asserts the generated `connectorDependencies` map matches both the `importLib()` calls in each connector source (package `name` plus the `import` specifier when it is a subpath, e.g. `mysql2/promise`) and the connector's own `CONNECTOR_DEPENDENCIES` export, so declared metadata cannot drift.
 
 `test/connector-capabilities.test.ts` does the same for capabilities: it builds each connector and asserts the docs table in `scripts/_capabilities-data.ts` matches the connector's real `dialect` + `capabilityOverrides`.
 

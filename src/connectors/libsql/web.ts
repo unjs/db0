@@ -17,7 +17,11 @@ export type ConnectorOptions = Config & {
 };
 
 export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
-  lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+  lib: {
+    name: "@libsql/client",
+    import: "@libsql/client/http",
+    version: "^0.14 || ^0.15 || ^0.16 || ^0.17",
+  },
 };
 
 const CONNECTOR_NAME = "libsql-web";
