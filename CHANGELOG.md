@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.4.1
+
+[compare changes](https://github.com/unjs/db0/compare/v0.4.0...v0.4.1)
+
+### 🚀 Enhancements
+
+- Add `import` specifier to connector dependencies ([f3e2e93](https://github.com/unjs/db0/commit/f3e2e93))
+
+### 🏡 Chore
+
+- Update deps ([a98d4e8](https://github.com/unjs/db0/commit/a98d4e8))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.4.0
 
 [compare changes](https://github.com/unjs/db0/compare/v0.3.4...v0.4.0)
