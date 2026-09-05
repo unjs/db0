@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       undocs:
-        specifier: npm:undocs-nightly@0.10.1-20260818-142856-3b64b18
-        version: undocs-nightly@0.10.1-20260818-142856-3b64b18(@oxc-project/types@0.144.0)(chokidar@5.0.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(h3@2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0))(jiti@2.7.0)(lightningcss@1.33.0)(ocache@0.2.0)(rolldown@1.2.4)
+        specifier: npm:undocs-nightly@0.10.1-20260828-133553-e5fe415
+        version: undocs-nightly@0.10.1-20260828-133553-e5fe415(@oxc-project/types@0.144.0)(chokidar@5.0.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0))(jiti@2.7.0)(lightningcss@1.33.0)(ocache@0.3.0)(rolldown@1.2.4)
 
 packages:
 
@@ -596,8 +596,8 @@ packages:
     resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
     engines: {node: ^14.18.0 || >=16.10.0}
 
-  crossws@0.4.10:
-    resolution: {integrity: sha512-pz3oubH/dt12KjqsUB0IuXW4nwRDQ583iDsP4555Cpdqx0NoU7pGlWBcayyFI8f/l/idRpgjMEfwuOxSWJYlIA==}
+  crossws@0.4.12:
+    resolution: {integrity: sha512-aypfsr6t0uNvkqaZc6zvBfXzC6pLI0/sIulpkV6RwCVtZqG5ebBzv4weImKK0VNCj91Wl9F5j7p5WU4MNrybng==}
     peerDependencies:
       srvx: '>=0.11.5'
     peerDependenciesMeta:
@@ -607,28 +607,8 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
-  db0@0.3.4:
-    resolution: {integrity: sha512-RiXXi4WaNzPTHEOu8UPQKMooIbqOEyqA1t7Z6MsdxSCeb8iUC9ko3LcmsLmeUt2SM5bctfArZKkRQggKZz7JNw==}
-    peerDependencies:
-      '@electric-sql/pglite': '*'
-      '@libsql/client': '*'
-      better-sqlite3: '*'
-      drizzle-orm: '*'
-      mysql2: '*'
-      sqlite3: '*'
-    peerDependenciesMeta:
-      '@electric-sql/pglite':
-        optional: true
-      '@libsql/client':
-        optional: true
-      better-sqlite3:
-        optional: true
-      drizzle-orm:
-        optional: true
-      mysql2:
-        optional: true
-      sqlite3:
-        optional: true
+  db0@0.4.1:
+    resolution: {integrity: sha512-6RBY/bSn42UrqATwsiULj2uYFyEykB3XeA/NLIVQeHNXlYV6D4Idxx3/aa6k5Y45Dwzx7sygeLotnqHWSeURYA==}
 
   defu@6.1.7:
     resolution: {integrity: sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ==}
@@ -656,23 +636,9 @@ packages:
     resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
     engines: {node: '>=0.12'}
 
-  env-runner@0.1.16:
-    resolution: {integrity: sha512-2LRJM4P2KLX6J83QZZrMqvgCDt/D5ea7wPcI3yYiy5cG/9rX5QwdwZFx0D7ktWnjdRyZxYjttGGorb5nFqb1CA==}
+  env-runner@0.2.1:
+    resolution: {integrity: sha512-2iDP2DfheAMMAKeXBggEuFmpSq+1Xs6wQoHba1g65pZFXlC3VHD1O6/tgVzS6GQLv+P2koPKZPKgKhXkigNBdg==}
     hasBin: true
-    peerDependencies:
-      '@netlify/runtime': ^4.1.23
-      '@vercel/queue': '>=0.2.0'
-      miniflare: ^4.20260515.0
-      wrangler: ^4.0.0
-    peerDependenciesMeta:
-      '@netlify/runtime':
-        optional: true
-      '@vercel/queue':
-        optional: true
-      miniflare:
-        optional: true
-      wrangler:
-        optional: true
 
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
@@ -725,12 +691,12 @@ packages:
       ocache:
         optional: true
 
-  h3@2.0.1-rc.27:
-    resolution: {integrity: sha512-qKIRJCVFXeo0QdXTVaPqF8OqcMW6h4ZW3AA6f+biAh+dbP+ZJmU1tSuVR8syRUZ8UWooFRAqYpfC/6WojAQxYg==}
+  h3@2.0.1-rc.31:
+    resolution: {integrity: sha512-AG7qZzF99a0BSYoXT3evJgIhwSIUKow7R+hwkLRZS06WJ9nbSb7QXUDgs1ByBjp6svTvl++N/GKA7I9YPz9cQQ==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
-      crossws: ^0.4.9
+      crossws: ^0.4.12
       ocache: '>=0.3.0'
     peerDependenciesMeta:
       crossws:
@@ -961,36 +927,10 @@ packages:
   nf3@0.3.23:
     resolution: {integrity: sha512-RWVLAWozmVD3AaDmaU3qMGB3v+yNlH5d9qqStI4e/WLlNQVnJ4YErGDbYCIrGFyrHdbF6I6Baf0Ae6c7tFYmSg==}
 
-  nitro-nightly@3.0.1-20260810-113911-16ff2809:
-    resolution: {integrity: sha512-CD/oRD6udCLWDMOHRRulls448wD1bUzQ6GYfzlUKXTSERDGML9orZhp0dfXTDMZ0A4EtUkRogFH/vHAj9P42ow==}
+  nitro-nightly@3.0.1-20260821-005124-e36e7a60:
+    resolution: {integrity: sha512-aq9jxMgz4ebAl+r1YQezwsdqSAdejaTVQwQaFSvsX7jpQZjes78UbWf1DLMHmOsoUsFo481Ih6D6OydC30a5ew==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
-    peerDependencies:
-      '@vercel/queue': ^0.4.0
-      dotenv: '*'
-      giget: '*'
-      jiti: ^2.7.0
-      rollup: ^4.62.2
-      vite: ^7 || ^8
-      xml2js: ^0.6.2
-      zephyr-agent: ^1.1.2
-    peerDependenciesMeta:
-      '@vercel/queue':
-        optional: true
-      dotenv:
-        optional: true
-      giget:
-        optional: true
-      jiti:
-        optional: true
-      rollup:
-        optional: true
-      vite:
-        optional: true
-      xml2js:
-        optional: true
-      zephyr-agent:
-        optional: true
 
   node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
@@ -998,14 +938,16 @@ packages:
   node-fetch-native@1.6.7:
     resolution: {integrity: sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q==}
 
-  ocache@0.2.0:
-    resolution: {integrity: sha512-QE+SxXf/A8yR01rEOg2X5KwUe+mARHo1xQXl+iwLMzLIH06S5lBOZhhHQWp7T5etfFa8nOnRhvjGuo9YBCWwig==}
+  nypm@0.6.9:
+    resolution: {integrity: sha512-zxlE2yvSWZWmHcNdT3+5zV2lrCogeE9YOklHrR3dFjqutq5wO7GFDYLFDRXLsYnJzwvy/im9fYoxePvS0VTW0w==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  ocache@0.3.0:
+    resolution: {integrity: sha512-RS/9P0zeBb0gDJmadGERLH8lZNXK7xbufTDhclkXGvFGTsj0G4M5/cLk+mizcERH29mLXNnocfB5wjcK70wGJg==}
 
   ofetch@1.5.1:
     resolution: {integrity: sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA==}
-
-  ofetch@2.0.0-alpha.3:
-    resolution: {integrity: sha512-zpYTCs2byOuft65vI3z43Dd6iSdFbOZZLb9/d21aCpx2rGastVU9dOCv0lu4ykc1Ur1anAYjDi3SUvR0vq50JA==}
 
   ohash@2.0.12:
     resolution: {integrity: sha512-65S/5gk9YSsaRjcyf7Nfa6h/d3E8/1gslpXfI4W7Dxn/oap8IKRuNT5VXkLQ1YFKIEg4apRY4Pj6aiwFzrDdmw==}
@@ -1076,13 +1018,13 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  srvx@0.11.22:
-    resolution: {integrity: sha512-LqZxxBDMKuMAZzFzJnDCkFOrs9MZQZr0LvHiO/SuSZVdQaXD7xQ5UWTUxheJrQPve1qk9MG2B/yttUvJxw8egQ==}
+  srvx@0.12.8:
+    resolution: {integrity: sha512-7k9HoDhluTlD7UJ+F+OopZoPZXB2J8f/5nW2VMLaB8KsSlZlRQxyyoX0hWEQCxB+F+3ZvB5QX3LqB6xSBRfxQQ==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
-  srvx@0.12.5:
-    resolution: {integrity: sha512-IuvtDNQg5EIwv3c6dleyau7u8hCyGQ7D6+V/QM799Aud07z0wCUcurKLTRfyG33C8oUY+UWcVBFkfHMcbtmRLA==}
+  srvx@1.0.3:
+    resolution: {integrity: sha512-aOuk+yNJA61yA6eJJvQJxpJLIxz090hKMqDGzd35tGsvwaodi1RPuYSFUp5EINaJp7snjVwLkO2RXVMPZBYnnA==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -1117,8 +1059,8 @@ packages:
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
-  undocs-nightly@0.10.1-20260818-142856-3b64b18:
-    resolution: {integrity: sha512-qaODDgcilXCyeiAdP+qUKfJZiEC/FUPAVJFa6RuHqa98fP00Dx6CtReGwE/n8v8k8HDfAmX+zZNvAKiv9rgPSA==}
+  undocs-nightly@0.10.1-20260828-133553-e5fe415:
+    resolution: {integrity: sha512-ZeydLCVHLYLz+Q8U7OwIO7h4nankBReIIqPvb2DvqfwKvwRjnMiT0czfINciW+EdsGrXrKV4ge+5opAo1Jp0/Q==}
     hasBin: true
 
   unenv@2.0.0-rc.24:
@@ -1165,91 +1107,20 @@ packages:
       webpack:
         optional: true
 
-  unstorage@2.0.0-alpha.7:
-    resolution: {integrity: sha512-ELPztchk2zgFJnakyodVY3vJWGW9jy//keJ32IOJVGUMyaPydwcA1FtVvWqT0TNRch9H+cMNEGllfVFfScImog==}
-    peerDependencies:
-      '@azure/app-configuration': ^1.11.0
-      '@azure/cosmos': ^4.9.1
-      '@azure/data-tables': ^13.3.2
-      '@azure/identity': ^4.13.0
-      '@azure/keyvault-secrets': ^4.10.0
-      '@azure/storage-blob': ^12.31.0
-      '@capacitor/preferences': ^6 || ^7 || ^8
-      '@deno/kv': '>=0.13.0'
-      '@netlify/blobs': ^6.5.0 || ^7.0.0 || ^8.1.0 || ^9.0.0 || ^10.0.0
-      '@planetscale/database': ^1.19.0
-      '@upstash/redis': ^1.36.2
-      '@vercel/blob': '>=0.27.3'
-      '@vercel/functions': ^2.2.12 || ^3.0.0
-      '@vercel/kv': ^1.0.1
-      aws4fetch: ^1.0.20
-      chokidar: ^4 || ^5
-      db0: '>=0.3.4'
-      idb-keyval: ^6.2.2
-      ioredis: ^5.9.3
-      lru-cache: ^11.2.6
-      mongodb: ^6 || ^7
-      ofetch: '*'
-      uploadthing: ^7.7.4
-    peerDependenciesMeta:
-      '@azure/app-configuration':
-        optional: true
-      '@azure/cosmos':
-        optional: true
-      '@azure/data-tables':
-        optional: true
-      '@azure/identity':
-        optional: true
-      '@azure/keyvault-secrets':
-        optional: true
-      '@azure/storage-blob':
-        optional: true
-      '@capacitor/preferences':
-        optional: true
-      '@deno/kv':
-        optional: true
-      '@netlify/blobs':
-        optional: true
-      '@planetscale/database':
-        optional: true
-      '@upstash/redis':
-        optional: true
-      '@vercel/blob':
-        optional: true
-      '@vercel/functions':
-        optional: true
-      '@vercel/kv':
-        optional: true
-      aws4fetch:
-        optional: true
-      chokidar:
-        optional: true
-      db0:
-        optional: true
-      idb-keyval:
-        optional: true
-      ioredis:
-        optional: true
-      lru-cache:
-        optional: true
-      mongodb:
-        optional: true
-      ofetch:
-        optional: true
-      uploadthing:
-        optional: true
+  unstorage@2.0.0-alpha.10:
+    resolution: {integrity: sha512-6h1veZp8gnp4dGllf0tDijoXxDYymJu251IpKKkrSVH+QHL6tXFbwG85KM+CBHSgpkkgtPuIiZ9oLCLP5+1Evw==}
 
   untyped@2.0.0:
     resolution: {integrity: sha512-nwNCjxJTjNuLCgFr42fEak5OcLuB3ecca+9ksPFNvtfYSLpjf+iJqSIaSnIile6ZPbKYxI5k2AfXqeopGudK/g==}
     hasBin: true
 
-  vite@8.2.1:
-    resolution: {integrity: sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw==}
+  vite@8.2.2:
+    resolution: {integrity: sha512-cFKLV/PRgAUlIRm5WjMjJ86jrftzpqcgH+Us+DS8mI3CDNiH30Whrz8uHL3+MOLPAgqbMBAqWdAHAphOAM+z/Q==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
       '@types/node': ^20.19.0 || >=22.12.0
-      '@vitejs/devtools': ^0.4.0
+      '@vitejs/devtools': ^0.4.0 || ^0.5.0
       esbuild: ^0.27.0 || ^0.28.0
       jiti: '>=1.21.0'
       less: ^4.0.0
@@ -1537,12 +1408,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.3.3
       '@tailwindcss/oxide-win32-x64-msvc': 4.3.3
 
-  '@tailwindcss/vite@4.3.3(vite@8.2.1(jiti@2.7.0))':
+  '@tailwindcss/vite@4.3.3(vite@8.2.2(jiti@2.7.0))':
     dependencies:
       '@tailwindcss/node': 4.3.3
       '@tailwindcss/oxide': 4.3.3
       tailwindcss: 4.3.3
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
 
   '@takumi-rs/core-darwin-arm64@2.10.0':
     optional: true
@@ -1598,16 +1469,16 @@ snapshots:
 
   '@types/web-bluetooth@0.0.21': {}
 
-  '@unhead/bundler@3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(unhead@3.3.2(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0)))(vite@8.2.1(jiti@2.7.0))':
+  '@unhead/bundler@3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(unhead@3.3.2(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0)))(vite@8.2.2(jiti@2.7.0))':
     dependencies:
       magic-string: 1.2.1
       oxc-walker: 1.1.1(@oxc-project/types@0.144.0)(rolldown@1.2.4)
-      unhead: 3.3.2(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))
-      unplugin: 3.3.0(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))
+      unhead: 3.3.2(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))
+      unplugin: 3.3.0(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))
     optionalDependencies:
       lightningcss: 1.33.0
       rolldown: 1.2.4
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@oxc-project/types'
@@ -1616,15 +1487,15 @@ snapshots:
       - rollup
       - unloader
 
-  '@unhead/vue@3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))(vue@3.5.41)':
+  '@unhead/vue@3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))(vue@3.5.41)':
     dependencies:
-      '@unhead/bundler': 3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(unhead@3.3.2(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0)))(vite@8.2.1(jiti@2.7.0))
+      '@unhead/bundler': 3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(unhead@3.3.2(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0)))(vite@8.2.2(jiti@2.7.0))
       hookable: 6.1.1
-      unhead: 3.3.2(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))
-      unplugin: 3.3.0(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))
+      unhead: 3.3.2(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))
+      unplugin: 3.3.0(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))
       vue: 3.5.41
     optionalDependencies:
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@oxc-project/types'
@@ -1639,10 +1510,10 @@ snapshots:
       - rollup
       - unloader
 
-  '@vitejs/plugin-vue@6.0.8(vite@8.2.1(jiti@2.7.0))(vue@3.5.41)':
+  '@vitejs/plugin-vue@6.0.8(vite@8.2.2(jiti@2.7.0))(vue@3.5.41)':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
       vue: 3.5.41
 
   '@vue/compiler-core@3.5.41':
@@ -1787,13 +1658,17 @@ snapshots:
 
   consola@3.4.2: {}
 
-  crossws@0.4.10(srvx@0.11.22):
+  crossws@0.4.12(srvx@0.12.8):
     optionalDependencies:
-      srvx: 0.11.22
+      srvx: 0.12.8
+
+  crossws@0.4.12(srvx@1.0.3):
+    optionalDependencies:
+      srvx: 1.0.3
 
   csstype@3.2.3: {}
 
-  db0@0.3.4: {}
+  db0@0.4.1: {}
 
   defu@6.1.7: {}
 
@@ -1816,12 +1691,12 @@ snapshots:
 
   entities@7.0.1: {}
 
-  env-runner@0.1.16:
+  env-runner@0.2.1:
     dependencies:
-      crossws: 0.4.10(srvx@0.11.22)
+      crossws: 0.4.12(srvx@1.0.3)
       exsolve: 1.1.1
       httpxy: 0.5.5
-      srvx: 0.11.22
+      srvx: 1.0.3
 
   estree-walker@2.0.2: {}
 
@@ -1846,21 +1721,21 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  h3-rules@0.1.0(h3@2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0))(ocache@0.2.0):
+  h3-rules@0.1.0(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0))(ocache@0.3.0):
     dependencies:
-      h3: 2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0)
+      h3: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0)
       rou3: 0.9.2
       ufo: 1.6.4
     optionalDependencies:
-      ocache: 0.2.0
+      ocache: 0.3.0
 
-  h3@2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0):
+  h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0):
     dependencies:
       rou3: 0.9.2
-      srvx: 0.12.5
+      srvx: 1.0.3
     optionalDependencies:
-      crossws: 0.4.10(srvx@0.11.22)
-      ocache: 0.2.0
+      crossws: 0.4.12(srvx@0.12.8)
+      ocache: 0.3.0
 
   hey-listen@1.0.8: {}
 
@@ -2029,76 +1904,40 @@ snapshots:
 
   nf3@0.3.23: {}
 
-  nitro-nightly@3.0.1-20260810-113911-16ff2809(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(vite@8.2.1(jiti@2.7.0)):
+  nitro-nightly@3.0.1-20260821-005124-e36e7a60:
     dependencies:
       consola: 3.4.2
-      crossws: 0.4.10(srvx@0.11.22)
-      db0: 0.3.4
-      env-runner: 0.1.16
-      h3: 2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0)
-      h3-rules: 0.1.0(h3@2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0))(ocache@0.2.0)
+      crossws: 0.4.12(srvx@0.12.8)
+      db0: 0.4.1
+      env-runner: 0.2.1
+      h3: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0)
       hookable: 6.1.1
       nf3: 0.3.23
-      ocache: 0.2.0
-      ofetch: 2.0.0-alpha.3
+      ocache: 0.3.0
       ohash: 2.0.12
       rolldown: 1.2.4
       rou3: 0.9.2
-      srvx: 0.11.22
+      srvx: 0.12.8
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ofetch@2.0.0-alpha.3)
-    optionalDependencies:
-      dotenv: 17.4.2
-      giget: 3.3.1
-      jiti: 2.7.0
-      vite: 8.2.1(jiti@2.7.0)
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@electric-sql/pglite'
-      - '@libsql/client'
-      - '@netlify/blobs'
-      - '@netlify/runtime'
-      - '@planetscale/database'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/functions'
-      - '@vercel/kv'
-      - aws4fetch
-      - better-sqlite3
-      - chokidar
-      - drizzle-orm
-      - idb-keyval
-      - ioredis
-      - lru-cache
-      - miniflare
-      - mongodb
-      - mysql2
-      - sqlite3
-      - uploadthing
-      - wrangler
+      unstorage: 2.0.0-alpha.10
 
   node-addon-api@7.1.1: {}
 
   node-fetch-native@1.6.7: {}
 
-  ocache@0.2.0:
+  nypm@0.6.9:
     dependencies:
-      ohash: 2.0.12
+      citty: 0.2.2
+      pathe: 2.0.3
+      tinyexec: 1.3.0
+
+  ocache@0.3.0: {}
 
   ofetch@1.5.1:
     dependencies:
       destr: 2.0.5
       node-fetch-native: 1.6.7
       ufo: 1.6.4
-
-  ofetch@2.0.0-alpha.3: {}
 
   ohash@2.0.12: {}
 
@@ -2170,9 +2009,9 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  srvx@0.11.22: {}
+  srvx@0.12.8: {}
 
-  srvx@0.12.5: {}
+  srvx@1.0.3: {}
 
   tailwind-merge@3.6.0: {}
 
@@ -2203,7 +2042,7 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  undocs-nightly@0.10.1-20260818-142856-3b64b18(@oxc-project/types@0.144.0)(chokidar@5.0.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(h3@2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0))(jiti@2.7.0)(lightningcss@1.33.0)(ocache@0.2.0)(rolldown@1.2.4):
+  undocs-nightly@0.10.1-20260828-133553-e5fe415(@oxc-project/types@0.144.0)(chokidar@5.0.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0))(jiti@2.7.0)(lightningcss@1.33.0)(ocache@0.3.0)(rolldown@1.2.4):
     dependencies:
       '@floating-ui/dom': 1.8.0
       '@fontsource-variable/geist': 5.3.0
@@ -2212,9 +2051,9 @@ snapshots:
       '@iconify-json/vscode-icons': 1.2.74
       '@iconify/utils': 3.1.4
       '@iconify/vue': 5.0.1(vue@3.5.41)
-      '@tailwindcss/vite': 4.3.3(vite@8.2.1(jiti@2.7.0))
-      '@unhead/vue': 3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))(vue@3.5.41)
-      '@vitejs/plugin-vue': 6.0.8(vite@8.2.1(jiti@2.7.0))(vue@3.5.41)
+      '@tailwindcss/vite': 4.3.3(vite@8.2.2(jiti@2.7.0))
+      '@unhead/vue': 3.3.2(@oxc-project/types@0.144.0)(lightningcss@1.33.0)(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))(vue@3.5.41)
+      '@vitejs/plugin-vue': 6.0.8(vite@8.2.2(jiti@2.7.0))(vue@3.5.41)
       '@vueuse/core': 14.4.0(vue@3.5.41)
       automd: 0.4.3
       c12: 4.0.0-beta.5(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)
@@ -2223,12 +2062,13 @@ snapshots:
       clsx: 2.1.1
       consola: 3.4.2
       defu: 6.1.7
-      h3-rules: 0.1.0(h3@2.0.1-rc.27(crossws@0.4.10(srvx@0.11.22))(ocache@0.2.0))(ocache@0.2.0)
+      h3-rules: 0.1.0(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.8))(ocache@0.3.0))(ocache@0.3.0)
       md4x: 0.0.29
       mermaid-compact: 0.0.1
       minisearch: 7.2.0
       motion-v: 2.4.0(@vueuse/core@14.4.0(vue@3.5.41))(vue@3.5.41)
-      nitro: nitro-nightly@3.0.1-20260810-113911-16ff2809(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(vite@8.2.1(jiti@2.7.0))
+      nitro: nitro-nightly@3.0.1-20260821-005124-e36e7a60
+      nypm: 0.6.9
       ofetch: 1.5.1
       rangi: 2.2.0
       scule: 1.3.0
@@ -2237,54 +2077,27 @@ snapshots:
       takumi-js: 2.10.0(csstype@3.2.3)
       tw-animate-css: 1.4.0
       ufo: 1.6.4
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
       vue: 3.5.41
     transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@electric-sql/pglite'
       - '@farmfe/core'
-      - '@libsql/client'
-      - '@netlify/blobs'
-      - '@netlify/runtime'
       - '@oxc-project/types'
-      - '@planetscale/database'
       - '@rspack/core'
       - '@types/node'
       - '@unhead/cli'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/functions'
-      - '@vercel/kv'
-      - '@vercel/queue'
       - '@vitejs/devtools'
       - '@vitejs/devtools-kit'
-      - aws4fetch
-      - better-sqlite3
       - bun-types-no-globals
       - chokidar
       - csstype
       - dotenv
-      - drizzle-orm
       - esbuild
       - giget
       - h3
-      - idb-keyval
-      - ioredis
       - jiti
       - less
       - lightningcss
-      - lru-cache
       - magicast
-      - miniflare
-      - mongodb
-      - mysql2
       - ocache
       - oxc-parser
       - preact
@@ -2294,30 +2107,25 @@ snapshots:
       - rollup
       - sass
       - sass-embedded
-      - sqlite3
       - stylus
       - sugarss
       - terser
       - tsx
       - typescript
       - unloader
-      - uploadthing
       - webpack
-      - wrangler
-      - xml2js
       - yaml
-      - zephyr-agent
 
   unenv@2.0.0-rc.24:
     dependencies:
       pathe: 2.0.3
 
-  unhead@3.3.2(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0)):
+  unhead@3.3.2(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0)):
     dependencies:
       hookable: 6.1.1
-      unplugin: 3.3.0(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0))
+      unplugin: 3.3.0(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0))
     optionalDependencies:
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@rspack/core'
@@ -2328,20 +2136,16 @@ snapshots:
       - unloader
       - webpack
 
-  unplugin@3.3.0(rolldown@1.2.4)(vite@8.2.1(jiti@2.7.0)):
+  unplugin@3.3.0(rolldown@1.2.4)(vite@8.2.2(jiti@2.7.0)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.5
       webpack-virtual-modules: 0.6.2
     optionalDependencies:
       rolldown: 1.2.4
-      vite: 8.2.1(jiti@2.7.0)
+      vite: 8.2.2(jiti@2.7.0)
 
-  unstorage@2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ofetch@2.0.0-alpha.3):
-    optionalDependencies:
-      chokidar: 5.0.0
-      db0: 0.3.4
-      ofetch: 2.0.0-alpha.3
+  unstorage@2.0.0-alpha.10: {}
 
   untyped@2.0.0:
     dependencies:
@@ -2351,7 +2155,7 @@ snapshots:
       knitwork: 1.3.0
       scule: 1.3.0
 
-  vite@8.2.1(jiti@2.7.0):
+  vite@8.2.2(jiti@2.7.0):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.5
