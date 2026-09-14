@@ -6,7 +6,6 @@ icon: devicon-plain:cloudflareworkers
 
 > Connect DB0 to Cloudflare D1 or PostgreSQL/MySQL using Cloudflare Hyperdrive
 
-
 ## Cloudflare D1
 
 :read-more{to="https://developers.cloudflare.com/d1"}
@@ -30,9 +29,7 @@ const db = createDatabase(
 ```
 
 > [!NOTE]
-> In order for the driver to work, `globalThis.__env__.DB` value should be set.
->
-> If you are using [Nitro](https://nitro.unjs.io/) you don't need to do any extra steps.
+> The binding is read from `env` exported by [`cloudflare:workers`](https://developers.cloudflare.com/workers/runtime-apis/bindings/#importing-env-as-a-global).
 
 ### Options
 

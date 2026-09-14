@@ -1,17 +1,22 @@
 /// <reference types="@cloudflare/workers-types" />
 
-function getCloudflareEnv() {
-  return (
-    (globalThis as any).__env__ ||
-    import("cloudflare:workers" as any).then((mod) => mod.env)
-  );
+async function getCloudflareEnv(): Promise<Record<string, unknown>> {
+  const { env } = await import("cloudflare:workers" as any);
+  return env;
 }
 
-export async function getHyperdrive(bindingName: string): Promise<Hyperdrive> {
+export async function getCloudflareBinding<T>(
+  type: string,
+  bindingName: string,
+): Promise<T> {
   const env = await getCloudflareEnv();
-  const binding: Hyperdrive = env[bindingName];
+  const binding = env?.[bindingName] as T | undefined;
   if (!binding) {
-    throw new Error(`[db0] [hyperdrive] binding \`${bindingName}\` not found`);
+    throw new Error(`[db0] [${type}] binding \`${bindingName}\` not found`);
   }
   return binding;
+}
+
+export function getHyperdrive(bindingName: string): Promise<Hyperdrive> {
+  return getCloudflareBinding<Hyperdrive>("hyperdrive", bindingName);
 }
