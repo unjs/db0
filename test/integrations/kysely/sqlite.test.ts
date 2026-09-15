@@ -5,6 +5,7 @@ import { kysely } from "../../../src/integrations/kysely";
 
 import type { Kysely } from "kysely";
 
+import betterSqlite3 from "../../../src/connectors/better-sqlite3";
 import libsqlNode from "../../../src/connectors/libsql/node";
 
 interface UsersTable {
@@ -17,6 +18,10 @@ interface DB {
 }
 
 const connectors: { name: string; connector: () => Connector }[] = [
+  {
+    name: "better-sqlite3",
+    connector: () => betterSqlite3({ name: ":memory:" }),
+  },
   {
     name: "libsql-node",
     connector: () => libsqlNode({ url: ":memory:" }),
@@ -106,6 +111,7 @@ for (const { name, connector } of connectors) {
 
     afterAll(async () => {
       await db.sql`DROP TABLE IF EXISTS users`;
+      await db.dispose();
     });
   });
 }
