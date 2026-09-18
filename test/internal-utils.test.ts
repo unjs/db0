@@ -97,7 +97,15 @@ describe("discardOnError", () => {
     end() {
       this.ends++;
     }
+    /**
+     * Emit like Node's `EventEmitter`: an `'error'` without a listener throws
+     * instead of passing silently, so a test that expects the event to be
+     * handled fails when no listener was registered.
+     */
     fail(error = new Error("connection terminated unexpectedly")) {
+      if (this.listeners.length === 0) {
+        throw error;
+      }
       for (const listener of this.listeners) listener(error);
     }
   }
