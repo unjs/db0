@@ -7,6 +7,7 @@ import { normalizeParams } from "./_internal/postgresql.ts";
 import {
   importLib,
   lazyInstance,
+  discardOnError,
   type ConnectorDependencies,
   type LibImport,
 } from "./_internal/utils.ts";
@@ -57,6 +58,7 @@ export default function neonConnector(
       () => import("@neondatabase/serverless"),
     );
     const client = new pg.Client(config);
+    discardOnError(getClient, client);
     await client.connect();
     return client;
   });

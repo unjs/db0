@@ -9,6 +9,7 @@ import {
   importLib,
   interopDefault,
   lazyInstance,
+  discardOnError,
   type ConnectorDependencies,
   type LibImport,
 } from "./_internal/utils.ts";
@@ -52,6 +53,7 @@ export default function cloudflareHyperdrivePostgresqlConnector(
       ...config,
       connectionString: hyperdrive.connectionString,
     });
+    discardOnError(getClient, client);
     await client.connect();
     return client;
   });

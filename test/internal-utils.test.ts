@@ -3,6 +3,7 @@ import {
   importLib,
   interopDefault,
   lazyInstance,
+  discardOnError,
 } from "../src/connectors/_internal/utils";
 
 describe("importLib", () => {
@@ -83,5 +84,78 @@ describe("lazyInstance", () => {
     expect(get.current).toBeUndefined();
     expect(await get()).not.toBe(first);
     expect(factory).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("discardOnError", () => {
+  class FakeConnection {
+    listeners: ((error: Error) => void)[] = [];
+    ends = 0;
+    on(_event: "error", listener: (error: Error) => void) {
+      this.listeners.push(listener);
+    }
+    end() {
+      this.ends++;
+    }
+    /**
+     * Emit like Node's `EventEmitter`: an `'error'` without a listener throws
+     * instead of passing silently, so a test that expects the event to be
+     * handled fails when no listener was registered.
+     */
+    fail(error = new Error("connection terminated unexpectedly")) {
+      if (this.listeners.length === 0) {
+        throw error;
+      }
+      for (const listener of this.listeners) listener(error);
+    }
+  }
+
+  /** The connector shape: register the listener before the connection is cached. */
+  function connect(connections: FakeConnection[] = []) {
+    const get = lazyInstance(async () => {
+      const connection = new FakeConnection();
+      discardOnError(get, connection);
+      connections.push(connection);
+      return connection;
+    });
+    return get;
+  }
+
+  it("swallows the error event instead of letting it reach Node", async () => {
+    const get = connect();
+    const connection = await get();
+    expect(() => connection.fail()).not.toThrow();
+  });
+
+  it("forgets the failed connection so the next call reconnects", async () => {
+    const get = connect();
+    const first = await get();
+
+    first.fail();
+    await vi.waitFor(() => expect(get.current).toBeUndefined());
+
+    expect(first.ends).toBe(1);
+    expect(await get()).not.toBe(first);
+  });
+
+  it("does not discard a connection that already replaced the failed one", async () => {
+    const get = connect();
+    const first = await get();
+
+    get.reset();
+    const second = await get();
+
+    // The old connection errors after being replaced: the live one must stay.
+    first.fail();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(second.ends).toBe(0);
+    expect(await get()).toBe(second);
+  });
+
+  it("ignores a connection without an event emitter", async () => {
+    const get = lazyInstance(async () => ({}));
+    const connection = await get();
+    expect(() => discardOnError(get, connection)).not.toThrow();
   });
 });
