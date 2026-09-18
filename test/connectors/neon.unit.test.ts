@@ -9,10 +9,23 @@ const { clients, state, MockClient } = vi.hoisted(() => {
     connects = 0;
     ends = 0;
     queries: { sql: string; params?: unknown[] }[] = [];
+    errorListeners: ((error: Error) => void)[] = [];
 
     constructor(config: any) {
       this.config = config;
       clients.push(this);
+    }
+
+    on(event: string, listener: (error: Error) => void) {
+      if (event === "error") {
+        this.errorListeners.push(listener);
+      }
+      return this;
+    }
+
+    /** Emit the `'error'` pg raises when the server drops the connection. */
+    fail(error = new Error("Connection terminated unexpectedly")) {
+      for (const listener of this.errorListeners) listener(error);
     }
 
     connect() {
@@ -111,5 +124,23 @@ describe("connectors: neon client lifecycle", () => {
     );
     await expect(db.getInstance()).rejects.toThrow("boom");
     await expect(db.dispose()).resolves.toBeUndefined();
+  });
+
+  test("a client that errors is replaced on the next query", async () => {
+    const db = createDatabase(
+      neonConnector({ url: "postgres://user@host/db" }),
+    );
+    await db.sql`SELECT 1`;
+
+    // pg emits 'error' when the server goes away (restart, failover, idle
+    // reaper). Without a listener this would terminate the process, and the
+    // dead client would be reused forever.
+    expect(() => clients[0].fail()).not.toThrow();
+    await vi.waitFor(() => expect(clients[0].ends).toBe(1));
+
+    await db.sql`SELECT 2`;
+
+    expect(clients).toHaveLength(2);
+    expect(clients[1].queries.at(-1).sql).toBe("SELECT 2");
   });
 });

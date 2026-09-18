@@ -66,3 +66,38 @@ export function lazyInstance<T>(factory: () => Promise<T>): LazyInstance<T> {
   };
   return get;
 }
+
+type ErrorEmitter = {
+  on?: (event: "error", listener: (error: Error) => void) => unknown;
+  end?: () => unknown;
+};
+
+/**
+ * Drop a cached connection from `instance` once it emits an `'error'` event.
+ *
+ * A driver connection that can emit `'error'` must always have a listener:
+ * Node terminates the process on an unhandled `'error'` event, so a server-side
+ * disconnect (a restart, a failover, an idle reaper) would otherwise take the
+ * process down with it. Forgetting the connection also lets the next query
+ * connect again instead of reusing one the server has already torn down.
+ */
+export function discardOnError<T extends ErrorEmitter>(
+  instance: LazyInstance<T>,
+  connection: T,
+): void {
+  connection.on?.("error", () => {
+    // Only forget this connection: a later one may already have replaced it.
+    void instance.current?.then(
+      (current) => {
+        if (current !== connection) {
+          return;
+        }
+        instance.reset();
+        // Release the socket. A connection that has already gone away ends
+        // without complaint, so failures here are nothing to report.
+        void Promise.resolve(connection.end?.()).catch(() => {});
+      },
+      () => {},
+    );
+  });
+}

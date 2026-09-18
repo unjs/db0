@@ -8,6 +8,7 @@ import {
   importLib,
   interopDefault,
   lazyInstance,
+  discardOnError,
   type ConnectorDependencies,
   type LibImport,
 } from "./_internal/utils.ts";
@@ -43,6 +44,7 @@ export default function postgresqlConnector(
       await importLib(CONNECTOR_NAME, "pg", lib, () => import("pg")),
     );
     const client = new pg.Client("url" in config ? config.url : config);
+    discardOnError(getClient, client);
     await client.connect();
     return client;
   });
