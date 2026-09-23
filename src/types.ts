@@ -5,7 +5,7 @@ import type { ConnectorName } from "./_connectors.ts";
  */
 export type Primitive = string | number | boolean | undefined | null;
 
-export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql";
+export type SQLDialect = "mysql" | "postgresql" | "sqlite" | "libsql" | "mssql";
 
 export interface DatabaseCapabilities {
   readonly json: boolean;

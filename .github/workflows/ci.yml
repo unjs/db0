@@ -16,3 +16,7 @@ jobs:
       - run: pnpm test:types
       - run: pnpm prisma:generate
       - run: pnpm vitest
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
