@@ -52,7 +52,7 @@ const connectors: {
 }[] = [];
 
 const connectorOptionsNameAliases: Record<string, string> = {
-  "mssql": "MSSQL"
+  mssql: "MSSQL",
 };
 
 for (const entry of connectorEntries) {
@@ -73,7 +73,8 @@ for (const entry of connectorEntries) {
 
   const names = [...new Set([name, ...alternativeNames])];
 
-  const optionsTName = (connectorOptionsNameAliases[name] || upperFirst(safeName)) + "Options";
+  const optionsTName =
+    (connectorOptionsNameAliases[name] || upperFirst(safeName)) + "Options";
 
   // Connectors only import their third-party libraries dynamically, so this is safe to load.
   const { CONNECTOR_DEPENDENCIES: dependencies } = contents.includes(
