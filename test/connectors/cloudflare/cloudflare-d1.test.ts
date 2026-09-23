@@ -1,8 +1,17 @@
 import { getPlatformProxy, type PlatformProxy } from "wrangler";
-import { afterAll, beforeAll, describe } from "vitest";
+import { afterAll, beforeAll, describe, vi } from "vitest";
 import cloudflareD1 from "../../../src/connectors/cloudflare-d1";
 import { testConnector } from "../_tests";
 import { fileURLToPath } from "node:url";
+
+const cf = vi.hoisted(() => ({
+  env: undefined as Record<string, unknown> | undefined,
+}));
+vi.mock("cloudflare:workers", () => ({
+  get env() {
+    return cf.env;
+  },
+}));
 
 describe("connectors: cloudflare-d1", () => {
   let platformProxy: PlatformProxy;
@@ -11,12 +20,12 @@ describe("connectors: cloudflare-d1", () => {
     platformProxy = await getPlatformProxy({
       configPath: fileURLToPath(new URL("wrangler-d1.toml", import.meta.url)),
     });
-    (globalThis as any).__env__ = platformProxy.env;
+    cf.env = platformProxy.env;
   });
 
   afterAll(async () => {
     await platformProxy?.dispose();
-    (globalThis as any).__env__ = undefined;
+    cf.env = undefined;
   });
 
   testConnector({

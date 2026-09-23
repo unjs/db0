@@ -20,6 +20,12 @@ const connectorFiles = (
   )
   .filter((file) => !file.split("/").some((part) => part.startsWith("_")));
 
+/**
+ * `bun-sqlite` statically imports `bun:sqlite`, which cannot be resolved under Node,
+ * so its module (and therefore its `CONNECTOR_DEPENDENCIES` export) cannot be loaded here.
+ */
+const NOT_LOADABLE_IN_NODE = new Set(["bun-sqlite"]);
+
 /** `mysql2/promise` -> `mysql2`, `@libsql/client/http` -> `@libsql/client` */
 function packageName(specifier: string): string {
   const segments = specifier.split("/");
@@ -41,22 +47,46 @@ describe("connector dependencies", () => {
       const contents = await readFile(join(connectorsDir, file), "utf8");
       const declared = connectorDependencies[name as ConnectorName] || {};
 
-      const expected: Record<string, string> = {};
-      for (const [, specifier, expression] of contents.matchAll(
-        /importLib\(\s*CONNECTOR_NAME,\s*"([^"]+)",\s*([\w.?]+),/g,
+      const expected: Record<string, { name: string; import?: string }> = {};
+      for (const [, specifier, expression, loaded] of contents.matchAll(
+        /importLib\(\s*CONNECTOR_NAME,\s*"([^"]+)",\s*([\w.?]+),\s*\(\)\s*=>\s*import\("([^"]+)"\)/g,
       )) {
-        expected[optionName(expression!)] = packageName(specifier!);
+        expect(
+          loaded,
+          `${name}: dynamic import does not match the declared specifier`,
+        ).toBe(specifier);
+        const pkg = packageName(specifier!);
+        expected[optionName(expression!)] = {
+          name: pkg,
+          // Only declared when the connector imports a subpath of the package.
+          import: specifier === pkg ? undefined : specifier,
+        };
       }
 
       expect(
         Object.fromEntries(
-          Object.entries(declared).map(([option, dep]) => [option, dep.name]),
+          Object.entries(declared).map(([option, dep]) => [
+            option,
+            { name: dep.name, import: dep.import },
+          ]),
         ),
       ).toEqual(expected);
 
       for (const dep of Object.values(declared)) {
         expect(dep.version, `${name}: missing version range`).toBeTruthy();
       }
+
+      if (NOT_LOADABLE_IN_NODE.has(name)) {
+        return;
+      }
+
+      // The generated map is a copy of the connector's own export: they must not drift.
+      const specifier = `../src/connectors/${file}`;
+      const { CONNECTOR_DEPENDENCIES: exported } = await import(specifier);
+      expect(
+        exported ?? {},
+        `${name}: generated map is out of sync with CONNECTOR_DEPENDENCIES`,
+      ).toEqual(declared);
     });
   }
 

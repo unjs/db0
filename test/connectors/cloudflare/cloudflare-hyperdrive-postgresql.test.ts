@@ -1,9 +1,18 @@
 import { getPlatformProxy, type PlatformProxy } from "wrangler";
 
-import { afterAll, beforeAll, describe } from "vitest";
+import { afterAll, beforeAll, describe, vi } from "vitest";
 import cloudflareHyperdrivePostgresql from "../../../src/connectors/cloudflare-hyperdrive-postgresql";
 import { testConnector } from "../_tests";
 import { fileURLToPath } from "node:url";
+
+const cf = vi.hoisted(() => ({
+  env: undefined as Record<string, unknown> | undefined,
+}));
+vi.mock("cloudflare:workers", () => ({
+  get env() {
+    return cf.env;
+  },
+}));
 
 describe.runIf(process.env.POSTGRESQL_URL)(
   "connectors: cloudflare-hyperdrive-postgresql",
@@ -16,7 +25,7 @@ describe.runIf(process.env.POSTGRESQL_URL)(
       platformProxy = await getPlatformProxy({
         configPath: fileURLToPath(new URL("wrangler-pg.toml", import.meta.url)),
       });
-      (globalThis as any).__env__ = platformProxy.env;
+      cf.env = platformProxy.env;
     });
 
     afterAll(async () => {

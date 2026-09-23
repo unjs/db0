@@ -87,13 +87,13 @@ export const connectorDependencies: Partial<
     lib: { name: "better-sqlite3", version: "^11 || ^12 || ^13" },
   },
   "cloudflare-hyperdrive-mysql": {
-    lib: { name: "mysql2", version: "^3" },
+    lib: { name: "mysql2", import: "mysql2/promise", version: "^3" },
   },
   "cloudflare-hyperdrive-postgresql": {
     lib: { name: "pg", version: "^8" },
   },
   "libsql-http": {
-    lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+    lib: { name: "@libsql/client", import: "@libsql/client/http", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
   },
   "libsql-node": {
     lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
@@ -103,10 +103,10 @@ export const connectorDependencies: Partial<
     lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
   },
   "libsql-web": {
-    lib: { name: "@libsql/client", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
+    lib: { name: "@libsql/client", import: "@libsql/client/http", version: "^0.14 || ^0.15 || ^0.16 || ^0.17" },
   },
   "mysql2": {
-    lib: { name: "mysql2", version: "^3" },
+    lib: { name: "mysql2", import: "mysql2/promise", version: "^3" },
   },
   "neon": {
     lib: { name: "@neondatabase/serverless", version: "^1" },

@@ -38,7 +38,7 @@ export type ConnectorOptions = {
 } & OmitMysqlConfig;
 
 export const CONNECTOR_DEPENDENCIES: ConnectorDependencies = {
-  lib: { name: "mysql2", version: "^3" },
+  lib: { name: "mysql2", import: "mysql2/promise", version: "^3" },
 };
 
 const CONNECTOR_NAME = "cloudflare-hyperdrive-mysql";

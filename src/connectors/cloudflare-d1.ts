@@ -1,6 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
+import { getCloudflareBinding } from "./_internal/cloudflare.ts";
 
 type RawStatement = D1PreparedStatement;
 
@@ -11,18 +12,8 @@ export interface ConnectorOptions {
 export default function cloudflareD1Connector(
   options: ConnectorOptions,
 ): Connector<D1Database> {
-  const getDB = () => {
-    // TODO: Remove legacy __cf_env__ support in next major version
-    const binding: D1Database =
-      ((globalThis as any).__env__ as any)?.[options.bindingName!] ||
-      ((globalThis as any).__cf_env__ as any)?.[options.bindingName!];
-    if (!binding) {
-      throw new Error(
-        `[db0] [d1] binding \`${options.bindingName}\` not found`,
-      );
-    }
-    return binding;
-  };
+  const getDB = () =>
+    getCloudflareBinding<D1Database>("d1", options.bindingName!);
 
   return {
     name: "cloudflare-d1",
@@ -32,24 +23,25 @@ export default function cloudflareD1Connector(
     // https://developers.cloudflare.com/d1/worker-api/d1-database/#batch
     capabilityOverrides: { transactions: false },
     getInstance: () => getDB(),
-    exec: (sql) => getDB().exec(sql),
-    prepare: (sql) => new StatementWrapper(getDB().prepare(sql)),
+    exec: async (sql) => (await getDB()).exec(sql),
+    prepare: (sql) =>
+      new StatementWrapper(async () => (await getDB()).prepare(sql)),
   };
 }
 
-class StatementWrapper extends BoundableStatement<RawStatement> {
+class StatementWrapper extends BoundableStatement<() => Promise<RawStatement>> {
   async all(...params: Primitive[]) {
-    const res = await this._statement.bind(...params).all();
+    const res = await (await this._statement()).bind(...params).all();
     return res.results;
   }
 
   async run(...params: Primitive[]) {
-    const res = await this._statement.bind(...params).run();
+    const res = await (await this._statement()).bind(...params).run();
     return res;
   }
 
   async get(...params: Primitive[]) {
-    const res = await this._statement.bind(...params).first();
+    const res = await (await this._statement()).bind(...params).first();
     return res;
   }
 }
