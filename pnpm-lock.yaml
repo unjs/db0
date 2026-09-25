@@ -54,8 +54,8 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4(@electric-sql/pglite@0.5.8)(@libsql/client@0.17.4)(better-sqlite3@13.0.3)(drizzle-orm@1.0.0-rc.4(@cloudflare/workers-types@5.20260901.1)(@electric-sql/pglite@0.5.8)(@libsql/client@0.17.4)(@neondatabase/serverless@1.1.0)(@planetscale/database@1.20.1)(@types/better-sqlite3@9.6.0)(@types/pg@8.23.1)(better-sqlite3@13.0.3)(bun-types@1.4.0)(mysql2@3.24.2(@types/node@26.4.0))(pg@8.23.0)(postgres@3.4.7)(sqlite3@6.0.1)(valibot@1.4.2(typescript@7.0.2))(zod@3.25.76))(mysql2@3.24.2(@types/node@26.4.0))(sqlite3@6.0.1)
       dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
+        specifier: ^18.0.3
+        version: 18.0.3
       drizzle-orm:
         specifier: 1.0.0-rc.4
         version: 1.0.0-rc.4(@cloudflare/workers-types@5.20260901.1)(@electric-sql/pglite@0.5.8)(@libsql/client@0.17.4)(@neondatabase/serverless@1.1.0)(@planetscale/database@1.20.1)(@types/better-sqlite3@9.6.0)(@types/pg@8.23.1)(better-sqlite3@13.0.3)(bun-types@1.4.0)(mysql2@3.24.2(@types/node@26.4.0))(pg@8.23.0)(postgres@3.4.7)(sqlite3@6.0.1)(valibot@1.4.2(typescript@7.0.2))(zod@3.25.76)
@@ -79,7 +79,7 @@ importers:
         version: 3.24.2(@types/node@26.4.0)
       obuild:
         specifier: ^0.4.38
-        version: 0.4.38(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)(typescript@7.0.2)
+        version: 0.4.38(chokidar@5.0.0)(dotenv@18.0.3)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)(typescript@7.0.2)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -112,7 +112,7 @@ importers:
     devDependencies:
       db0:
         specifier: latest
-        version: 0.4.0
+        version: 0.4.1
       drizzle-kit:
         specifier: ^0.20.14
         version: 0.20.18(supports-color@10.2.2)
@@ -127,7 +127,7 @@ importers:
     devDependencies:
       db0:
         specifier: latest
-        version: 0.4.0
+        version: 0.4.1
       jiti:
         specifier: ^1.21.0
         version: 1.21.7
@@ -2093,8 +2093,8 @@ packages:
       sqlite3:
         optional: true
 
-  db0@0.4.0:
-    resolution: {integrity: sha512-2aitWuWdOGUGQdO8oiSdQIRXpiQmYt6CnB1WoAQ1HtBkk26JyvUnSFnT477fG/8n6+QabQUKJDP3KH8njHoocw==}
+  db0@0.4.1:
+    resolution: {integrity: sha512-6RBY/bSn42UrqATwsiULj2uYFyEykB3XeA/NLIVQeHNXlYV6D4Idxx3/aa6k5Y45Dwzx7sygeLotnqHWSeURYA==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -2173,6 +2173,11 @@ packages:
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
+
+  dotenv@18.0.3:
+    resolution: {integrity: sha512-/8CJTyL817qPnfbQrJgOEcrU3fDrJkRIoXBE566wHuvIXKOCHUZhPqGPbCPi9SogjdGnreF0TlvnTgK6J/8zpA==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   dreamopt@0.8.0:
     resolution: {integrity: sha512-vyJTp8+mC+G+5dfgsY+r3ckxlz+QMX40VjPQsZc5gxVAxLmi64TBoVkP54A/pRAXMXsbu2GMMBrZPxNv23waMg==}
@@ -5283,7 +5288,7 @@ snapshots:
     optionalDependencies:
       magicast: 0.5.4
 
-  c12@4.0.0-beta.5(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4):
+  c12@4.0.0-beta.5(chokidar@5.0.0)(dotenv@18.0.3)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4):
     dependencies:
       confbox: 0.2.4
       defu: 6.1.7
@@ -5293,7 +5298,7 @@ snapshots:
       rc9: 3.0.1
     optionalDependencies:
       chokidar: 5.0.0
-      dotenv: 17.4.2
+      dotenv: 18.0.3
       giget: 3.3.1
       jiti: 2.7.0
       magicast: 0.5.4
@@ -5448,7 +5453,7 @@ snapshots:
       mysql2: 3.24.2(@types/node@26.4.0)
       sqlite3: 6.0.1
 
-  db0@0.4.0: {}
+  db0@0.4.1: {}
 
   debug@4.4.3(supports-color@10.2.2):
     dependencies:
@@ -5510,6 +5515,8 @@ snapshots:
       heap: 0.2.7
 
   dotenv@17.4.2: {}
+
+  dotenv@18.0.3: {}
 
   dreamopt@0.8.0:
     dependencies:
@@ -6620,9 +6627,9 @@ snapshots:
 
   obug@2.1.4: {}
 
-  obuild@0.4.38(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)(typescript@7.0.2):
+  obuild@0.4.38(chokidar@5.0.0)(dotenv@18.0.3)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)(typescript@7.0.2):
     dependencies:
-      c12: 4.0.0-beta.5(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)
+      c12: 4.0.0-beta.5(chokidar@5.0.0)(dotenv@18.0.3)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)
       consola: 3.4.2
       defu: 6.1.7
       exsolve: 1.1.1
