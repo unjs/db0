@@ -63,7 +63,7 @@
     "better-sqlite3": "^13.0.3",
     "changelogen": "^0.6.2",
     "db0": "^0.3.4",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.3",
     "drizzle-orm": "1.0.0-rc.4",
     "eslint": "^10.9.1",
     "eslint-config-unjs": "^0.6.2",
