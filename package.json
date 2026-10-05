@@ -52,7 +52,7 @@
     "@electric-sql/pglite": "^0.5.8",
     "@libsql/client": "^0.17.4",
     "@neondatabase/serverless": "^1.1.0",
-    "@planetscale/database": "^1.20.1",
+    "@planetscale/database": "^2.0.0",
     "@prisma/client": "^7.10.0",
     "@prisma/driver-adapter-utils": "^7.10.0",
     "@types/better-sqlite3": "^9.6.0",
