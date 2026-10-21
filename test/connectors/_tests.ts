@@ -83,6 +83,20 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
     expect(rows).toMatchInlineSnapshot(userSnapshot);
   });
 
+  it("select with common table expression", async () => {
+    const { rows } =
+      await db.sql`WITH matched AS (SELECT * FROM users WHERE id = ${userId}) SELECT * FROM matched`;
+    expect(rows).toMatchInlineSnapshot(userSnapshot);
+  });
+
+  if (opts.dialect !== "mysql") {
+    it("mutation with common table expression", async () => {
+      await expect(
+        db.sql`WITH ids AS (SELECT 'none' AS id) DELETE FROM users WHERE id IN (SELECT id FROM ids)`,
+      ).resolves.toBeDefined();
+    });
+  }
+
   it("deferred prepare errors", async () => {
     await expect(
       db.prepare("SELECT * FROM non_existing_table").all(),

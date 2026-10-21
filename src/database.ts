@@ -4,6 +4,7 @@ import type { Connector, Database, SQLDialect } from "./types.ts";
 import type { Primitive } from "./types.ts";
 
 const SQL_SELECT_RE = /^select/i;
+const SQL_WITH_RE = /^with\b/i;
 const SQL_RETURNING_RE = /[\s]returning[\s]/i;
 const DIALECTS_WITH_RET: Set<SQLDialect> = new Set(["postgresql", "sqlite"]);
 
@@ -72,6 +73,8 @@ export function createDatabase<TConnector extends Connector = Connector>(
       const [sql, params] = sqlTemplate(strings, ...values);
       if (
         SQL_SELECT_RE.test(sql) /* select */ ||
+        (SQL_WITH_RE.test(sql) &&
+          getCTEStatement(sql) === "select") /* with ... select */ ||
         // prettier-ignore
         (DIALECTS_WITH_RET.has(connector.dialect) && SQL_RETURNING_RE.test(sql)) /* returning */
       ) {
@@ -102,4 +105,33 @@ export function createDatabase<TConnector extends Connector = Connector>(
       return this.dispose();
     },
   };
+}
+
+const SQL_CTE_TOKEN_RE =
+  /'(?:[^']|'')*'|"(?:[^"]|"")*"|`[^`]*`|[()]|[a-z_]\w*/gi;
+const SQL_STATEMENT_KEYWORDS = new Set([
+  "select",
+  "insert",
+  "update",
+  "delete",
+]);
+
+/**
+ * Returns the keyword of the main statement of a `WITH` query: the first
+ * statement keyword outside the parenthesized CTE bodies.
+ */
+function getCTEStatement(sql: string): string | undefined {
+  let depth = 0;
+  for (const [token] of sql.matchAll(SQL_CTE_TOKEN_RE)) {
+    if (token === "(") {
+      depth++;
+    } else if (token === ")") {
+      depth--;
+    } else if (depth === 0) {
+      const keyword = token.toLowerCase();
+      if (SQL_STATEMENT_KEYWORDS.has(keyword)) {
+        return keyword;
+      }
+    }
+  }
 }
