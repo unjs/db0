@@ -89,6 +89,20 @@ export function testConnector<TConnector extends Connector = Connector>(opts: {
     expect(rows).toMatchInlineSnapshot(userSnapshot);
   });
 
+  it("select with common table expression and comment", async () => {
+    const { rows } =
+      await db.sql`WITH /* delete */ matched AS (SELECT * FROM users WHERE id = ${userId}) SELECT * FROM matched`;
+    expect(rows).toMatchInlineSnapshot(userSnapshot);
+  });
+
+  if (opts.dialect === "sqlite") {
+    it("select with common table expression named by brackets", async () => {
+      const { rows } =
+        await db.sql`WITH [delete] AS (SELECT * FROM users WHERE id = ${userId}) SELECT * FROM [delete]`;
+      expect(rows).toMatchInlineSnapshot(userSnapshot);
+    });
+  }
+
   if (opts.dialect !== "mysql") {
     it("mutation with common table expression", async () => {
       await expect(

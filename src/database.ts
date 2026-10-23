@@ -108,7 +108,7 @@ export function createDatabase<TConnector extends Connector = Connector>(
 }
 
 const SQL_CTE_TOKEN_RE =
-  /'(?:[^']|'')*'|"(?:[^"]|"")*"|`[^`]*`|[()]|[a-z_]\w*/gi;
+  /--[^\n]*|\/\*[\s\S]*?\*\/|'(?:[^']|'')*'|"(?:[^"]|"")*"|`[^`]*`|\[[^\]]*\]|[()]|[a-z_]\w*/gi;
 const SQL_STATEMENT_KEYWORDS = new Set([
   "select",
   "insert",
