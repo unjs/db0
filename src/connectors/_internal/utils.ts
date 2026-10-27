@@ -52,16 +52,33 @@ export type LazyInstance<T> = (() => Promise<T>) & {
   current: Promise<T> | undefined;
   /** Forget the cached instance so that it is created again on next access. */
   reset: () => void;
+  /**
+   * Forget the cached instance and reject the next access with `error`; the
+   * access after that creates the instance again.
+   */
+  fail: (error: unknown) => void;
 };
 
 export function lazyInstance<T>(factory: () => Promise<T>): LazyInstance<T> {
-  const get = (() =>
-    (get.current ??= factory().catch((error) => {
+  let failure: { error: unknown } | undefined;
+  const get = (() => {
+    if (failure) {
+      const { error } = failure;
+      failure = undefined;
+      return Promise.reject(error);
+    }
+    return (get.current ??= factory().catch((error) => {
       get.current = undefined;
       throw error;
-    }))) as LazyInstance<T>;
+    }));
+  }) as LazyInstance<T>;
   get.current = undefined;
   get.reset = () => {
+    failure = undefined;
+    get.current = undefined;
+  };
+  get.fail = (error) => {
+    failure = { error };
     get.current = undefined;
   };
   return get;
@@ -80,19 +97,36 @@ type ErrorEmitter = {
  * disconnect (a restart, a failover, an idle reaper) would otherwise take the
  * process down with it. Forgetting the connection also lets the next query
  * connect again instead of reusing one the server has already torn down.
+ *
+ * Reconnecting is only safe outside a transaction: the server rolled back the
+ * open one with the session, so the rest of it would silently autocommit on the
+ * new connection. When `inTransaction` reports one, the next query rejects
+ * instead (integrations roll back on it) and only the one after reconnects.
  */
 export function discardOnError<T extends ErrorEmitter>(
   instance: LazyInstance<T>,
   connection: T,
+  inTransaction?: (connection: T) => boolean,
 ): void {
-  connection.on("error", () => {
-    // Only forget this connection: a later one may already have replaced it.
-    void instance.current?.then(
+  connection.on("error", (error) => {
+    const lostTransaction = inTransaction?.(connection) ?? false;
+    const pending = instance.current;
+    void pending?.then(
       (current) => {
-        if (current !== connection) {
+        // Only forget this connection: a later one may already have replaced it.
+        if (current !== connection || instance.current !== pending) {
           return;
         }
-        instance.reset();
+        if (lostTransaction) {
+          instance.fail(
+            new Error(
+              "[db0] The connection was lost during a transaction and the server rolled it back. The next query uses a new connection.",
+              { cause: error },
+            ),
+          );
+        } else {
+          instance.reset();
+        }
         // Release the socket. A connection that has already gone away ends
         // without complaint, so failures here are nothing to report.
         void Promise.resolve(connection.end()).catch(() => {});

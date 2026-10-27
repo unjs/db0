@@ -1,3 +1,16 @@
+/**
+ * Whether a `pg` client was inside a transaction block when it last became idle.
+ *
+ * Clients without `getTransactionStatus()` (older `pg`, `@neondatabase/serverless`)
+ * cannot tell and report `false`.
+ */
+export function inTransaction(client: object): boolean {
+  const status = (
+    client as { getTransactionStatus?: () => string | null }
+  ).getTransactionStatus?.();
+  return status === "T" || status === "E";
+}
+
 // PostgreSQL uses numbered placeholders ($1, $2, ...) instead of `?`.
 // https://www.postgresql.org/docs/current/sql-prepare.html
 //

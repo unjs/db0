@@ -85,12 +85,24 @@ describe("lazyInstance", () => {
     expect(await get()).not.toBe(first);
     expect(factory).toHaveBeenCalledTimes(2);
   });
+
+  it("can fail the next access once", async () => {
+    const factory = vi.fn(async () => ({}));
+    const get = lazyInstance(factory);
+    const first = await get();
+    get.fail(new Error("gone"));
+    expect(get.current).toBeUndefined();
+    await expect(get()).rejects.toThrow("gone");
+    expect(await get()).not.toBe(first);
+    expect(factory).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("discardOnError", () => {
   class FakeConnection {
     listeners: ((error: Error) => void)[] = [];
     ends = 0;
+    inTransaction = false;
     on(_event: "error", listener: (error: Error) => void) {
       this.listeners.push(listener);
     }
@@ -114,7 +126,7 @@ describe("discardOnError", () => {
   function connect(connections: FakeConnection[] = []) {
     const get = lazyInstance(async () => {
       const connection = new FakeConnection();
-      discardOnError(get, connection);
+      discardOnError(get, connection, (c) => c.inTransaction);
       connections.push(connection);
       return connection;
     });
@@ -151,5 +163,40 @@ describe("discardOnError", () => {
 
     expect(second.ends).toBe(0);
     expect(await get()).toBe(second);
+  });
+
+  it("does not discard a connection that replaced the failed one before the error was handled", async () => {
+    const get = connect();
+    const first = await get();
+
+    // Replaced in the same tick, before the error handler gets to run.
+    first.fail();
+    get.reset();
+    const second = get();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(get.current).toBe(second);
+    expect(first.ends).toBe(0);
+  });
+
+  it("fails the next query instead of reconnecting inside a transaction", async () => {
+    const get = connect();
+    const first = await get();
+    first.inTransaction = true;
+
+    const error = new Error(
+      "terminating connection due to idle-in-transaction timeout",
+    );
+    first.fail(error);
+    await vi.waitFor(() => expect(get.current).toBeUndefined());
+    expect(first.ends).toBe(1);
+
+    // The rest of the transaction must not autocommit on a fresh session.
+    const rejection = await get().catch((error_) => error_);
+    expect(rejection.message).toMatch("lost during a transaction");
+    expect(rejection.cause).toBe(error);
+
+    // The rollback that follows has consumed the failure: reconnect.
+    expect(await get()).not.toBe(first);
   });
 });

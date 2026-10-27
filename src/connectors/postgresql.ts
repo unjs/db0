@@ -3,7 +3,7 @@ import type pg from "pg";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
-import { normalizeParams } from "./_internal/postgresql.ts";
+import { inTransaction, normalizeParams } from "./_internal/postgresql.ts";
 import {
   discardOnError,
   importLib,
@@ -44,7 +44,7 @@ export default function postgresqlConnector(
       await importLib(CONNECTOR_NAME, "pg", lib, () => import("pg")),
     );
     const client = new pg.Client("url" in config ? config.url : config);
-    discardOnError(getClient, client);
+    discardOnError(getClient, client, inTransaction);
     await client.connect();
     return client;
   });

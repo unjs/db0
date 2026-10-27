@@ -3,7 +3,7 @@ import type * as pg from "@neondatabase/serverless";
 import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
-import { normalizeParams } from "./_internal/postgresql.ts";
+import { inTransaction, normalizeParams } from "./_internal/postgresql.ts";
 import {
   discardOnError,
   importLib,
@@ -58,7 +58,7 @@ export default function neonConnector(
       () => import("@neondatabase/serverless"),
     );
     const client = new pg.Client(config);
-    discardOnError(getClient, client);
+    discardOnError(getClient, client, inTransaction);
     await client.connect();
     return client;
   });
