@@ -18,7 +18,10 @@ import type { AnyRelations } from "drizzle-orm";
 
 import type { Cache } from "drizzle-orm/cache/core";
 
-import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+import type {
+  QueryMetadata,
+  WithCacheConfig,
+} from "drizzle-orm/cache/core/types";
 
 import type { Database, Primitive } from "db0";
 
@@ -48,12 +51,9 @@ export interface DB0SQLiteSessionOptions {
    * emits the same JSON helpers as `db.query.*` (see `../sqlite/index.ts`).
    */
   forbidJsonb?: boolean;
+  /** Include query params in `DrizzleQueryError` messages. */
+  paramsInErrors?: boolean;
 }
-
-type QueryMetadata = {
-  type: "select" | "update" | "delete" | "insert";
-  tables: string[];
-};
 
 export class DB0SQLiteSession<
   TRelations extends AnyRelations,
@@ -61,6 +61,7 @@ export class DB0SQLiteSession<
   private logger: Logger;
   private cache: Cache | undefined;
   private forbidJsonb: boolean | undefined;
+  private paramsInErrors: boolean | undefined;
 
   constructor(
     private db: Database,
@@ -72,6 +73,7 @@ export class DB0SQLiteSession<
     this.logger = options.logger ?? new NoopLogger();
     this.cache = options.cache;
     this.forbidJsonb = options.forbidJsonb;
+    this.paramsInErrors = options.paramsInErrors;
   }
 
   prepareQuery(
@@ -110,13 +112,8 @@ export class DB0SQLiteSession<
             ),
         // Non-returning insert/update/delete: drizzle picks `run` as the
         // execute method, so the driver's own metadata is what resolves.
+        // (`values()` goes through `all` in `arrays` mode.)
         run: (params) => stmt.run(...(params as Primitive[])),
-        values: (params) =>
-          stmt
-            .all(...(params as Primitive[]))
-            .then((rows) =>
-              (rows as Record<string, unknown>[]).map((row) => toArray(row)),
-            ),
       },
       query,
       mapper,
@@ -125,6 +122,7 @@ export class DB0SQLiteSession<
       this.cache,
       queryMetadata,
       cacheConfig,
+      this.paramsInErrors,
     );
   }
 

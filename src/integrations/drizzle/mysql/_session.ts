@@ -19,13 +19,18 @@ import type { AnyRelations, Assume } from "drizzle-orm";
 
 import type { Cache } from "drizzle-orm/cache/core";
 
-import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+import type {
+  QueryMetadata,
+  WithCacheConfig,
+} from "drizzle-orm/cache/core/types";
 
 import type { Database, Primitive } from "db0";
 
 export interface DB0MySqlSessionOptions {
   logger?: Logger;
   cache?: Cache;
+  /** Include query params in `DrizzleQueryError` messages. */
+  paramsInErrors?: boolean;
 }
 
 /**
@@ -61,16 +66,12 @@ export interface DB0MySqlQueryResultHKT extends MySqlQueryResultHKT {
       >[];
 }
 
-type QueryMetadata = {
-  type: "select" | "update" | "delete" | "insert";
-  tables: string[];
-};
-
 export class DB0MySqlSession<
   TRelations extends AnyRelations,
 > extends MySqlAsyncSession<DB0MySqlQueryResultHKT, TRelations> {
   private logger: Logger;
   private cache: Cache | undefined;
+  private paramsInErrors: boolean | undefined;
 
   constructor(
     private db: Database,
@@ -81,6 +82,7 @@ export class DB0MySqlSession<
     super(dialect);
     this.logger = options.logger ?? new NoopLogger();
     this.cache = options.cache;
+    this.paramsInErrors = options.paramsInErrors;
   }
 
   prepareQuery<T extends MySqlPreparedQueryConfig>(
@@ -139,6 +141,7 @@ export class DB0MySqlSession<
       this.cache,
       queryMetadata,
       cacheConfig,
+      this.paramsInErrors,
     );
   }
 

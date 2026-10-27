@@ -132,6 +132,7 @@ export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   const session = new DB0MySqlSession(db, dialect, relations, {
     logger,
     cache: config?.cache,
+    paramsInErrors: config?.paramsInErrors,
   });
 
   const drizzleDb = new MySqlAsyncDatabase(

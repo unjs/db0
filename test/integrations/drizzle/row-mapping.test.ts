@@ -271,7 +271,9 @@ describe("integrations: drizzle: row mapping without a field list", () => {
 describe("integrations: drizzle: row mapping of same-named tables", () => {
   // Postgres refuses the join this describes and MySQL needs a server, so the
   // field list is handed to the tracked mapper generator directly.
-  const convert = (fields: { path: string[]; field: any }[]) => {
+  const convert = (
+    fields: { path: string[]; field: any; fieldType: "Column" }[],
+  ) => {
     const dialect = trackSelectedFields(new PgDialect());
     const mapper = dialect.mapperGenerators.rows(fields as any, undefined);
     return getRowConverter(mapper);
@@ -283,8 +285,8 @@ describe("integrations: drizzle: row mapping of same-named tables", () => {
 
     expect(() =>
       convert([
-        { path: ["a"], field: app.name },
-        { path: ["b"], field: audit.name },
+        { path: ["a"], field: app.name, fieldType: "Column" },
+        { path: ["b"], field: audit.name, fieldType: "Column" },
       ])({ name: "audited" }),
     ).toThrow(
       /`app.entries.name` and `audit.entries.name` both come back as `name`/,
@@ -296,8 +298,8 @@ describe("integrations: drizzle: row mapping of same-named tables", () => {
 
     expect(
       convert([
-        { path: ["a"], field: app.name },
-        { path: ["b"], field: app.name },
+        { path: ["a"], field: app.name, fieldType: "Column" },
+        { path: ["b"], field: app.name, fieldType: "Column" },
       ])({ name: "kept" }),
     ).toEqual(["kept", "kept"]);
   });

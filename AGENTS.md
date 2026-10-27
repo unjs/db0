@@ -105,12 +105,14 @@ than `schema`, and casing comes from the `snakeCase.table()` / `camelCase.table(
 helpers instead of a `casing` option, so `column.name` is always the final SQL
 name — a stray `casing` in the config is rejected outright.
 
-v1 also moved all pg/mysql decoding into **codecs**, so each dialect's `drizzle()`
-defaults to the codec set matching `db.connector` (`pgCodecsFor()` /
-`mysqlCodecsFor()`). The official sets assume the driver was reconfigured to hand
-back raw text; db0 does not own the connection, so date/time (and mysql bigint)
-columns are cast to text in SQL instead. SQLite passes `forbidJsonb` (default
-`true` for `cloudflare-d1`), and all three wire `$client` and `$cache`.
+v1 also moved all column decoding into **codecs** (SQLite since rc.5), so each
+dialect's `drizzle()` defaults to the codec set matching `db.connector`
+(`pgCodecsFor()` / `mysqlCodecsFor()` / `sqliteCodecsFor()`). The official pg/mysql
+sets assume the driver was reconfigured to hand back raw text; db0 does not own
+the connection, so date/time (and mysql bigint) columns are cast to text in SQL
+instead. The SQLite driver sets apply unchanged. SQLite passes `forbidJsonb`
+(default `true` for `cloudflare-d1`; drizzle only emits `jsonb_*` for nested
+relations), and all three wire `$client`, `$cache` and `paramsInErrors`.
 
 db0 has no streaming API: `iterator()` buffers the whole result set, and on mysql
 it errors for statements that resolve to driver metadata rather than rows.

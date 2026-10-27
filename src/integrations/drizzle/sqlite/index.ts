@@ -13,6 +13,14 @@ import type { DrizzleSQLiteConfig } from "drizzle-orm/sqlite-core";
 
 import type { AnyRelations, EmptyRelations } from "drizzle-orm";
 
+import { bufferFromBytes } from "drizzle-orm/sqlite-core/codecs";
+import type { SQLiteCodecs } from "drizzle-orm/sqlite-core/codecs";
+import { refineCodecs } from "drizzle-orm/codecs";
+import { betterSQLite3Codecs } from "drizzle-orm/better-sqlite3/codecs";
+import { nodeSQLiteCodecs } from "drizzle-orm/node-sqlite/codecs";
+import { libsqlCodecs } from "drizzle-orm/libsql/codecs";
+import { d1Codecs } from "drizzle-orm/d1/codecs";
+
 import {
   assertNoCasingOption,
   attachCache,
@@ -21,6 +29,50 @@ import {
 } from "../_utils.ts";
 
 export type { DrizzleSQLiteConfig };
+
+// Codecs
+//
+// Since drizzle-orm 1.0.0-rc.5, SQLite column decoding lives in codecs too (see
+// `../postgres/index.ts`): a dialect built without them leaves booleans as
+// `0`/`1`, timestamps as numbers, JSON as text and `numeric()` as whatever
+// SQLite's affinity made of it. Every official driver passes the set matching
+// its client, so db0 picks one per connector. Unlike Postgres, SQLite drivers
+// need no reconfiguring for these, so the driver sets apply unchanged.
+
+/**
+ * Codecs for the connectors named `sqlite`: better-sqlite3 (blobs come back as
+ * a `Buffer`) and bun:sqlite (a plain `Uint8Array`, which drizzle's bun driver
+ * wraps in a `Buffer`) share that name, so blobs are wrapped only when needed.
+ */
+export const db0SQLiteCodecs: SQLiteCodecs = refineCodecs(betterSQLite3Codecs, {
+  blob: {
+    normalize: (value: Uint8Array) =>
+      Buffer.isBuffer(value) ? value : bufferFromBytes(value),
+  },
+});
+
+/**
+ * The codecs db0 uses for a SQLite connector when `config.codecs` is unset.
+ *
+ * Unknown connectors (and `sqlite3`) fall back to the better-sqlite3 set. Pass
+ * `codecs` explicitly for a client that decodes differently.
+ */
+export function sqliteCodecsFor(connector: string | undefined): SQLiteCodecs {
+  if (connector?.startsWith("libsql")) {
+    return libsqlCodecs;
+  }
+  switch (connector) {
+    case "cloudflare-d1": {
+      return d1Codecs;
+    }
+    case "node-sqlite": {
+      return nodeSQLiteCodecs;
+    }
+    default: {
+      return db0SQLiteCodecs;
+    }
+  }
+}
 
 /**
  * Connectors whose SQLite build predates JSONB (SQLite 3.45).
@@ -62,7 +114,10 @@ export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   assertNoCasingOption(config);
 
   const dialect = trackSelectedFields(
-    new SQLiteDialect({ useJitMappers: useJitMappers(config?.jit) }),
+    new SQLiteDialect({
+      useJitMappers: useJitMappers(config?.jit),
+      codecs: config?.codecs ?? sqliteCodecsFor(db.connector),
+    }),
   );
 
   let logger: DB0SQLiteSessionOptions["logger"];
@@ -80,6 +135,7 @@ export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   const session = new DB0SQLiteSession(db, dialect, relations, {
     logger,
     cache: config?.cache,
+    paramsInErrors: config?.paramsInErrors,
     // So that a transaction's relational queries emit the same JSON helpers.
     forbidJsonb,
   });

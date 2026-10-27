@@ -68,8 +68,8 @@ export function getRowConverter(mapper: Mapper | undefined): RowConverter {
 interface MapperGenerators {
   rows: (
     columns: Fields,
-    joinsNotNullableMap: Record<string, boolean> | undefined,
-  ) => Mapper;
+    nullableObjectPaths: string[] | undefined,
+  ) => Mapper | undefined;
 }
 
 /**
@@ -89,8 +89,11 @@ export function trackSelectedFields<
 >(dialect: TDialect): TDialect {
   const generators = dialect.mapperGenerators;
   const generateRows = generators.rows;
-  generators.rows = (columns, joinsNotNullableMap) => {
-    const mapper = generateRows(columns, joinsNotNullableMap);
+  generators.rows = (columns, nullableObjectPaths) => {
+    const mapper = generateRows(columns, nullableObjectPaths);
+    if (!mapper) {
+      return undefined;
+    }
     let checked = false;
     const checkedMapper: Mapper = (rows) => {
       if (!checked) {

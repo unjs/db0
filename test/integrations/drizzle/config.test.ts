@@ -171,10 +171,12 @@ describe("integrations: drizzle: config: forbidJsonb", () => {
     },
   }));
 
+  // Drizzle only reaches for `jsonb_*` in nested relations, so the query has to
+  // nest one.
   const relationalSql = (db: Database, forbidJsonb?: boolean) =>
     drizzleSqlite(db, { relations, forbidJsonb })
-      .query.authors.findMany({
-        with: { books: true },
+      .query.books.findMany({
+        with: { author: { with: { books: true } } },
       })
       .toSQL().sql;
 
@@ -203,7 +205,9 @@ describe("integrations: drizzle: config: forbidJsonb", () => {
     const drizzleDb = drizzleSqlite(db, { relations, forbidJsonb: true });
     const sql = await drizzleDb.transaction(
       async (tx) =>
-        tx.query.authors.findMany({ with: { books: true } }).toSQL().sql,
+        tx.query.books
+          .findMany({ with: { author: { with: { books: true } } } })
+          .toSQL().sql,
     );
     expect(sql).not.toMatch(/jsonb_/);
     expect(sql).toMatch(/json_/);
@@ -267,6 +271,65 @@ describe("integrations: drizzle: config: types", () => {
   it("`DrizzleBaseConfig` is assignable at runtime", () => {
     const config: DrizzleBaseConfig = { logger: false };
     expect(config.logger).toBe(false);
+  });
+});
+
+describe("integrations: drizzle: config: codecs (better-sqlite3)", () => {
+  const codecs = dSqlite.sqliteTable("codecs", {
+    id: dSqlite.integer("id").primaryKey(),
+    flag: dSqlite.integer("flag", { mode: "boolean" }),
+    ts: dSqlite.integer("ts", { mode: "timestamp" }),
+    tsMs: dSqlite.integer("ts_ms", { mode: "timestamp_ms" }),
+    data: dSqlite.text("data", { mode: "json" }),
+    num: dSqlite.numeric("num"),
+    big: dSqlite.blob("big", { mode: "bigint" }),
+    bytes: dSqlite.blob("bytes", { mode: "buffer" }),
+  });
+
+  let db: Database;
+  let row: typeof codecs.$inferSelect;
+
+  beforeAll(async () => {
+    db = createDatabase(betterSqlite3({ name: ":memory:" }));
+    await db.sql`CREATE TABLE codecs (
+      id INTEGER PRIMARY KEY, flag INTEGER, ts INTEGER, ts_ms INTEGER,
+      data TEXT, num NUMERIC, big BLOB, bytes BLOB
+    )`;
+    await db.exec(
+      `INSERT INTO codecs (flag, ts, ts_ms, data, num, big, bytes)
+       VALUES (1, 1704164645, 1704164645000, '{"a":[1,2]}', '12.5',
+               '9007199254740993', x'0102')`,
+    );
+
+    const rows = await drizzleSqlite(db).select().from(codecs);
+    row = rows[0]!;
+  });
+
+  afterAll(async () => {
+    await db.dispose();
+  });
+
+  it("decodes integer({ mode: 'boolean' }) to a boolean", () => {
+    expect(row.flag).toBe(true);
+  });
+
+  it("decodes integer timestamps to dates", () => {
+    expect(row.ts?.toISOString()).toBe("2024-01-02T03:04:05.000Z");
+    expect(row.tsMs?.toISOString()).toBe("2024-01-02T03:04:05.000Z");
+  });
+
+  it("decodes text({ mode: 'json' }) to a value", () => {
+    expect(row.data).toEqual({ a: [1, 2] });
+  });
+
+  it("decodes numeric() to a string and blob({ mode: 'bigint' }) to a BigInt", () => {
+    expect(row.num).toBe("12.5");
+    expect(row.big).toBe(9_007_199_254_740_993n);
+  });
+
+  it("keeps blobs as a Buffer", () => {
+    expect(Buffer.isBuffer(row.bytes)).toBe(true);
+    expect([...row.bytes!]).toEqual([1, 2]);
   });
 });
 

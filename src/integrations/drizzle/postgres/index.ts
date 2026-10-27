@@ -136,6 +136,7 @@ export function drizzle<TRelations extends AnyRelations = EmptyRelations>(
   const session = new DB0PgSession(db, dialect, relations, {
     logger,
     cache: config?.cache,
+    paramsInErrors: config?.paramsInErrors,
   });
 
   const drizzleDb = new PgAsyncDatabase(

@@ -19,13 +19,18 @@ import type { AnyRelations, Assume, SQL } from "drizzle-orm";
 
 import type { Cache } from "drizzle-orm/cache/core";
 
-import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+import type {
+  QueryMetadata,
+  WithCacheConfig,
+} from "drizzle-orm/cache/core/types";
 
 import type { Database, Primitive } from "db0";
 
 export interface DB0PgSessionOptions {
   logger?: Logger;
   cache?: Cache;
+  /** Include query params in `DrizzleQueryError` messages. */
+  paramsInErrors?: boolean;
 }
 
 /**
@@ -61,16 +66,12 @@ export interface DB0PgQueryResultHKT extends PgQueryResultHKT {
       >[];
 }
 
-type QueryMetadata = {
-  type: "select" | "update" | "delete" | "insert";
-  tables: string[];
-};
-
 export class DB0PgSession<
   TRelations extends AnyRelations,
 > extends PgAsyncSession<DB0PgQueryResultHKT, TRelations> {
   private logger: Logger;
   private cache: Cache | undefined;
+  private paramsInErrors: boolean | undefined;
 
   constructor(
     private db: Database,
@@ -81,6 +82,7 @@ export class DB0PgSession<
     super(dialect);
     this.logger = options.logger ?? new NoopLogger();
     this.cache = options.cache;
+    this.paramsInErrors = options.paramsInErrors;
   }
 
   prepareQuery<T extends PreparedQueryConfig = PreparedQueryConfig>(
@@ -120,6 +122,7 @@ export class DB0PgSession<
       this.cache,
       queryMetadata,
       cacheConfig,
+      this.paramsInErrors,
     );
   }
 
@@ -138,6 +141,11 @@ export class DB0PgSession<
       sql`begin${config ? sql` ${transactionConfigSQL(config)}` : undefined}`,
     );
     try {
+      if (typeof config?.snapshot === "string") {
+        await tx.execute(
+          sql`set transaction snapshot ${config.snapshot}`.inlineParams(),
+        );
+      }
       const result = await transaction(tx);
       await tx.execute(sql`commit`);
       return result;
