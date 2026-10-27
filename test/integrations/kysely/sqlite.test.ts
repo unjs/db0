@@ -3,8 +3,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { type Connector, type Database, createDatabase } from "../../../src";
 import { kysely } from "../../../src/integrations/kysely";
 
-import type { Kysely } from "kysely";
+import { sql, type Kysely } from "kysely";
 
+import betterSqlite3 from "../../../src/connectors/better-sqlite3";
 import libsqlNode from "../../../src/connectors/libsql/node";
 
 interface UsersTable {
@@ -17,6 +18,10 @@ interface DB {
 }
 
 const connectors: { name: string; connector: () => Connector }[] = [
+  {
+    name: "better-sqlite3",
+    connector: () => betterSqlite3({ name: ":memory:" }),
+  },
   {
     name: "libsql-node",
     connector: () => libsqlNode({ url: ":memory:" }),
@@ -104,8 +109,51 @@ for (const { name, connector } of connectors) {
       expect(countAfter).toBe(countBefore);
     });
 
+    it("affected rows", async () => {
+      const inserted = await ky
+        .insertInto("users")
+        .values({ name: "Counted" })
+        .executeTakeFirstOrThrow();
+      expect(inserted.numInsertedOrUpdatedRows).toBe(1n);
+      expect(typeof inserted.insertId).toBe("bigint");
+
+      const updated = await ky
+        .updateTable("users")
+        .set({ name: "Counted" })
+        .where("name", "=", "Counted")
+        .executeTakeFirstOrThrow();
+      expect(updated.numUpdatedRows).toBe(1n);
+
+      const deleted = await ky
+        .deleteFrom("users")
+        .where("name", "=", "Counted")
+        .executeTakeFirstOrThrow();
+      expect(deleted.numDeletedRows).toBe(1n);
+    });
+
+    it("schema builder", async () => {
+      await ky.schema
+        .createTable("kysely_schema_test")
+        .ifNotExists()
+        .addColumn("id", "integer", (col) => col.primaryKey())
+        .execute();
+      await ky.schema.dropTable("kysely_schema_test").execute();
+    });
+
+    it("raw sql", async () => {
+      await sql`INSERT INTO users (name) VALUES (${"Raw User"})`.execute(ky);
+
+      const res =
+        await sql<UsersTable>`SELECT * FROM users WHERE name = ${"Raw User"}`.execute(
+          ky,
+        );
+      expect(res.rows.length).toBe(1);
+      expect(res.rows[0].name).toBe("Raw User");
+    });
+
     afterAll(async () => {
       await db.sql`DROP TABLE IF EXISTS users`;
+      await db.dispose();
     });
   });
 }
