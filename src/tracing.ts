@@ -113,6 +113,16 @@ export function withTracing<TConnector extends Connector = Connector>(
 
   const queryChannel = tracingChannel<TraceContext>(QUERY_CHANNEL);
 
+  // `TracingChannel#hasSubscribers` is missing on some runtimes (e.g. Bun), so
+  // fall back to checking the individual sub-channels.
+  const hasSubscribers = (): boolean =>
+    queryChannel.hasSubscribers ??
+    (queryChannel.start.hasSubscribers ||
+      queryChannel.end.hasSubscribers ||
+      queryChannel.asyncStart.hasSubscribers ||
+      queryChannel.asyncEnd.hasSubscribers ||
+      queryChannel.error.hasSubscribers);
+
   // The context is built lazily to avoid any work when nobody is subscribed.
   // This is an async function so that subscribing never turns a rejection
   // (e.g. an invalid `sql` template) into a synchronous throw.
@@ -121,7 +131,7 @@ export function withTracing<TConnector extends Connector = Connector>(
     method: TraceContext["method"],
     query: string | (() => string),
   ): Promise<T> {
-    if (!queryChannel.hasSubscribers) {
+    if (!hasSubscribers()) {
       return exec();
     }
     return queryChannel.tracePromise(exec, {
