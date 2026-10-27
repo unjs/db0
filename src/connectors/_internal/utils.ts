@@ -68,8 +68,8 @@ export function lazyInstance<T>(factory: () => Promise<T>): LazyInstance<T> {
 }
 
 type ErrorEmitter = {
-  on?: (event: "error", listener: (error: Error) => void) => unknown;
-  end?: () => unknown;
+  on: (event: "error", listener: (error: Error) => void) => unknown;
+  end: () => unknown;
 };
 
 /**
@@ -85,7 +85,7 @@ export function discardOnError<T extends ErrorEmitter>(
   instance: LazyInstance<T>,
   connection: T,
 ): void {
-  connection.on?.("error", () => {
+  connection.on("error", () => {
     // Only forget this connection: a later one may already have replaced it.
     void instance.current?.then(
       (current) => {
@@ -95,7 +95,7 @@ export function discardOnError<T extends ErrorEmitter>(
         instance.reset();
         // Release the socket. A connection that has already gone away ends
         // without complaint, so failures here are nothing to report.
-        void Promise.resolve(connection.end?.()).catch(() => {});
+        void Promise.resolve(connection.end()).catch(() => {});
       },
       () => {},
     );

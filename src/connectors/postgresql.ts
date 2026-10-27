@@ -5,10 +5,10 @@ import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 import { normalizeParams } from "./_internal/postgresql.ts";
 import {
+  discardOnError,
   importLib,
   interopDefault,
   lazyInstance,
-  discardOnError,
   type ConnectorDependencies,
   type LibImport,
 } from "./_internal/utils.ts";

@@ -6,10 +6,10 @@ import { BoundableStatement } from "./_internal/statement.ts";
 import { getHyperdrive } from "./_internal/cloudflare.ts";
 import { normalizeParams } from "./_internal/postgresql.ts";
 import {
+  discardOnError,
   importLib,
   interopDefault,
   lazyInstance,
-  discardOnError,
   type ConnectorDependencies,
   type LibImport,
 } from "./_internal/utils.ts";

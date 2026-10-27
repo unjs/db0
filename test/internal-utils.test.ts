@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  discardOnError,
   importLib,
   interopDefault,
   lazyInstance,
-  discardOnError,
 } from "../src/connectors/_internal/utils";
 
 describe("importLib", () => {
@@ -151,11 +151,5 @@ describe("discardOnError", () => {
 
     expect(second.ends).toBe(0);
     expect(await get()).toBe(second);
-  });
-
-  it("ignores a connection without an event emitter", async () => {
-    const get = lazyInstance(async () => ({}));
-    const connection = await get();
-    expect(() => discardOnError(get, connection)).not.toThrow();
   });
 });
