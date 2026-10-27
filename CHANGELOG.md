@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v0.4.2
+
+[compare changes](https://github.com/unjs/db0/compare/v0.4.1...v0.4.2)
+
+### 🚀 Enhancements
+
+- **cloudflare:** Use `cloudflare:workers` env instead of `globalThis.__env__` ([be03a51](https://github.com/unjs/db0/commit/be03a51))
+
+### 🩹 Fixes
+
+- **tracing:** Detect subscribers on runtimes without `TracingChannel#hasSubscribers` ([6d16bbc](https://github.com/unjs/db0/commit/6d16bbc))
+- **drizzle:** Support drizzle-orm 1.0.0-rc.5 ([4739f40](https://github.com/unjs/db0/commit/4739f40))
+
+### 🏡 Chore
+
+- Update deps ([9996101](https://github.com/unjs/db0/commit/9996101))
+
+### ❤️ Contributors
+
+- Pooya Parsa <pooya@pi0.io>
+
 ## v0.4.1
 
 [compare changes](https://github.com/unjs/db0/compare/v0.4.0...v0.4.1)
