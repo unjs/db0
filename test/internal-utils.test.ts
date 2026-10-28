@@ -179,6 +179,19 @@ describe("discardOnError", () => {
     expect(first.ends).toBe(0);
   });
 
+  it("ignores a connection whose end() throws synchronously", async () => {
+    const get = connect();
+    const first = await get();
+    first.end = () => {
+      throw new Error("socket already closed");
+    };
+
+    expect(() => first.fail()).not.toThrow();
+    await vi.waitFor(() => expect(get.current).toBeUndefined());
+
+    expect(await get()).not.toBe(first);
+  });
+
   it("fails the next query instead of reconnecting inside a transaction", async () => {
     const get = connect();
     const first = await get();

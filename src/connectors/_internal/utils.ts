@@ -128,8 +128,12 @@ export function discardOnError<T extends ErrorEmitter>(
           instance.reset();
         }
         // Release the socket. A connection that has already gone away ends
-        // without complaint, so failures here are nothing to report.
-        void Promise.resolve(connection.end()).catch(() => {});
+        // without complaint, so failures here are nothing to report. `end()`
+        // may also throw synchronously, so call it inside the chain to keep
+        // that from rejecting the detached promise below.
+        void Promise.resolve()
+          .then(() => connection.end())
+          .catch(() => {});
       },
       () => {},
     );
