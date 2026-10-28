@@ -2,6 +2,7 @@ import type mysql from "mysql2/promise";
 import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 import {
+  discardOnError,
   importLib,
   lazyInstance,
   type ConnectorDependencies,
@@ -39,7 +40,9 @@ export default function mysqlConnector(
       lib,
       () => import("mysql2/promise"),
     );
-    return mysql.createConnection({ ...config });
+    const connection = await mysql.createConnection({ ...config });
+    discardOnError(getConnection, connection);
+    return connection;
   });
 
   const query: InternalQuery = (sql, params) =>

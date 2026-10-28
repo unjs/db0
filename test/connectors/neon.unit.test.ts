@@ -20,6 +20,8 @@ const { clients, state, MockClient } = vi.hoisted(() => {
       return state.connect();
     }
 
+    on() {}
+
     query(sql: string, params?: unknown[]) {
       this.queries.push({ sql, params });
       return Promise.resolve({ rows: [], rowCount: 0 });

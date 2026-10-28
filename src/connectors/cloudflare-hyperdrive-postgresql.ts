@@ -4,8 +4,9 @@ import type { Connector, Primitive } from "db0";
 
 import { BoundableStatement } from "./_internal/statement.ts";
 import { getHyperdrive } from "./_internal/cloudflare.ts";
-import { normalizeParams } from "./_internal/postgresql.ts";
+import { inTransaction, normalizeParams } from "./_internal/postgresql.ts";
 import {
+  discardOnError,
   importLib,
   interopDefault,
   lazyInstance,
@@ -52,6 +53,7 @@ export default function cloudflareHyperdrivePostgresqlConnector(
       ...config,
       connectionString: hyperdrive.connectionString,
     });
+    discardOnError(getClient, client, inTransaction);
     await client.connect();
     return client;
   });

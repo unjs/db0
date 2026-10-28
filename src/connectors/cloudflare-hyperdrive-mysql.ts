@@ -3,6 +3,7 @@ import type { Connector, Primitive } from "db0";
 import { BoundableStatement } from "./_internal/statement.ts";
 import { getHyperdrive } from "./_internal/cloudflare.ts";
 import {
+  discardOnError,
   importLib,
   lazyInstance,
   type ConnectorDependencies,
@@ -61,7 +62,7 @@ export default function cloudflareHyperdriveMysqlConnector(
       () => import("mysql2/promise"),
     );
     const hyperdrive = await getHyperdrive(opts.bindingName);
-    return mysql.createConnection({
+    const connection = await mysql.createConnection({
       ...config,
       host: hyperdrive.host,
       user: hyperdrive.user,
@@ -73,6 +74,8 @@ export default function cloudflareHyperdriveMysqlConnector(
       // Configure mysql2 to use static parsing instead of eval() parsing with disableEval
       disableEval: true,
     });
+    discardOnError(getConnection, connection);
+    return connection;
   });
 
   const query: InternalQuery = (sql, params) =>
