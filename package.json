@@ -48,9 +48,9 @@
     "test:types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261026.1",
-    "@electric-sql/pglite": "^0.5.11",
-    "@libsql/client": "^0.17.4",
+    "@cloudflare/workers-types": "^5.20261028.1",
+    "@electric-sql/pglite": "^0.5.13",
+    "@libsql/client": "^0.18.0",
     "@neondatabase/serverless": "^1.2.0",
     "@planetscale/database": "^1.20.2",
     "@prisma/client": "^7.10.1",
@@ -62,9 +62,9 @@
     "automd": "^0.4.3",
     "better-sqlite3": "^13.0.3",
     "changelogen": "^0.6.2",
-    "db0": "^0.4.1",
+    "db0": "^0.4.2",
     "dotenv": "^18.0.9",
-    "drizzle-orm": "1.0.0-rc.5",
+    "drizzle-orm": "1.0.0-rc.5-ab785fc",
     "eslint": "^10.13.0",
     "eslint-config-unjs": "^0.6.2",
     "jiti": "^2.7.0",
@@ -80,7 +80,7 @@
     "sqlite3": "^6.0.1",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.154.0"
   },
-  "packageManager": "pnpm@12.15.0"
+  "packageManager": "pnpm@12.16.1"
 }
