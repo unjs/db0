@@ -22,6 +22,11 @@ export interface TraceContext {
   method: "exec" | "sql" | "prepare.all" | "prepare.run" | "prepare.get";
   connector: Database["connector"];
   dialect: SQLDialect;
+  /**
+   * The traced database the query ran on, so subscribers can tell several
+   * databases using the same connector apart.
+   */
+  database: Database;
 }
 
 /**
@@ -139,6 +144,7 @@ export function withTracing<TConnector extends Connector = Connector>(
       method,
       connector: db.connector,
       dialect: db.dialect,
+      database: tracedDb,
     });
   }
 
