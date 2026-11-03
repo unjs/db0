@@ -308,6 +308,24 @@ describe("tracing", () => {
       }
     });
 
+    it("should include the traced database the query ran on", async () => {
+      const listener = createTracingListener("query");
+      const otherDb = withTracing(
+        createDatabase(connector({ name: ":memory:" })),
+      );
+      onTestFinished(() => otherDb.dispose());
+
+      await db.exec("SELECT 1");
+      await otherDb.prepare("SELECT 1").all();
+
+      const databases = listener.handlers.start.mock.calls.map(
+        (call) => call[0].database,
+      );
+      expect(databases).toHaveLength(2);
+      expect(databases[0]).toBe(db);
+      expect(databases[1]).toBe(otherDb);
+    });
+
     it("should emit events in order on success", async () => {
       const order: string[] = [];
       const listener = createTracingListener("query");
