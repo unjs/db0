@@ -2,7 +2,7 @@
 icon: cbi:neon
 ---
 
-# NEON
+# Neon
 
 > Very similar to [Postgres connector](/connectors/postgresql), but optimized for serverless environments.
 
